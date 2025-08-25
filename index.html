@@ -112,14 +112,29 @@
                     <li><a href="#upcoming" class="nav-link flex items-center text-lg p-3 rounded-xl hover:bg-[color:var(--hover-bg)] transition"><svg class="w-6 h-6 mr-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><span class="nav-text">Upcoming</span></a></li>
                 </ul>
             </nav>
-            <div class="mt-auto pt-6 border-t border-white/10">
-                <a href="#" class="flex items-center p-3 rounded-xl hover:bg-[color:var(--hover-bg)] transition">
-                    <img src="https://placehold.co/40x40/000000/ffffff?text=D" alt="User Avatar" class="w-10 h-10 rounded-full mr-4 flex-shrink-0">
-                    <div class="nav-text">
-                        <p class="font-semibold">D'Gamer</p>
-                        <p class="text-sm text-gray-400">View Profile</p>
+            <!-- DYNAMIC AUTH SECTION -->
+            <div id="auth-section" class="mt-auto pt-6 border-t border-white/10">
+                <!-- Logged In State (hidden by default) -->
+                <div id="user-profile" class="hidden">
+                    <div class="flex items-center p-3">
+                        <img id="user-avatar" src="https://placehold.co/40x40/ff416c/ffffff?text=U" alt="User Avatar" class="w-10 h-10 rounded-full mr-4 flex-shrink-0">
+                        <div class="nav-text">
+                            <p id="user-name" class="font-semibold">User</p>
+                            <p id="user-credits" class="text-sm text-gray-400">Credits: 0</p>
+                        </div>
                     </div>
-                </a>
+                    <button id="sign-out-btn" class="w-full mt-2 text-center p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/40 transition">
+                        <span class="nav-text">Sign Out</span>
+                    </button>
+                </div>
+        
+                <!-- Logged Out State (visible by default) -->
+                <div id="sign-in-prompt">
+                     <button id="sign-in-btn" class="w-full flex items-center text-lg p-3 rounded-xl hover:bg-[color:var(--hover-bg)] transition">
+                        <svg class="w-6 h-6 mr-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                        <span class="nav-text">Sign In</span>
+                    </button>
+                </div>
             </div>
         </aside>
 
@@ -201,8 +216,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMENT REFERENCES ---
             const navLinks = document.querySelectorAll('.nav-link');
-            const pages = document.querySelectorAll('.page-content');
             const pageTitle = document.getElementById('page-title');
             const searchBar = document.getElementById('search-bar');
             const allGamesGrid = document.getElementById('all-games-grid');
@@ -212,8 +227,19 @@
             const navTexts = document.querySelectorAll('.nav-text');
             const backBtn = document.getElementById('back-btn');
 
+            // Auth elements
+            const userProfile = document.getElementById('user-profile');
+            const signInPrompt = document.getElementById('sign-in-prompt');
+            const signInBtn = document.getElementById('sign-in-btn');
+            const signOutBtn = document.getElementById('sign-out-btn');
+            const userNameEl = document.getElementById('user-name');
+            const userCreditsEl = document.getElementById('user-credits');
+            const userAvatarEl = document.getElementById('user-avatar');
+
+            // --- STATE ---
             let lastActivePage = 'home';
 
+            // --- DATA ---
             const allGamesData = [
                 { id: 'gta5', title: 'Grand Theft Auto V', dev: 'Rockstar Games', category: 'Action Adventure', img: 'https://image.api.playstation.com/vulcan/ap/rnd/202203/0811/rS1c1aor6y3Mh4n13Nf3b2vi.png', desc: 'When a young street hustler, a retired bank robber and a terrifying psychopath find themselves entangled with some of the most frightening and deranged elements of the criminal underworld, the U.S. government and the entertainment industry, they must pull off a series of dangerous heists to survive in a ruthless city in which they can trust nobody, least of all each other.', link: 'https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/' },
                 { id: 'rdr2', title: 'Red Dead Redemption 2', dev: 'Rockstar Games', category: 'Action Adventure', img: 'https://image.api.playstation.com/vulcan/img/rnd/202010/2618/Y02ljdBodKFBiziorYgqftTq.png', desc: 'America, 1899. The end of the wild west era has begun as lawmen hunt down the last remaining outlaw gangs. Those who will not surrender or succumb are killed.', link: '#' },
@@ -226,10 +252,80 @@
                  { id: 'uncharted', title: 'Uncharted: Legacy of Thieves', dev: 'Naughty Dog', img: 'https://image.api.playstation.com/vulcan/ap/rnd/202109/0222/a003s0V10vmLo1a025V01AvR.png' }
             ];
 
+            // --- COOKIE & AUTHENTICATION LOGIC ---
+
+            /**
+             * Gets a cookie by name.
+             * @param {string} name The name of the cookie.
+             * @returns {string|null} The cookie value or null if not found.
+             */
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            }
+
+            /**
+             * Deletes a cookie by setting its expiration to the past.
+             * @param {string} name The name of the cookie.
+             */
+            function deleteCookie(name) {
+                // Set the cookie with the root domain to ensure it's deleted correctly.
+                document.cookie = `${name}=; path=/; domain=.dverse.fun; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+            }
+
+            /**
+             * Initializes authentication by checking for a session cookie.
+             * It no longer needs to handle URL tokens, as that's managed by the main dverse.fun site.
+             */
+            function initializeAuth() {
+                const sessionToken = getCookie('dverseSessionToken');
+                const userDataString = getCookie('dverseUserData');
+
+                if (sessionToken && userDataString) {
+                    try {
+                        // Decode the user data from the cookie and parse it.
+                        const userData = JSON.parse(decodeURIComponent(userDataString));
+                        renderLoggedInState(userData);
+                    } catch (e) {
+                        console.error("Failed to parse user data from cookie", e);
+                        renderLoggedOutState();
+                    }
+                } else {
+                    renderLoggedOutState();
+                }
+            }
+
+            /**
+             * Renders the UI for a logged-in user.
+             * @param {object} userData - The user data object.
+             */
+            function renderLoggedInState(userData) {
+                if (!userData) return;
+                
+                userNameEl.textContent = userData.username;
+                userCreditsEl.textContent = `Credits: ${userData.credits}`;
+                userAvatarEl.src = `https://placehold.co/40x40/ff416c/ffffff?text=${userData.avatarInitial || 'U'}`;
+                
+                signInPrompt.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+            }
+
+            /**
+             * Renders the UI for a logged-out user.
+             */
+            function renderLoggedOutState() {
+                userProfile.classList.add('hidden');
+                signInPrompt.classList.remove('hidden');
+            }
+
+            // --- UI & PAGE LOGIC ---
+
             function createGameCard(game) {
                 return `
                     <div class="game-card glass-panel rounded-2xl p-4 cursor-pointer" data-game-id="${game.id}">
-                        <img src="${game.img}" class="rounded-lg mb-4 h-40 w-full object-cover">
+                        <img src="${game.img}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0f2027/ffffff?text=Image+Not+Found';" class="rounded-lg mb-4 h-40 w-full object-cover">
                         <h4 class="font-semibold truncate">${game.title}</h4>
                         <p class="text-sm text-gray-400">${game.dev}</p>
                     </div>
@@ -244,13 +340,12 @@
             }
 
             function renderAllGames(filter = '') {
-                allGamesGrid.innerHTML = '';
                 const filteredGames = allGamesData.filter(game => game.title.toLowerCase().includes(filter.toLowerCase()));
                 if (filteredGames.length === 0) {
                     allGamesGrid.innerHTML = `<p class="col-span-4 text-center text-gray-400">No games found.</p>`;
-                    return;
+                } else {
+                    allGamesGrid.innerHTML = filteredGames.map(createGameCard).join('');
                 }
-                allGamesGrid.innerHTML = filteredGames.map(createGameCard).join('');
             }
             
             function renderUpcomingGames() {
@@ -258,7 +353,7 @@
                 upcomingGrid.innerHTML = upcomingGamesData.map(createGameCard).join('');
             }
 
-            function showPage(pageId, isPoppingState = false) {
+            function showPage(pageId, isFromHistory = false) {
                 const currentActive = document.querySelector('.page-content:not(.hidden)');
                 if (currentActive) {
                     currentActive.classList.add('page-exit');
@@ -274,17 +369,20 @@
                         targetPage.classList.remove('hidden');
                         targetPage.classList.add('page-enter');
                     }
-                    if (!isPoppingState) {
-                        lastActivePage = pageId;
-                    }
                 }, 300);
 
+                if (pageId !== 'game-detail') {
+                    lastActivePage = pageId;
+                }
 
                 navLinks.forEach(link => {
                     link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${pageId}`) {
+                    const activePageId = (pageId === 'game-detail') ? lastActivePage : pageId;
+                    if (link.getAttribute('href') === `#${activePageId}`) {
                         link.classList.add('active');
-                        pageTitle.textContent = link.textContent.trim();
+                        if (pageId !== 'game-detail') {
+                            pageTitle.textContent = link.textContent.trim();
+                        }
                     }
                 });
             }
@@ -302,6 +400,21 @@
                 showPage('game-detail');
                 pageTitle.textContent = game.title;
             }
+
+            // --- EVENT LISTENERS ---
+
+            signInBtn.addEventListener('click', () => {
+                // Redirect to dverse.fun and tell it where to send us back.
+                const redirectUrl = window.location.href.split('?')[0]; // Get the clean URL of this page
+                window.location.href = `https://dverse.fun?redirect_url=${encodeURIComponent(redirectUrl)}`;
+            });
+
+            signOutBtn.addEventListener('click', () => {
+                // Delete the cookies to sign out.
+                deleteCookie('dverseSessionToken');
+                deleteCookie('dverseUserData');
+                renderLoggedOutState();
+            });
 
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
@@ -322,12 +435,7 @@
                 sidebarTitle.classList.toggle('opacity-0');
                 sidebarTitle.classList.toggle('opacity-100');
                 navTexts.forEach(text => text.classList.toggle('hidden'));
-                
-                if (sidebar.classList.contains('w-24')) {
-                    sidebarTitle.textContent = "D'";
-                } else {
-                    sidebarTitle.textContent = "D'Games";
-                }
+                sidebarTitle.textContent = sidebar.classList.contains('w-24') ? "D'" : "D'Games";
             });
 
             document.getElementById('page-container').addEventListener('click', (e) => {
@@ -341,7 +449,8 @@
                 showPage(lastActivePage, true);
             });
 
-            // Initial setup
+            // --- INITIALIZATION ---
+            initializeAuth();
             renderHomePage();
             renderAllGames();
             renderUpcomingGames();
