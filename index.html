@@ -114,6 +114,8 @@
             </nav>
             <!-- DYNAMIC AUTH SECTION -->
             <div id="auth-section" class="mt-auto pt-6 border-t border-white/10">
+                <!-- **FIX:** Added a dedicated container for error messages -->
+                <div id="auth-error" class="hidden text-red-400 text-sm mb-2 p-2 bg-red-900/50 rounded-lg"></div>
                 <!-- Logged In State (hidden by default) -->
                 <div id="user-profile" class="hidden">
                     <div class="flex items-center p-3">
@@ -235,6 +237,7 @@
             const userNameEl = document.getElementById('user-name');
             const userCreditsEl = document.getElementById('user-credits');
             const userAvatarEl = document.getElementById('user-avatar');
+            const authErrorEl = document.getElementById('auth-error'); // Error display element
 
             // --- STATE ---
             let lastActivePage = 'home';
@@ -260,18 +263,26 @@
                     });
 
                     if (!response.ok) {
-                        renderLoggedOutState();
-                        return;
+                        // **FIX:** Check for specific error messages from the server
+                        if (response.headers.get("content-type")?.includes("application/json")) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                        }
+                        throw new Error(`Server responded with status: ${response.status}`);
                     }
                     const userData = await response.json();
                     renderLoggedInState(userData);
                 } catch (error) {
                     console.error("Auth check failed:", error);
+                    // **FIX:** Display a more informative error message on the page
+                    authErrorEl.textContent = `Auth Error: ${error.message}. This is likely a CORS issue.`;
+                    authErrorEl.classList.remove('hidden');
                     renderLoggedOutState();
                 }
             }
 
             function renderLoggedInState(userData) {
+                authErrorEl.classList.add('hidden'); // Hide error on success
                 signInPrompt.style.display = 'none';
                 userProfile.style.display = 'block';
                 userNameEl.textContent = userData.name;
