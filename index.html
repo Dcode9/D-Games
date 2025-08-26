@@ -252,72 +252,40 @@
                  { id: 'uncharted', title: 'Uncharted: Legacy of Thieves', dev: 'Naughty Dog', img: 'https://image.api.playstation.com/vulcan/ap/rnd/202109/0222/a003s0V10vmLo1a025V01AvR.png' }
             ];
 
-            // --- COOKIE & AUTHENTICATION LOGIC ---
+            // --- AUTHENTICATION LOGIC ---
+            async function initializeAuth() {
+                try {
+                    const response = await fetch('https://authfordev.dverse.fun/api/user', {
+                        credentials: 'include'
+                    });
 
-            /**
-             * Gets a cookie by name.
-             * @param {string} name The name of the cookie.
-             * @returns {string|null} The cookie value or null if not found.
-             */
-            function getCookie(name) {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; ${name}=`);
-                if (parts.length === 2) return parts.pop().split(';').shift();
-                return null;
-            }
-
-            /**
-             * Deletes a cookie by setting its expiration to the past.
-             * @param {string} name The name of the cookie.
-             */
-            function deleteCookie(name) {
-                // Set the cookie with the root domain to ensure it's deleted correctly.
-                document.cookie = `${name}=; path=/; domain=.dverse.fun; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-            }
-
-            /**
-             * Initializes authentication by checking for a session cookie.
-             * It no longer needs to handle URL tokens, as that's managed by the main dverse.fun site.
-             */
-            function initializeAuth() {
-                const sessionToken = getCookie('dverseSessionToken');
-                const userDataString = getCookie('dverseUserData');
-
-                if (sessionToken && userDataString) {
-                    try {
-                        // Decode the user data from the cookie and parse it.
-                        const userData = JSON.parse(decodeURIComponent(userDataString));
-                        renderLoggedInState(userData);
-                    } catch (e) {
-                        console.error("Failed to parse user data from cookie", e);
+                    if (!response.ok) {
                         renderLoggedOutState();
+                        return;
                     }
-                } else {
+                    const userData = await response.json();
+                    renderLoggedInState(userData);
+                } catch (error) {
+                    console.error("Auth check failed:", error);
                     renderLoggedOutState();
                 }
             }
 
-            /**
-             * Renders the UI for a logged-in user.
-             * @param {object} userData - The user data object.
-             */
             function renderLoggedInState(userData) {
-                if (!userData) return;
-                
-                userNameEl.textContent = userData.username;
+                signInPrompt.style.display = 'none';
+                userProfile.style.display = 'block';
+                userNameEl.textContent = userData.name;
                 userCreditsEl.textContent = `Credits: ${userData.credits}`;
-                userAvatarEl.src = `https://placehold.co/40x40/ff416c/ffffff?text=${userData.avatarInitial || 'U'}`;
-                
-                signInPrompt.classList.add('hidden');
-                userProfile.classList.remove('hidden');
+                userAvatarEl.src = userData.avatarUrl;
             }
 
-            /**
-             * Renders the UI for a logged-out user.
-             */
             function renderLoggedOutState() {
-                userProfile.classList.add('hidden');
-                signInPrompt.classList.remove('hidden');
+                signInPrompt.style.display = 'block';
+                userProfile.style.display = 'none';
+            }
+
+            function signOut() {
+                window.location.href = `https://authfordev.dverse.fun/logout?redirect_url=${encodeURIComponent(window.location.href)}`;
             }
 
             // --- UI & PAGE LOGIC ---
@@ -404,17 +372,11 @@
             // --- EVENT LISTENERS ---
 
             signInBtn.addEventListener('click', () => {
-                // Redirect to dverse.fun and tell it where to send us back.
-                const redirectUrl = window.location.href.split('?')[0]; // Get the clean URL of this page
-                window.location.href = `https://dverse.fun?redirect_url=${encodeURIComponent(redirectUrl)}`;
+                const redirectUrl = window.location.href.split('?')[0];
+                window.location.href = `https://authfordev.dverse.fun/login?redirect_url=${encodeURIComponent(redirectUrl)}`;
             });
 
-            signOutBtn.addEventListener('click', () => {
-                // Delete the cookies to sign out.
-                deleteCookie('dverseSessionToken');
-                deleteCookie('dverseUserData');
-                renderLoggedOutState();
-            });
+            signOutBtn.addEventListener('click', signOut);
 
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
