@@ -1,7 +1,5 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ],
+  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false
 }
