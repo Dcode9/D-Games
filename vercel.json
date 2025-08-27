@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/dcode9/d-games/D-Games-main/index.html"
     }
   ]
 }
