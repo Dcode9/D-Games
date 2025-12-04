@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripple Reaction</title>
+    <style>
+        body { margin: 0; background: #1a1a2e; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #e94560; font-size: 24px;
+            text-shadow: 0 0 5px #e94560; pointer-events: none;
+        }
+        #instructions {
+            position: absolute; bottom: 20px; width: 100%; text-align: center; color: #aaa;
+            pointer-events: none; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">Score: <span id="s">0</span></div>
+    <div id="instructions">Click to create a Gravity Well. Collect Blue dots. Avoid Red dots.</div>
+    <canvas id="c"></canvas>
+    <script>
+        const c = document.getElementById('c');
+        const ctx = c.getContext('2d');
+        let w, h;
+
+        let score = 0;
+        let particles = [];
+        let ripples = [];
+        
+        // Colors
+        const GOOD = '#4dfff3';
+        const BAD = '#e94560';
+        
+        function resize() {
+            w = c.width = window.innerWidth;
+            h = c.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Dot {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.type = Math.random() > 0.2 ? 'good' : 'bad';
+                this.rad = this.type === 'good' ? 4 : 6;
+                this.color = this.type === 'good' ? GOOD : BAD;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Bounce
+                if(this.x < 0 || this.x > w) this.vx *= -1;
+                if(this.y < 0 || this.y > h) this.vy *= -1;
+                
+                // Interaction with ripples
+                ripples.forEach(r => {
+                    const dx = r.x - this.x;
+                    const dy = r.y - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < r.size && this.type === 'good') {
+                        // Suck in good particles
+                        this.x += dx * 0.1;
+                        this.y += dy * 0.1;
+                        if(dist < 10) {
+                            this.respawn();
+                            score++;
+                            document.getElementById('s').innerText = score;
+                            // Visual flair
+                            r.flash = true;
+                        }
+                    } else if (dist < r.size && this.type === 'bad') {
+                        // Repel bad particles? Or Game over?
+                        // Let's make it game over if they touch the center
+                        if(dist < 10) {
+                           score = 0;
+                           document.getElementById('s').innerText = score;
+                           document.body.style.background = '#500';
+                           setTimeout(() => document.body.style.background = '#1a1a2e', 100);
+                           this.respawn();
+                           // Remove all ripples
+                           ripples = [];
+                        }
+                    }
+                });
+            }
+            respawn() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.type = Math.random() > 0.2 ? 'good' : 'bad';
+                this.color = this.type === 'good' ? GOOD : BAD;
+                this.rad = this.type === 'good' ? 4 : 6;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.rad, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        class Ripple {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.size = 0;
+                this.maxSize = 150;
+                this.life = 1;
+                this.flash = false;
+            }
+            update() {
+                if(this.size < this.maxSize) this.size += 5;
+                this.life -= 0.01;
+                this.flash = false; // Reset flash
+            }
+            draw() {
+                ctx.strokeStyle = `rgba(77, 255, 243, ${this.life})`;
+                if(this.flash) ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.stroke();
+            }
+        }
+
+        // Init
+        for(let i=0; i<50; i++) particles.push(new Dot());
+
+        window.addEventListener('mousedown', e => ripples.push(new Ripple(e.clientX, e.clientY)));
+        window.addEventListener('touchstart', e => {
+            e.preventDefault();
+            ripples.push(new Ripple(e.touches[0].clientX, e.touches[0].clientY));
+        }, {passive: false});
+
+        function loop() {
+            requestAnimationFrame(loop);
+            // Trail effect
+            ctx.fillStyle = 'rgba(26, 26, 46, 0.2)';
+            ctx.fillRect(0, 0, w, h);
+
+            particles.forEach(p => { p.update(); p.draw(); });
+            
+            ripples.forEach((r, i) => {
+                r.update();
+                r.draw();
+                if(r.life <= 0) ripples.splice(i, 1);
+            });
+        }
+        loop();
+    </script>
+</body>
+</html>
