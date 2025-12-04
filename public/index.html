@@ -205,7 +205,13 @@
                  { id: 'uncharted', title: 'Uncharted: Legacy of Thieves', dev: 'Naughty Dog', img: 'https://image.api.playstation.com/vulcan/ap/rnd/202109/0222/a003s0V10vmLo1a025V01AvR.png' }
             ];
             
+            // --- UPDATED INSTANT PLAYS DATA ---
             const instantPlaysData = [
+                { id: 'neon', title: 'Neon Galaxy', dev: 'Arcade', img: 'assets/neon-cover.png', url: '/neon-galaxy/' },
+                { id: 'tower', title: 'Tower of Hue', dev: 'Puzzle', img: 'assets/tower-cover.png', url: '/tower-of-hue/' },
+                { id: 'cyber', title: 'Cyber Road', dev: 'Racing', img: 'assets/cyber-cover.png', url: '/cyber-road/' },
+                { id: 'orbit', title: 'Orbit Guard', dev: 'Action', img: 'assets/orbit-cover.png', url: '/orbit-guard/' },
+                { id: 'ripple', title: 'Ripple Reaction', dev: 'Casual', img: 'assets/ripple-cover.png', url: '/ripple-reaction/' },
                 { id: '3xo', title: '3XO', dev: 'Instant Play', img: '/assets/3XO Cover.png', url: '/3xo.html' }
             ];
 
@@ -294,6 +300,7 @@
                 const featuredContainer = document.getElementById('featured-game-container');
                 featuredContainer.innerHTML = featuredGamesData.map(g => `<div class="flex-shrink-0 w-72">${createGameCard(g)}</div>`).join('');
                 
+                // Show ALL instant plays on the home page scroll
                 const homeInstantPlaysContainer = document.getElementById('home-instant-plays-container');
                 homeInstantPlaysContainer.innerHTML = instantPlaysData.map(g => `<div class="flex-shrink-0 w-72">${createGameCard(g)}</div>`).join('');
             }
@@ -385,4 +392,3 @@
     </script>
 </body>
 </html>
-
