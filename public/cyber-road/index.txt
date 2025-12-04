@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Road</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; }
+        canvas { display: block; }
+        #score {
+            position: absolute; top: 20px; right: 20px;
+            font-family: 'Courier New', monospace; font-weight: bold;
+            color: #ff00de; font-size: 30px; text-shadow: 0 0 10px #ff00de;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">0</div>
+    <canvas id="c"></canvas>
+    <script>
+        const c = document.getElementById('c');
+        const ctx = c.getContext('2d');
+        let w, h;
+
+        let playerX = 0;
+        let speed = 20;
+        let score = 0;
+        let segments = [];
+        let gameActive = true;
+        const ROAD_WIDTH = 2000; // Virtual width
+
+        function resize() {
+            w = c.width = window.innerWidth;
+            h = c.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', e => {
+            if(!gameActive) return;
+            // Map mouse X to road width (-1 to 1 range)
+            playerX = (e.clientX / w) * 2 - 1; 
+        });
+        
+        // Touch support
+        window.addEventListener('touchmove', e => {
+             if(!gameActive) return;
+             playerX = (e.touches[0].clientX / w) * 2 - 1;
+        });
+        window.addEventListener('click', () => { if(!gameActive) reset(); });
+
+        class Segment {
+            constructor(z) {
+                this.z = z;
+                this.obstacle = Math.random() < 0.3 ? (Math.random() * 2 - 1) : null; // -1 to 1 position
+                this.color = (Math.floor(z/2000) % 2 === 0) ? '#220022' : '#2b002b';
+            }
+        }
+
+        function reset() {
+            gameActive = true;
+            score = 0;
+            segments = [];
+            for(let i=0; i<50; i++) segments.push(new Segment(i * 100));
+        }
+        reset();
+
+        function project(x, y, z) {
+            // Simple perspective projection
+            const scale = 300 / (z - 200); // 200 is camera dist
+            const xProj = (x * ROAD_WIDTH) * scale + w / 2;
+            const yProj = (y + 400) * scale + h / 2;
+            return { x: xProj, y: yProj, scale: scale };
+        }
+
+        function loop() {
+            ctx.fillStyle = '#050010';
+            ctx.fillRect(0, 0, w, h);
+
+            if(gameActive) score++;
+            document.getElementById('score').innerText = Math.floor(score/10);
+
+            // Horizon (Sun)
+            const sunY = h/2 - 50;
+            const grad = ctx.createLinearGradient(0, sunY-150, 0, sunY+100);
+            grad.addColorStop(0, '#ffcc00');
+            grad.addColorStop(1, '#ff0055');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(w/2, sunY, 150, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Grid lines on sun
+            ctx.fillStyle = '#050010';
+            for(let i=0; i<10; i++) {
+                ctx.fillRect(w/2 - 160, sunY + 20 + i*15, 320, 5);
+            }
+
+            // Move segments
+            segments.forEach(s => s.z -= speed);
+            if (segments[0].z < 250) { // Camera is at ~200, clip before hitting
+                segments.shift();
+                const lastZ = segments[segments.length-1].z;
+                segments.push(new Segment(lastZ + 100));
+            }
+
+            // Draw Road
+            for (let i = segments.length - 1; i >= 0; i--) {
+                const s = segments[i];
+                if(s.z < 300) continue; // Behind clip plane
+
+                const p1 = project(-1, 0, s.z);
+                const p2 = project(1, 0, s.z);
+                const p3 = project(1, 0, s.z + 100);
+                const p4 = project(-1, 0, s.z + 100);
+
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.lineTo(p3.x, p3.y);
+                ctx.lineTo(p4.x, p4.y);
+                ctx.fill();
+
+                // Grid Lines
+                ctx.strokeStyle = 'rgba(255, 0, 222, 0.3)';
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y); ctx.lineTo(p4.x, p4.y);
+                ctx.stroke();
+                
+                // Obstacles
+                if (s.obstacle !== null) {
+                    const obsP = project(s.obstacle, 0, s.z);
+                    const size = 15000 / (s.z - 200);
+                    
+                    ctx.fillStyle = '#00ffff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.fillRect(obsP.x - size/2, obsP.y - size, size, size);
+                    ctx.shadowBlur = 0;
+
+                    // Collision (very close Z and similar X)
+                    if (gameActive && s.z < 600 && s.z > 500) {
+                        if (Math.abs(playerX - s.obstacle) < 0.3) { // 0.3 is hit width
+                            gameActive = false;
+                        }
+                    }
+                }
+            }
+            
+            // Player
+            // Player is fixed on screen Y, moves X
+            // But visually we just draw it at bottom center offset by playerX
+            // However, to make it look "in the world", we project it? 
+            // Actually player Z is fixed at say 550.
+            
+            const playerZ = 550;
+            const pp = project(playerX, 0, playerZ);
+            const pSize = 15000 / (playerZ - 200);
+
+            ctx.fillStyle = gameActive ? '#ff00de' : 'white';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = ctx.fillStyle;
+            ctx.beginPath();
+            ctx.arc(pp.x, pp.y - pSize/2, pSize/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if(!gameActive) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0,0,w,h);
+                ctx.fillStyle = 'white';
+                ctx.font = '40px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText("CRASHED", w/2, h/2);
+                ctx.font = '20px Courier New';
+                ctx.fillText("Click to Restart", w/2, h/2 + 40);
+            }
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
