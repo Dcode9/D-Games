@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tower of Hue</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; top: 10%; width: 100%; text-align: center;
+            pointer-events: none; opacity: 0.8;
+        }
+        #score { font-size: 80px; color: white; font-weight: bold; text-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #msg { font-size: 20px; color: #aaa; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;}
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div id="score">0</div>
+        <div id="msg">Tap to Stack</div>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        
+        let score = 0;
+        let blocks = [];
+        let debris = [];
+        let hue = 0;
+        let state = 'start'; // start, play, over
+        
+        const INITIAL_WIDTH = 300;
+        const BLOCK_HEIGHT = 40;
+        const SPEED = 5;
+
+        let currentBlock = null;
+        let direction = 1; // 1 or -1
+        let offset = 0; // Current moving offset
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            if(state === 'start') reset();
+        }
+        window.addEventListener('resize', resize);
+
+        function reset() {
+            blocks = [];
+            debris = [];
+            score = 0;
+            hue = Math.random() * 360;
+            document.getElementById('score').innerText = score;
+            document.getElementById('msg').innerText = "Tap to Stack";
+            
+            // Base block
+            blocks.push({
+                x: (w - INITIAL_WIDTH) / 2,
+                y: h - 100,
+                w: INITIAL_WIDTH,
+                h: BLOCK_HEIGHT,
+                color: `hsl(${hue}, 60%, 50%)`
+            });
+            
+            spawnNext();
+            state = 'play';
+        }
+
+        function spawnNext() {
+            const prev = blocks[blocks.length - 1];
+            hue += 10;
+            
+            currentBlock = {
+                x: -prev.w, // Start off screen
+                y: prev.y - BLOCK_HEIGHT,
+                w: prev.w,
+                h: BLOCK_HEIGHT,
+                color: `hsl(${hue}, 60%, 50%)`
+            };
+            
+            // Random start side
+            direction = Math.random() > 0.5 ? 1 : -1;
+            if (direction === -1) currentBlock.x = w;
+            else currentBlock.x = -currentBlock.w;
+        }
+
+        function placeBlock() {
+            if(state !== 'play') {
+                reset();
+                return;
+            }
+
+            const prev = blocks[blocks.length - 1];
+            const curr = currentBlock;
+            
+            const dist = curr.x - prev.x;
+            
+            // Missed completely
+            if (Math.abs(dist) >= prev.w) {
+                gameOver();
+                return;
+            }
+
+            // Sliced
+            const overlap = prev.w - Math.abs(dist);
+            
+            // Cut falling part
+            const fallingPart = {
+                y: curr.y,
+                h: curr.h,
+                color: curr.color,
+                vy: 0
+            };
+
+            if (dist > 0) {
+                // Sliced right side
+                curr.w = overlap;
+                // curr.x remains same
+                
+                fallingPart.x = curr.x + overlap;
+                fallingPart.w = dist;
+            } else {
+                // Sliced left side
+                curr.x = prev.x; // Snap to prev x
+                curr.w = overlap;
+                
+                fallingPart.x = curr.x - Math.abs(dist); // The original x
+                fallingPart.w = Math.abs(dist);
+            }
+            
+            debris.push(fallingPart);
+            blocks.push(curr);
+            
+            score++;
+            document.getElementById('score').innerText = score;
+            document.getElementById('msg').innerText = "";
+            
+            // Camera shift down if too high
+            if(blocks.length > 10) {
+                blocks.forEach(b => b.y += BLOCK_HEIGHT);
+                debris.forEach(d => d.y += BLOCK_HEIGHT);
+                // Remove bottom one
+                blocks.shift();
+            }
+            
+            spawnNext();
+        }
+
+        function gameOver() {
+            state = 'over';
+            document.getElementById('msg').innerText = "Game Over - Tap to Retry";
+            
+            // Add current block to debris as it falls
+            debris.push({
+                x: currentBlock.x, y: currentBlock.y, w: currentBlock.w, h: currentBlock.h,
+                color: currentBlock.color, vy: 0
+            });
+            currentBlock = null;
+        }
+
+        // Input
+        window.addEventListener('mousedown', placeBlock);
+        window.addEventListener('touchstart', (e) => { e.preventDefault(); placeBlock(); }, {passive: false});
+
+        function loop() {
+            requestAnimationFrame(loop);
+            
+            // Background gradient
+            const g = ctx.createLinearGradient(0, 0, 0, h);
+            g.addColorStop(0, '#222');
+            g.addColorStop(1, '#111');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
+
+            // Update Current Block
+            if (state === 'play' && currentBlock) {
+                currentBlock.x += SPEED * direction;
+                
+                // Bounce edges? No, in this game typical is pass through or ping pong
+                // Let's do ping pong
+                if (currentBlock.x + currentBlock.w > w + 200 && direction === 1) direction = -1;
+                if (currentBlock.x < -200 && direction === -1) direction = 1;
+                
+                // Draw current
+                ctx.fillStyle = currentBlock.color;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = currentBlock.color;
+                ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.w, currentBlock.h);
+                ctx.shadowBlur = 0;
+            }
+
+            // Draw Stack
+            blocks.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                // Highlight top
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(b.x, b.y, b.w, 5);
+            });
+
+            // Physics for Debris
+            debris.forEach((d, i) => {
+                d.y += d.vy;
+                d.vy += 1; // Gravity
+                
+                ctx.fillStyle = d.color;
+                ctx.fillRect(d.x, d.y, d.w, d.h);
+                
+                if (d.y > h) debris.splice(i, 1);
+            });
+        }
+
+        resize();
+        loop();
+
+    </script>
+</body>
+</html>
