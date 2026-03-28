@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Neon Snake</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        :root {
+            --neon-green: #39ff14;
+            --neon-red: #ff073a;
+            --neon-blue: #0ff;
+            --neon-gold: #ffd700;
+            --bg-color: #06060a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Neon Glow Effects */
+        .glow-text { text-shadow: 0 0 6px var(--neon-green), 0 0 12px var(--neon-green), 0 0 24px rgba(57,255,20,0.3); }
+        .glow-text-red { text-shadow: 0 0 6px var(--neon-red), 0 0 12px var(--neon-red), 0 0 24px rgba(255,7,58,0.3); }
+        .glow-text-gold { text-shadow: 0 0 6px var(--neon-gold), 0 0 12px var(--neon-gold); }
+
+        .glow-border {
+            box-shadow: 0 0 12px rgba(0,255,255,0.25), inset 0 0 12px rgba(0,255,255,0.08);
+            border: 1.5px solid rgba(0,255,255,0.4);
+        }
+
+        /* Animations */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); text-shadow: 0 0 25px var(--neon-green); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes highScorePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); color: var(--neon-gold); text-shadow: 0 0 20px var(--neon-gold); }
+            100% { transform: scale(1); }
+        }
+        .animate-hs-pop { animation: highScorePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        .scanline-effect::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 255, 255, 0.03) 50%, transparent 60%);
+            animation: scanline 5s linear infinite;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(0,255,255,0.6)); }
+            50% { filter: drop-shadow(0 0 25px rgba(0,255,255,0.9)) drop-shadow(0 0 50px rgba(57,255,20,0.4)); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0); }
+            10% { transform: translate(-4px, 2px); }
+            20% { transform: translate(4px, -2px); }
+            30% { transform: translate(-2px, 4px); }
+            40% { transform: translate(2px, -4px); }
+            50% { transform: translate(-4px, -2px); }
+            60% { transform: translate(4px, 2px); }
+            70% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            90% { transform: translate(-2px, 0); }
+        }
+        .shake { animation: shake 0.5s ease-in-out; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(0,255,255,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,255,255,0); }
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { border-color: rgba(0,255,255,0.4); box-shadow: 0 0 12px rgba(0,255,255,0.25), inset 0 0 12px rgba(0,255,255,0.08); }
+            50% { border-color: rgba(0,255,255,0.7); box-shadow: 0 0 20px rgba(0,255,255,0.4), inset 0 0 20px rgba(0,255,255,0.15); }
+        }
+
+        @keyframes wallFlash {
+            0% { border-color: #ff073a; box-shadow: 0 0 30px rgba(255,7,58,0.6), inset 0 0 30px rgba(255,7,58,0.2); }
+            100% { border-color: rgba(0,255,255,0.4); box-shadow: 0 0 12px rgba(0,255,255,0.25), inset 0 0 12px rgba(0,255,255,0.08); }
+        }
+
+        /* Modal Transitions */
+        .modal {
+            transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal.hidden-modal {
+            opacity: 0;
+            transform: scale(0.85) translateY(20px);
+            pointer-events: none;
+        }
+        .modal.visible-modal {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* D-pad Styling */
+        .d-pad-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            transition: all 0.12s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .d-pad-btn:active {
+            background: rgba(0, 255, 255, 0.25);
+            box-shadow: 0 0 20px rgba(0,255,255,0.4);
+            border-color: rgba(0, 255, 255, 0.6);
+            transform: scale(0.88);
+        }
+
+        /* Buttons */
+        .neon-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        .neon-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        canvas { image-rendering: pixelated; }
+
+        /* Game wrapper border animation */
+        .game-wrapper { transition: all 0.3s ease; }
+        .game-wrapper.playing { animation: borderPulse 3s ease-in-out infinite; }
+        .game-wrapper.crashed { animation: wallFlash 0.6s ease-out forwards; }
+
+        /* Score combo indicator */
+        @keyframes comboFade {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-20px) scale(1.5); }
+        }
+        .combo-text {
+            animation: comboFade 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* New high score badge */
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Haptic indicator flash */
+        @keyframes hapticFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col items-center justify-between py-3 sm:py-6 scanline-effect relative">
+
+    <!-- Ambient Background Gradient -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,255,255,0.03)_0%,_transparent_70%)]"></div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="w-full max-w-md px-5 flex justify-between items-center z-10">
+        <div class="flex flex-col items-start">
+            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold">Score</span>
+            <div class="relative">
+                <span id="score" class="text-3xl sm:text-4xl font-black text-[#39ff14] glow-text transition-all duration-200 inline-block tabular-nums">0</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="mute-btn" class="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-full bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 hover:border-cyan-500/30 active:scale-90" aria-label="Toggle Sound">
+                <svg id="icon-vol" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 10v4a2 2 0 002 2h2.276a2 2 0 001.414-.586l3.293-3.293A1 1 0 0015 11.293V8.707a1 1 0 00-1.707-.707l-3.293 3.293A2 2 0 018.586 12H7a2 2 0 01-2-2z"></path></svg>
+                <svg id="icon-mute" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h2.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+            </button>
+            <button id="haptic-toggle-btn" class="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-full bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 hover:border-cyan-500/30 active:scale-90" aria-label="Toggle Haptics">
+                <svg id="icon-haptic-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8M6 15h12M9 3v3m6-3v3m-7.5 3h9"></path></svg>
+                <svg id="icon-haptic-off" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728A9 9 0 015.636 5.636"></path></svg>
+            </button>
+        </div>
+
+        <div class="flex flex-col items-end">
+            <span class="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-bold">Best</span>
+            <span id="high-score" class="text-3xl sm:text-4xl font-black text-cyan-400 transition-all inline-block tabular-nums">0</span>
+        </div>
+    </header>
+
+    <!-- Game Container -->
+    <main class="relative z-10 flex-grow flex items-center justify-center w-full px-3 my-2 sm:my-0">
+        <div id="game-wrapper" class="game-wrapper relative bg-black/50 backdrop-blur-sm rounded-xl glow-border overflow-hidden shadow-[0_0_40px_rgba(0,255,255,0.06)]">
+            <canvas id="gameCanvas"></canvas>
+
+            <!-- Start Menu Modal -->
+            <div id="start-screen" class="modal visible-modal absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-lg z-20">
+                <div style="animation: titleGlow 3s ease-in-out infinite">
+                    <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-[#39ff14] to-cyan-400 mb-1 leading-tight">NEON</h1>
+                    <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#39ff14] via-cyan-400 to-[#39ff14] mb-4 leading-tight">SNAKE</h1>
+                </div>
+                <p class="text-gray-400 mb-8 text-xs md:text-sm text-center px-6 leading-relaxed max-w-[280px]">
+                    Swipe, use D-pad, or Arrow Keys to move.<br>
+                    Eat to grow. Don't crash!
+                </p>
+                <button id="start-btn" class="neon-btn px-10 py-3 bg-cyan-500/10 text-cyan-300 border-2 border-cyan-400/60 rounded-full font-bold uppercase tracking-[0.2em] text-sm hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_30px_rgba(0,255,255,0.5)] active:scale-90 transition-all duration-300" style="animation: pulseRing 2s infinite, float 3s ease-in-out infinite">
+                    Start Game
+                </button>
+                <p class="text-gray-600 text-[10px] mt-6 uppercase tracking-widest">Haptics on iOS & Android</p>
+            </div>
+
+            <!-- Game Over Modal -->
+            <div id="game-over-screen" class="modal hidden-modal absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-lg z-30">
+                <h2 class="text-5xl md:text-6xl font-black text-[#ff073a] glow-text-red mb-1">CRASHED!</h2>
+                <div id="new-best-badge" class="hidden text-[#ffd700] glow-text-gold text-sm font-bold uppercase tracking-widest mb-2" style="animation: badgePulse 1s ease-in-out infinite">
+                    ★ New Best! ★
+                </div>
+                <p class="text-gray-300 text-lg mb-1">Score</p>
+                <p class="text-4xl font-black text-[#39ff14] glow-text mb-6" id="final-score">0</p>
+                <button id="restart-btn" class="neon-btn px-10 py-3 bg-red-500/10 text-red-400 border-2 border-[#ff073a]/60 rounded-full font-bold uppercase tracking-[0.2em] text-sm hover:bg-[#ff073a] hover:text-white hover:shadow-[0_0_30px_rgba(255,7,58,0.5)] active:scale-90 transition-all duration-300">
+                    Try Again
+                </button>
+            </div>
+
+            <!-- Pause Overlay -->
+            <div id="pause-screen" class="modal hidden-modal absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md z-20">
+                <h2 class="text-4xl md:text-5xl font-black text-white tracking-[0.3em]" style="animation: float 2s ease-in-out infinite">PAUSED</h2>
+                <p class="text-gray-400 text-sm mt-3">Tap or press Space to resume</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile D-pad -->
+    <div class="sm:hidden z-10 pb-4 pt-1 w-full max-w-[220px] mx-auto">
+        <div class="grid grid-cols-3 grid-rows-3 gap-1.5 w-full aspect-square">
+            <div class="col-start-2 row-start-1">
+                <button id="dpad-up" class="d-pad-btn w-full h-full rounded-t-2xl flex items-center justify-center text-cyan-500/70">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>
+                </button>
+            </div>
+            <div class="col-start-1 row-start-2">
+                <button id="dpad-left" class="d-pad-btn w-full h-full rounded-l-2xl flex items-center justify-center text-cyan-500/70">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+            </div>
+            <div class="col-start-2 row-start-2 flex items-center justify-center">
+                <button id="dpad-pause" class="w-full h-full rounded-lg flex items-center justify-center bg-gray-800/30 border border-gray-700/20 active:bg-cyan-500/20 active:scale-90 transition-all">
+                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+                </button>
+            </div>
+            <div class="col-start-3 row-start-2">
+                <button id="dpad-right" class="d-pad-btn w-full h-full rounded-r-2xl flex items-center justify-center text-cyan-500/70">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+            <div class="col-start-2 row-start-3">
+                <button id="dpad-down" class="d-pad-btn w-full h-full rounded-b-2xl flex items-center justify-center text-cyan-500/70">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Instructions -->
+    <div class="hidden sm:flex items-center gap-3 text-gray-500 text-xs z-10 pb-3">
+        <span class="flex items-center gap-1.5">
+            <kbd class="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50 text-cyan-400/80 font-mono text-[11px]">WASD</kbd>
+            <span>or</span>
+            <kbd class="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50 text-cyan-400/80 font-mono text-[11px]">Arrows</kbd>
+            <span>to move</span>
+        </span>
+        <span class="text-gray-700">|</span>
+        <span class="flex items-center gap-1.5">
+            <kbd class="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50 text-cyan-400/80 font-mono text-[11px]">Space</kbd>
+            <span>to pause</span>
+        </span>
+    </div>
+
+    <script>
+        /** ============================
+         *  CROSS-PLATFORM HAPTICS
+         *  iOS: uses <input type="checkbox" switch> trick (Safari 17.4+)
+         *  Android/others: uses navigator.vibrate()
+         *  ============================ */
+        const Haptics = (() => {
+            let hapticsEnabled = true;
+
+            // Detect if we should use iOS haptics workaround
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            const supportsVibrate = 'vibrate' in navigator;
+            const supportsCoarsePointer = typeof window !== 'undefined' &&
+                                          window.matchMedia('(pointer: coarse)').matches;
+
+            // iOS haptic via hidden checkbox switch toggle
+            function iosHapticTick() {
+                try {
+                    const label = document.createElement('label');
+                    label.style.position = 'fixed';
+                    label.style.top = '-9999px';
+                    label.style.left = '-9999px';
+                    label.style.opacity = '0';
+                    label.style.pointerEvents = 'none';
+                    label.setAttribute('aria-hidden', 'true');
+
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.setAttribute('switch', '');
+                    input.style.position = 'fixed';
+                    input.style.top = '-9999px';
+                    input.style.left = '-9999px';
+                    input.style.opacity = '0';
+                    input.style.pointerEvents = 'none';
+
+                    label.appendChild(input);
+                    document.body.appendChild(label);
+
+                    // Clicking the label toggles the checkbox which triggers haptic on iOS
+                    label.click();
+
+                    // Clean up after a small delay to ensure haptic fires
+                    requestAnimationFrame(() => {
+                        document.body.removeChild(label);
+                    });
+                } catch(e) {
+                    // Silently fail
+                }
+            }
+
+            // Core vibrate function
+            function vibrate(pattern) {
+                if (!hapticsEnabled) return;
+
+                if (isIOS) {
+                    // iOS: use checkbox switch trick
+                    if (Array.isArray(pattern)) {
+                        // For patterns, fire multiple ticks
+                        let delay = 0;
+                        for (let i = 0; i < pattern.length; i++) {
+                            if (i % 2 === 0) {
+                                // vibrate phase
+                                setTimeout(() => iosHapticTick(), delay);
+                            }
+                            delay += pattern[i];
+ 
