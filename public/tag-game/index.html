@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tag Game - D'Games</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap');
+    :root {
+      --white: #fff;
+      --ink: #10202c;
+      --sky: #43a9ee;
+      --teal: #38aaa3;
+      --pink: #ff3f87;
+      --grass: #13d64d;
+      --red: #ef3f3e;
+      --blue: #0784f3;
+      --yellow: #ffe430;
+      --green: #0bd64a;
+      --purple: #b565c7;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #32a8e8; }
+    body { font-family: Fredoka, system-ui, sans-serif; color: var(--white); user-select: none; }
+    button { font: inherit; cursor: pointer; }
+    #game-shell { position: fixed; inset: 0; background: linear-gradient(#43a9ee 0%, #50bee7 66%, #ff3f87 66%); }
+    canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: auto; }
+    .screen { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 5; }
+    .screen.active { display: flex; }
+    .title-logo { font-size: clamp(110px, 19vw, 255px); line-height: .72; letter-spacing: .045em; transform: rotate(-1deg); color: white; -webkit-text-stroke: 4px #101820; text-shadow: 8px 10px 0 rgba(0,0,0,.18); margin: 3vh 0 3vh; }
+    .panel { width: min(400px, 84vw); padding: 46px 64px; border-radius: 38px; background: var(--purple); box-shadow: inset 0 22px rgba(255,255,255,.08); display: grid; gap: 32px; }
+    .big-btn { border: 0; color: white; text-transform: uppercase; min-height: 67px; padding: 8px 24px; font-size: clamp(30px, 4vw, 44px); line-height: 1; text-shadow: 3px 4px 0 #8f37ff, -2px -2px 0 #8f37ff, 2px -2px 0 #8f37ff, -2px 2px 0 #8f37ff; box-shadow: inset 0 -3px rgba(0,0,0,.12), 0 6px rgba(0,0,0,.08); transition: transform .12s ease, filter .12s ease; }
+    .big-btn:hover, .map-card:hover, .outline-btn:hover { transform: translateY(-4px) scale(1.02); filter: brightness(1.06); }
+    .big-btn:active, .map-card:active, .outline-btn:active { transform: translateY(1px) scale(.99); }
+    .red { background: var(--red); } .yellow { background: var(--yellow); } .green { background: var(--green); }
+    .music { position: absolute; right: 24px; top: 17px; z-index: 8; width: 84px; height: 84px; border: 4px solid white; border-radius: 10px; background: rgba(255,255,255,.12); color: white; font-size: 49px; display: grid; place-items: center; }
+    .music.off::after { content: ''; position: absolute; width: 96px; height: 6px; background: #fff; transform: rotate(-42deg); border-radius: 6px; }
+    .screen-title { font-size: clamp(58px, 9vw, 106px); margin: 0 0 54px; text-transform: uppercase; letter-spacing: .02em; text-shadow: 0 6px 0 rgba(0,0,0,.12); }
+    #map-screen { background: #3fa0b8; }
+    .maps { width: min(1080px, 92vw); display: grid; grid-template-columns: repeat(3, 1fr); gap: 66px; align-items: end; }
+    .map-card { border: 0; background: transparent; padding: 0; height: 250px; transition: transform .15s ease, filter .15s ease; }
+    .mini-map { width: 100%; height: 100%; position: relative; overflow: visible; }
+    .island { position: absolute; left: 2%; right: 2%; bottom: 0; height: 108px; border-radius: 0 0 18px 18px; box-shadow: inset 0 -18px rgba(0,0,0,.08); }
+    .island::before { content: ''; position: absolute; left: 0; right: 0; top: -30px; height: 42px; border-radius: 3px 3px 0 0; }
+    .forest .island { background: var(--pink); } .forest .island::before { background: var(--grass); box-shadow: 0 20px 0 #20b949; }
+    .winter .island { background: #9da2ff; } .winter .island::before { background: #dfeeff; box-shadow: 0 20px 0 #b7c8ff; }
+    .desert .island { background: #ffd675; } .desert .island::before { background: #ffe098; box-shadow: 0 20px 0 #e9ac45; }
+    .outline-btn { margin-top: 64px; color: white; background: transparent; border: 6px solid white; padding: 8px 18px; font-size: clamp(30px, 4vw, 39px); text-transform: uppercase; transition: transform .12s ease; }
+    #controls-screen { background: var(--teal); justify-content: flex-start; padding-top: 13vh; }
+    .subtitle { font-size: clamp(26px, 3.2vw, 41px); margin: -40px 0 52px; text-align: center; }
+    .control-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 170px)); gap: 34px; align-items: start; }
+    .control-card { border: 6px solid currentColor; border-radius: 18px; height: 288px; display: grid; grid-template-rows: 42px 1fr 116px 38px; overflow: visible; background: rgba(255,255,255,.2); position: relative; }
+    .control-card .cap, .control-card .foot { justify-self: center; width: 118px; height: 31px; margin-top: -20px; border-radius: 20px; color: white; display: grid; place-items: center; font-size: 20px; background: currentColor; }
+    .control-card .foot { margin: 0 0 -18px; align-self: end; }
+    .control-card .avatar { place-self: center; transform: scale(1.42); }
+    .keys { display: grid; place-items: center; align-content: center; color: white; font-size: 36px; border-top: 5px solid currentColor; }
+    .key-row { display: flex; gap: 5px; }
+    .key { min-width: 40px; height: 40px; border: 3px solid white; border-radius: 5px; display: grid; place-items: center; box-shadow: inset 0 -4px rgba(255,255,255,.15); }
+    #hud { position: absolute; inset: 0; pointer-events: none; z-index: 4; display: none; }
+    #timer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 64px; color: white; text-shadow: 0 6px 0 rgba(0,0,0,.2); }
+    #status { position: absolute; left: 18px; top: 14px; font-size: 23px; text-shadow: 0 4px rgba(0,0,0,.25); }
+    #winner { background: rgba(56,170,163,.92); text-align: center; }
+    #winner h2 { font-size: clamp(50px, 9vw, 110px); margin: 0 0 20px; text-shadow: 0 7px rgba(0,0,0,.2); }
+    #winner p { font-size: 34px; margin: 0 0 34px; }
+    .avatar { width: 54px; height: 54px; position: relative; display: inline-block; }
+    .body { position: absolute; inset: 12px 7px 0; background: #092333; border-radius: 10px 10px 5px 5px; }
+    .ear { position: absolute; width: 24px; height: 28px; background: #092333; top: 3px; transform: skew(-20deg); border-radius: 3px 3px 0 0; }
+    .ear.left { left: 14px; } .ear.right { right: 7px; }
+    .band { position: absolute; left: 2px; right: -6px; top: 24px; height: 16px; border-radius: 5px; background: currentColor; }
+    .tail { position: absolute; right: -13px; top: 32px; width: 16px; height: 32px; border-radius: 3px; background: currentColor; }
+    .eye { position: absolute; top: 36px; width: 10px; height: 10px; border-radius: 50%; background: white; z-index: 2; }
+    .eye.l { left: 18px; } .eye.r { right: 12px; }
+    .mouth { position: absolute; left: 26px; bottom: 5px; width: 10px; height: 6px; background: white; border-radius: 0 0 8px 8px; z-index: 2; }
+    @media (max-width: 880px) { .maps { gap: 16px; } .control-grid { grid-template-columns: repeat(2, minmax(145px, 170px)); } .screen-title { margin-bottom: 30px; } .panel { gap: 20px; padding: 36px; } }
+  </style>
+</head>
+<body>
+  <div id="game-shell">
+    <canvas id="scene"></canvas>
+    <button id="music" class="music" aria-label="Toggle sound">♫</button>
+    <div id="hud"><div id="timer">120</div><div id="status">Red is IT</div></div>
+
+    <section id="home-screen" class="screen active">
+      <h1 class="title-logo">TAG</h1>
+      <div class="panel">
+        <button class="big-btn red" data-players="2">2 Players</button>
+        <button class="big-btn yellow" data-players="3">3 Players</button>
+        <button class="big-btn green" data-players="4">4 Players</button>
+      </div>
+    </section>
+
+    <section id="map-screen" class="screen">
+      <h2 class="screen-title">Choose Map</h2>
+      <div class="maps">
+        <button class="map-card" data-map="forest" aria-label="Forest map"><div class="mini-map forest" id="mini-forest"></div></button>
+        <button class="map-card" data-map="winter" aria-label="Winter map"><div class="mini-map winter" id="mini-winter"></div></button>
+        <button class="map-card" data-map="desert" aria-label="Desert map"><div class="mini-map desert" id="mini-desert"></div></button>
+      </div>
+      <button class="outline-btn" id="settings-btn">Game Settings</button>
+    </section>
+
+    <section id="controls-screen" class="screen">
+      <h2 class="screen-title">Controls</h2>
+      <p class="subtitle">Make sure that the keyboard only supports keystrokes</p>
+      <div class="control-grid" id="control-grid"></div>
+      <button class="outline-btn" id="start-btn">Start</button>
+    </section>
+
+    <section id="winner" class="screen">
+      <h2 id="winner-title">Blue Wins!</h2>
+      <p id="winner-detail">Tagged players lose points. Stay away from IT!</p>
+      <button class="outline-btn" id="play-again">Play Again</button>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('scene');
+    const ctx = canvas.getContext('2d');
+    const screens = ['home-screen', 'map-screen', 'controls-screen', 'winner'];
+    const hud = document.getElementById('hud');
+    const timerEl = document.getElementById('timer');
+    const statusEl = document.getElementById('status');
+    const musicBtn = document.getElementById('music');
+    const colors = ['#ef3f3e', '#0784f3', '#11c84f', '#ffe331'];
+    const names = ['Red', 'Blue', 'Green', 'Yellow'];
+    const controls = [
+      { left: 'a', right: 'd', jump: 'w', label: 'A W D' },
+      { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', label: '← ↑ →' },
+      { left: 'j', right: 'l', jump: 'i', label: 'J I L' },
+      { left: 'f', right: 'h', jump: 't', label: 'F T H' }
+    ];
+    const maps = {
+      forest: { sky: '#43a9ee', far: '#63c4ee', ground: '#ff3f87', top: '#18d34e', ice: false },
+      winter: { sky: '#a8adf7', far: '#8b95df', ground: '#8f98ee', top: '#dceaff', ice: true },
+      desert: { sky: '#f0b35f', far: '#d88d4c', ground: '#ffd676', top: '#ffe29b', ice: false }
+    };
+    let W = innerWidth, H = innerHeight, dpr = devicePixelRatio || 1;
+    let screen = 'home', playerCount = 2, selectedMap = 'winter', state = 'menu';
+    let world, players = [], keys = {}, camera = { x: 0, y: 0, z: 1 }, timeLeft = 120, last = 0, tagCooldown = 0;
+    let muted = false, audioCtx, musicOsc, musicGain;
+
+    function resize() {
+      W = innerWidth; H = innerHeight; dpr = devicePixelRatio || 1;
+      canvas.width = Math.floor(W * dpr); canvas.height = Math.floor(H * dpr);
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    addEventListener('resize', resize); resize();
+
+    function show(id) {
+      screens.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
+      hud.style.display = id === '' ? 'block' : 'none';
+    }
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      musicGain = audioCtx.createGain(); musicGain.gain.value = muted ? 0 : .035; musicGain.connect(audioCtx.destination);
+      musicOsc = audioCtx.createOscillator(); musicOsc.type = 'triangle'; musicOsc.frequency.value = 196; musicOsc.connect(musicGain); musicOsc.start();
+      let beat = 0;
+      setInterval(() => {
+        if (!audioCtx || state === 'playing') {
+          const seq = [196, 247, 294, 247, 220, 262, 330, 262];
+          musicOsc.frequency.setTargetAtTime(seq[beat++ % seq.length], audioCtx.currentTime, .025);
+        }
+      }, 260);
+    }
+    function sfx(type) {
+      if (muted || !audioCtx) return;
+      const now = audioCtx.currentTime;
+      const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(.0001, now);
+      const presets = { click: [520, 720, .06, 'square'], jump: [330, 620, .12, 'sine'], tag: [160, 720, .22, 'sawtooth'], teleport: [850, 240, .28, 'triangle'], win: [392, 784, .55, 'triangle'] };
+      const p = presets[type] || presets.click;
+      o.type = p[3]; o.frequency.setValueAtTime(p[0], now); o.frequency.exponentialRampToValueAtTime(p[1], now + p[2]);
+      g.gain.exponentialRampToValueAtTime(.16, now + .015); g.gain.exponentialRampToValueAtTime(.0001, now + p[2]);
+      o.start(now); o.stop(now + p[2] + .03);
+    }
+
+    document.querySelectorAll('[data-players]').forEach(btn => btn.onclick = () => { initAudio(); sfx('click'); playerCount = +btn.dataset.players; renderControls(); buildMiniMaps(); show('map-screen'); });
+    document.querySelectorAll('[data-map]').forEach(btn => btn.onclick = () => { sfx('click'); selectedMap = btn.dataset.map; show('controls-screen'); });
+    document.getElementById('settings-btn').onclick = () => sfx('click');
+    document.getElementById('start-btn').onclick = () => { sfx('click'); startGame(); };
+    document.getElementById('play-again').onclick = () => { sfx('click'); show('home-screen'); state = 'menu'; };
+    musicBtn.onclick = () => { initAudio(); muted = !muted; musicBtn.classList.toggle('off', muted); if (musicGain) musicGain.gain.value = muted ? 0 : .035; sfx('click'); };
+
+    addEventListener('keydown', e => { keys[e.key] = true; if (['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key)) e.preventDefault(); });
+    addEventListener('keyup', e => { keys[e.key] = false; });
+
+    function renderControls() {
+      const grid = document.getElementById('control-grid');
+      grid.innerHTML = Array.from({ length: playerCount }, (_, i) => `
+        <div class="control-card" style="color:${colors[i]}">
+          <div class="cap"><span style="color:white">${names[i].toUpperCase()}</span></div>
+          ${avatarHtml(i)}
+          <div class="keys"><div class="key-row"><span class="key">${controls[i].label.split(' ')[1]}</span></div><div class="key-row"><span class="key">${controls[i].label.split(' ')[0]}</span><span class="key">${controls[i].label.split(' ')[2]}</span></div></div>
+          <div class="foot"><span style="color:white">CONTROL</span></div>
+        </div>`).join('');
+    }
+    function avatarHtml(i) { return `<div class="avatar" style="color:${colors[i]}"><span class="ear left"></span><span class="ear right"></span><span class="body"></span><span class="tail"></span><span class="band"></span><span class="eye l"></span><span class="eye r"></span><span class="mouth"></span></div>`; }
+
+    function createWorld() {
+      world = { w: 2600, h: 1500, platforms: [], stars: [], jumps: [], decor: [] };
+      const p = world.platforms;
+      p.push({ x: -100, y: 680, w: 720, h: 54 }, { x: 760, y: 695, w: 720, h: 48 }, { x: 1810, y: 710, w: 720, h: 48 });
+      p.push({ x: 60, y: 390, w: 560, h: 34, r: -.15 }, { x: 740, y: 500, w: 610, h: 34 }, { x: 1180, y: 310, w: 720, h: 34 }, { x: 2050, y: 330, w: 520, h: 34 });
+      p.push({ x: 0, y: 1060, w: 450, h: 34, r: .2 }, { x: 850, y: 1030, w: 480, h: 34 }, { x: 1580, y: 940, w: 680, h: 34 }, { x: 2180, y: 1120, w: 500, h: 34, r: -.12 });
+      world.jumps.push({ x: 930, y: 650 }, { x: 2230, y: 1060 }, { x: 1280, y: 455 });
+      world.stars.push({ x: 355, y: 1015, pair: 1 }, { x: 2200, y: 270, pair: 0 }, { x: 1510, y: 885, pair: 3 }, { x: 2440, y: 665, pair: 2 });
+      if (selectedMap === 'winter') world.decor.push({ type:'snowman', x:760, y:260 }, { type:'cane', x:2290, y:600 }, { type:'lights', x:100, y:420 }, { type:'lights', x:980, y:620 });
+      if (selectedMap === 'forest') world.decor.push({ type:'tree', x:160, y:530 }, { type:'tree', x:1250, y:390 }, { type:'flower', x:690, y:655 }, { type:'crate', x:2060, y:660 });
+      if (selectedMap === 'desert') world.decor.push({ type:'cactus', x:370, y:1010 }, { type:'pyramid', x:1760, y:890 }, { type:'palm', x:2310, y:640 }, { type:'crate', x:1340, y:455 });
+    }
+    function startGame() {
+      createWorld();
+      players = Array.from({ length: playerCount }, (_, i) => ({ id: i, name: names[i], color: colors[i], x: 260 + i * 420, y: 610 - (i % 2) * 190, vx: 0, vy: 0, w: 48, h: 54, onGround: false, it: i === 0, score: 0, face: 1, cd: 0 }));
+      timeLeft = 120; tagCooldown = 1; state = 'playing'; last = performance.now(); show(''); requestAnimationFrame(loop);
+    }
+
+    function loop(t) {
+      const dt = Math.min(.033, (t - last) / 1000 || .016); last = t;
+      if (state === 'playing') update(dt);
+      draw();
+      if (state === 'playing') requestAnimationFrame(loop);
+    }
+    function update(dt) {
+      timeLeft -= dt; tagCooldown -= dt;
+      if (timeLeft <= 0) return endGame();
+      for (const p of players) {
+        const c = controls[p.id]; const accel = selectedMap === 'winter' ? 1150 : 1500; const friction = selectedMap === 'winter' ? .965 : .83;
+        if (keys[c.left]) { p.vx -= accel * dt; p.face = -1; }
+        if (keys[c.right]) { p.vx += accel * dt; p.face = 1; }
+        if (keys[c.jump] && p.onGround) { p.vy = -620; p.onGround = false; sfx('jump'); }
+        p.vx *= friction; p.vx = Math.max(-360, Math.min(360, p.vx)); p.vy += 1550 * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.onGround = false;
+        for (const pl of world.platforms) collidePlatform(p, pl);
+        for (const j of world.jumps) if (Math.hypot(p.x + p.w/2 - j.x, p.y + p.h - j.y) < 55 && p.vy > -500) { p.vy = -880; p.onGround = false; sfx('jump'); }
+        for (let si = 0; si < world.stars.length; si++) {
+          const st = world.stars[si];
+          if (p.cd <= 0 && Math.hypot(p.x + p.w/2 - st.x, p.y + p.h/2 - st.y) < 58) {
+            const to = world.stars[st.pair]; p.x = to.x - p.w/2; p.y = to.y - p.h - 20; p.vy = -120; p.cd = 1.2; sfx('teleport');
+          }
+        }
+        p.cd -= dt;
+        if (p.y > world.h + 180) { p.x = 240 + p.id * 300; p.y = 80; p.vx = 0; p.vy = 0; }
+        p.x = Math.max(0, Math.min(world.w - p.w, p.x));
+      }
+      const it = players.find(p => p.it);
+      statusEl.textContent = `${it.name} is IT`;
+      for (const p of players) if (p !== it && tagCooldown <= 0 && rects(it, p)) {
+        it.it = false; p.it = true; it.score += 2; p.score -= 1; tagCooldown = 1.25; sfx('tag');
+      }
+      updateCamera(dt); timerEl.textContent = Math.ceil(timeLeft);
+    }
+    function collidePlatform(p, pl) {
+      const px = p.x + p.w/2, py = p.y + p.h;
+      if (p.vy >= 0 && px > pl.x && px < pl.x + pl.w && py > pl.y - 8 && py < pl.y + pl.h + 26) { p.y = pl.y - p.h; p.vy = 0; p.onGround = true; }
+    }
+    function rects(a,b) { return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+    function updateCamera(dt) {
+      const minX = Math.min(...players.map(p => p.x)), maxX = Math.max(...players.map(p => p.x + p.w));
+      const minY = Math.min(...players.map(p => p.y)), maxY = Math.max(...players.map(p => p.y + p.h));
+      const spanX = maxX - minX + 520, spanY = maxY - minY + 380;
+      const targetZ = Math.max(.5, Math.min(1.15, Math.min(W / spanX, H / spanY)));
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      camera.z += (targetZ - camera.z) * Math.min(1, dt * 2.8);
+      camera.x += (cx - W / (2 * camera.z) - camera.x) * Math.min(1, dt * 3.5);
+      camera.y += (cy - H / (2 * camera.z) - camera.y) * Math.min(1, dt * 3.5);
+      camera.x = Math.max(-120, Math.min(world.w - W / camera.z + 120, camera.x));
+      camera.y = Math.max(-80, Math.min(world.h - H / camera.z + 100, camera.y));
+    }
+    function endGame() {
+      state = 'ended'; sfx('win');
+      const winner = [...players].sort((a,b) => b.score - a.score)[0];
+      document.getElementById('winner-title').textContent = `${winner.name} Wins!`;
+      document.getElementById('winner-detail').textContent = players.map(p => `${p.name}: ${p.score}`).join('   •   ');
+      show('winner');
+    }
+
+    function draw() {
+      if (state === 'playing') drawGame(); else drawMenuBackdrop();
+    }
+    function drawMenuBackdrop() {
+      const m = maps.forest; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = m.sky; ctx.fillRect(0,0,W,H); drawHills(W,H,m); drawMenuGround();
+      drawTree(90,H-210,1.25); drawTree(W*.26,H-110,.75); drawFlower(440,H-42); drawCrate(340,H-70,50); drawPortal(W-155,H-32,1); drawAvatarCanvas(W-170,H-170,2,1.2); drawAvatarCanvas(238,H-116,0,.9); drawAvatarCanvas(840,H-115,1,.95);
+    }
+    function drawGame() {
+      const m = maps[selectedMap]; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H); ctx.fillStyle = m.sky; ctx.fillRect(0,0,W,H); drawHills(W,H,m);
+      ctx.save(); ctx.scale(camera.z, camera.z); ctx.translate(-camera.x, -camera.y);
+      for (const d of world.decor) drawDecor(d);
+      world.platforms.forEach(drawPlatform);
+      world.jumps.forEach(drawJump); world.stars.forEach((s,i)=>drawStar(s.x,s.y,i)); players.forEach(drawPlayer);
+      ctx.restore();
+    }
+    function drawHills(w,h,m) { ctx.globalAlpha=.28; ctx.fillStyle=m.far; for(let i=-1;i<5;i++){ ctx.beginPath(); ctx.ellipse(i*420+180,h-110,360,170,0,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=.45; ctx.fillStyle='#fff'; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.ellipse(i*520+260,h-85,270,140,0,Math.PI,0,true); ctx.fill(); } ctx.globalAlpha=1; }
+    function drawMenuGround(){ ctx.fillStyle='#11d64b'; ctx.fillRect(0,H-58,W,10); ctx.fillStyle='#ff3f87'; ctx.fillRect(0,H-48,W,60); }
+    function drawPlatform(pl){ const m=maps[selectedMap]; ctx.save(); ctx.translate(pl.x,pl.y); ctx.rotate(pl.r||0); ctx.fillStyle=m.top; roundRect(0,0,pl.w,18,2); ctx.fill(); ctx.fillStyle=m.ground; roundRect(0,16,pl.w,pl.h,2); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.28)'; for(let x=18;x<pl.w;x+=48) ctx.fillRect(x,10,28,7); ctx.restore(); }
+    function drawJump(j){ ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(j.x,j.y,22,0,Math.PI); ctx.stroke(); ctx.beginPath(); ctx.arc(j.x,j.y-8,33,.25,Math.PI-.25); ctx.stroke(); }
+    function drawStar(x,y,i){ ctx.save(); ctx.translate(x,y); ctx.rotate(performance.now()/650 + i); ctx.fillStyle='#ffc83e'; ctx.strokeStyle='#fff1a8'; ctx.lineWidth=3; ctx.beginPath(); for(let k=0;k<10;k++){ const r=k%2?15:32; const a=-Math.PI/2+k*Math.PI/5; ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r); } ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    function drawPlayer(p){ drawAvatarCanvas(p.x+p.w/2, p.y+p.h/2, p.id, 1, p.face); if(p.it){ ctx.fillStyle='white'; ctx.beginPath(); ctx.moveTo(p.x+p.w/2,p.y-22); ctx.lineTo(p.x+p.w/2-14,p.y-46); ctx.lineTo(p.x+p.w/2+14,p.y-46); ctx.closePath(); ctx.fill(); } }
+    function drawAvatarCanvas(x,y,id,scale=1,face=1){ ctx.save(); ctx.translate(x,y); ctx.scale(scale*face,scale); ctx.fillStyle='#092333'; roundRect(-22,-12,44,39,9); ctx.fill(); ctx.beginPath(); ctx.moveTo(-14,-14); ctx.lineTo(3,-39); ctx.lineTo(3,-14); ctx.fill(); ctx.beginPath(); ctx.moveTo(6,-14); ctx.lineTo(24,-37); ctx.lineTo(22,-14); ctx.fill(); ctx.fillStyle=colors[id]; roundRect(-26,-9,56,15,4); ctx.fill(); roundRect(20,1,16,31,3); ctx.fill(); ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(-9,8,5,0,7); ctx.arc(11,8,5,0,7); ctx.fill(); ctx.fillStyle='#092333'; ctx.beginPath(); ctx.arc(-7,6,2,0,7); ctx.arc(13,6,2,0,7); ctx.fill(); ctx.fillStyle='white'; roundRect(-2,22,11,8,0); ctx.fill(); ctx.restore(); }
+    function drawDecor(d){ if(d.type==='snowman'){ctx.fillStyle='white';ctx.beginPath();ctx.arc(d.x,d.y+30,30,0,7);ctx.arc(d.x,d.y-5,20,0,7);ctx.fill();ctx.fillStyle='#333';ctx.fillRect(d.x-16,d.y-40,32,9);ctx.fillRect(d.x-9,d.y-63,18,23);} if(d.type==='cane'){ctx.strokeStyle='#ff4c4c';ctx.lineWidth=34;ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x,d.y-120);ctx.arc(d.x-38,d.y-120,38,0,Math.PI,true);ctx.stroke();ctx.strokeStyle='white';ctx.lineWidth=18;ctx.stroke();} if(d.type==='lights'){ctx.strokeStyle='#263b34';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.quadraticCurveTo(d.x+120,d.y+90,d.x+240,d.y);ctx.stroke();for(let i=0;i<8;i++){ctx.fillStyle=['#f33','#fc3','#3e5'][i%3];ctx.beginPath();ctx.arc(d.x+i*32,d.y+Math.sin(i)*35,7,0,7);ctx.fill();}} if(d.type==='tree')drawTree(d.x,d.y,1); if(d.type==='flower')drawFlower(d.x,d.y); if(d.type==='crate')drawCrate(d.x,d.y,45); if(d.type==='cactus'){ctx.fillStyle='#22b955';roundRect(d.x,d.y-90,28,90,14);ctx.fill();roundRect(d.x-30,d.y-58,25,18,9);ctx.fill();roundRect(d.x+20,d.y-70,25,18,9);ctx.fill();} if(d.type==='pyramid'){ctx.fillStyle='#e7a947';ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+80,d.y-100);ctx.lineTo(d.x+160,d.y);ctx.fill();} if(d.type==='palm'){ctx.fillStyle='#a55b3d';ctx.fillRect(d.x,d.y-110,22,110);ctx.fillStyle='#35b958';for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(d.x+10,d.y-115,(i%2?70:50),14,i*.7,0,7);ctx.fill();}} }
+    function drawTree(x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='#b0005b';ctx.fillRect(0,-120,31,120);ctx.fillStyle='#05d66e';roundRect(-45,-210,100,100,16);ctx.fill();roundRect(-58,-122,82,28,14);ctx.fill();roundRect(35,-145,70,38,18);ctx.fill();ctx.restore();}
+    function drawFlower(x,y){ctx.fillStyle='#34bb67';ctx.fillRect(x,y-28,5,28);ctx.fillStyle='#ff4c90';for(let i=0;i<6;i++){ctx.beginPath();ctx.arc(x+Math.cos(i)*10,y-32+Math.sin(i)*10,6,0,7);ctx.fill();}ctx.fillStyle='white';ctx.beginPath();ctx.arc(x,y-32,5,0,7);ctx.fill();}
+    function drawCrate(x,y,s){ctx.fillStyle='#ffb34d';roundRect(x,y-s,s,s,6);ctx.fill();ctx.strokeStyle='#e88332';ctx.lineWidth=5;ctx.strokeRect(x+5,y-s+5,s-10,s-10);ctx.beginPath();ctx.moveTo(x+12,y-s+12);ctx.lineTo(x+s-12,y-12);ctx.stroke();}
+    function drawPortal(x,y,s){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.strokeStyle='#bf65ff';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,30,Math.PI,0);ctx.lineTo(30,28);ctx.lineTo(-30,28);ctx.closePath();ctx.stroke();ctx.fillStyle='#f0a6ff';roundRect(-21,-5,42,33,14);ctx.fill();ctx.restore();}
+    function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+    function buildMiniMaps(){ ['forest','winter','desert'].forEach(id=>{ const el=document.getElementById('mini-'+id); el.innerHTML='<div class="island"></div>'; }); }
+    buildMiniMaps(); draw();
+  </script>
+</body>
+</html>
