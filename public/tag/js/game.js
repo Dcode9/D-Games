@@ -24,10 +24,17 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-const playJumpSound = () => zzfx(...[,,150,.05,.01,.03,1,1.5,41,-14,,,,,,,,.66,.05]);
-const playTagSound = () => zzfx(...[,,400,.1,.1,.2,2,1.5,1,-20,,,,,,,,.7,.1]);
-const playTeleportSound = () => zzfx(...[,,600,.1,.3,.5,1,2,5,-10,,,,,,,,.5,.1]);
-const playBounceSound = () => zzfx(...[,,200,.05,.05,.1,1,1,20,-10,,,,,,,,.6,.05]);
+// Wrapper to avoid AudioContext warnings before user interaction
+let audioStarted = false;
+const safePlay = (fn) => {
+    if (!audioStarted) return;
+    try { fn(); } catch(e) {}
+};
+
+const playJumpSound = () => safePlay(() => zzfx(...[,,150,.05,.01,.03,1,1.5,41,-14,,,,,,,,.66,.05]));
+const playTagSound = () => safePlay(() => zzfx(...[,,400,.1,.1,.2,2,1.5,1,-20,,,,,,,,.7,.1]));
+const playTeleportSound = () => safePlay(() => zzfx(...[,,600,.1,.3,.5,1,2,5,-10,,,,,,,,.5,.1]));
+const playBounceSound = () => safePlay(() => zzfx(...[,,200,.05,.05,.1,1,1,20,-10,,,,,,,,.6,.05]));
 
 function preload() {
     let g = this.make.graphics({x: 0, y: 0, add: false});
@@ -120,15 +127,24 @@ function create() {
     this.teleporters = [];
 
     // Tag Game State
-    this.itIndex = Math.floor(Math.random() * 4); // Random starting "It"
+    this.itIndex = Math.floor(Math.random() * 4);
     this.lastTagTime = 0;
-    this.gameTimer = 120; // 2 minutes
+    this.gameTimer = 120;
     this.timerText = this.add.text(600, 50, this.gameTimer, {
         fontFamily: 'Arial', fontSize: '64px', color: '#ffffff', fontStyle: 'bold', stroke: '#000000', strokeThickness: 6
-    }).setOrigin(0.5).setScrollFactor(0); // Fixed to UI
+    }).setOrigin(0.5).setScrollFactor(0);
     this.timerText.setDepth(100);
 
-    // Countdown Timer Event
+    // Start Audio Context on first click
+    this.input.on('pointerdown', () => {
+        if (!audioStarted) {
+            audioStarted = true;
+            if (zzfxX && zzfxX.state === 'suspended') {
+                zzfxX.resume();
+            }
+        }
+    });
+
     this.time.addEvent({
         delay: 1000,
         callback: () => {
@@ -152,7 +168,7 @@ function create() {
 
     mapData.forEach(p => {
         let rect = this.matter.add.rectangle(p.x, p.y, p.w, p.h, {
-            isStatic: true, angle: p.a, friction: 0.0, collisionFilter: { category: defaultCat }
+            isStatic: true, angle: p.a, friction: 0.1, collisionFilter: { category: defaultCat }
         });
         let sprite = this.add.tileSprite(p.x, p.y, p.w, p.h, 'platform');
         sprite.setRotation(p.a);
@@ -196,10 +212,10 @@ function create() {
         let p = this.matter.add.sprite(spawnPoints[i].x, spawnPoints[i].y, 'player' + i);
         p.setRectangle(30, 30);
         p.setFixedRotation();
-        p.setFriction(0.001);
+        p.setFriction(0.001); // Keep friction low so players don't stick to walls
         p.setBounce(0.0);
         p.playerIndex = i;
-        p.canJump = true;
+        p.canJump = true; // Use this variable to check jump state
         p.lastTeleport = 0;
         p.setCollisionCategory(playerCat);
         p.setCollidesWith([defaultCat, playerCat, sensorCat]);
@@ -208,11 +224,10 @@ function create() {
         this.players.push({ sprite: p, keys: keys, id: i });
     }
 
-    // Crown for "It"
     this.crown = this.add.sprite(0, 0, 'crown');
     this.crown.setOrigin(0.5, 1);
 
-    // Collision Logic (Jumping & Tagging)
+    // Collision Logic
     this.matter.world.on('collisionactive', (event) => {
         event.pairs.forEach((pair) => {
             const bodyA = pair.bodyA;
@@ -225,7 +240,6 @@ function create() {
 
                 if (p1 && p2) {
                     let timeNow = this.time.now;
-                    // Tag cooldown: 1.5 seconds
                     if (timeNow - this.lastTagTime > 1500) {
                         if (this.itIndex === p1.id) {
                             this.itIndex = p2.id;
@@ -245,12 +259,12 @@ function create() {
                     const otherBody = bodyA === p.sprite.body ? bodyB : bodyA;
 
                     if (otherBody.gameObject && otherBody.gameObject.isJumpPad) {
-                        p.sprite.setVelocityY(-15);
+                        p.sprite.setVelocityY(-20); // Higher bounce
                         playBounceSound();
                     } else if (!otherBody.isSensor) {
-                        if (p.sprite.body.velocity.y > -0.1) {
-                            p.canJump = true;
-                        }
+                        // Allow jump if colliding with something that is somewhat below the player
+                        // Use a very lenient Y threshold, essentially if we are touching a platform we can jump.
+                        p.canJump = true;
                     }
                 }
             });
@@ -287,14 +301,12 @@ function create() {
         });
     });
 
-    // Camera Setup
     this.cameras.main.setBounds(-200, -200, 1600, 1200);
 }
 
 function update() {
-    const speed = 5;
+    const speed = 7; // Slightly faster movement
 
-    // Minimum X/Y bounds for dynamic camera
     let minX = 9999, maxX = -9999, minY = 9999, maxY = -9999;
 
     this.players.forEach(p => {
@@ -303,51 +315,49 @@ function update() {
         if (p.keys.left.isDown) velX = -speed;
         if (p.keys.right.isDown) velX = speed;
 
-        // Slightly higher speed for "It"
         if (this.itIndex === p.id) {
-            velX *= 1.1;
+            velX *= 1.2; // 20% faster for "It"
         }
 
+        // Apply horizontal velocity smoothly
         p.sprite.setVelocityX(velX);
 
+        // Jump logic
         if (p.keys.up.isDown && p.canJump) {
-            p.sprite.setVelocityY(-12); // Slightly higher jump
-            p.canJump = false;
-            playJumpSound();
+            // Apply jump force only if they have downward or minimal upward velocity
+            if(p.sprite.body.velocity.y >= -1) {
+                p.sprite.setVelocityY(-14);
+                p.canJump = false;
+                playJumpSound();
+            }
         }
 
-        // Fast fall
         if (p.keys.down.isDown) {
             p.sprite.setVelocityY(p.sprite.body.velocity.y + 1);
         }
 
-        // Screen Wrap (X-axis)
         if (p.sprite.x < -20) p.sprite.x = 1220;
         if (p.sprite.x > 1220) p.sprite.x = -20;
 
-        // Camera calculations
         if (p.sprite.x < minX) minX = p.sprite.x;
         if (p.sprite.x > maxX) maxX = p.sprite.x;
         if (p.sprite.y < minY) minY = p.sprite.y;
         if (p.sprite.y > maxY) maxY = p.sprite.y;
     });
 
-    // Update Crown position
     let itPlayer = this.players[this.itIndex].sprite;
     this.crown.setPosition(itPlayer.x, itPlayer.y - 20);
 
-    // Dynamic Camera Zoom and Pan
     let targetCenterX = (minX + maxX) / 2;
     let targetCenterY = (minY + maxY) / 2;
-    let distX = Math.max(maxX - minX, 600); // Minimum view width
-    let distY = Math.max(maxY - minY, 400); // Minimum view height
+    let distX = Math.max(maxX - minX, 600);
+    let distY = Math.max(maxY - minY, 400);
 
-    let targetZoomX = 1200 / (distX + 200); // 200 padding
-    let targetZoomY = 800 / (distY + 200);
+    let targetZoomX = 1200 / (distX + 300); // More padding
+    let targetZoomY = 800 / (distY + 300);
     let targetZoom = Math.min(targetZoomX, targetZoomY);
-    targetZoom = Phaser.Math.Clamp(targetZoom, 0.6, 1.2); // Cap zoom levels
+    targetZoom = Phaser.Math.Clamp(targetZoom, 0.5, 1.2);
 
-    // Smooth camera lerp
     this.cameras.main.scrollX += ((targetCenterX - 600) - this.cameras.main.scrollX) * 0.1;
     this.cameras.main.scrollY += ((targetCenterY - 400) - this.cameras.main.scrollY) * 0.1;
     this.cameras.main.zoom += (targetZoom - this.cameras.main.zoom) * 0.05;
