@@ -1,0 +1,26 @@
+npm warn exec The following package was not found and will be installed: serve@14.2.6
+ INFO  Accepting connections at http://localhost:3000
+ HTTP  7/5/2026 9:41:54 AM ::1 HEAD /chess-game/
+ HTTP  7/5/2026 9:41:54 AM ::1 Returned 200 in 242 ms
+ HTTP  7/5/2026 9:42:30 AM ::1 GET /
+ HTTP  7/5/2026 9:42:30 AM ::1 Returned 200 in 3 ms
+ HTTP  7/5/2026 9:46:28 AM ::1 GET /
+ HTTP  7/5/2026 9:46:28 AM ::1 Returned 200 in 9 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/neon-cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/tower-cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/cyber-cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/orbit-cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/ripple-cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 GET /assets/3XO%20Cover.png
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 53 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 43 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 42 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 36 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 36 ms
+ HTTP  7/5/2026 9:46:29 AM ::1 Returned 200 in 61 ms
+ HTTP  7/5/2026 9:46:31 AM ::1 GET /chess-game/
+ HTTP  7/5/2026 9:46:31 AM ::1 Returned 200 in 2 ms
+ HTTP  7/5/2026 9:46:31 AM ::1 GET /chess-game/style.css
+ HTTP  7/5/2026 9:46:31 AM ::1 GET /chess-game/script.js
+ HTTP  7/5/2026 9:46:31 AM ::1 Returned 200 in 2 ms
+ HTTP  7/5/2026 9:46:31 AM ::1 Returned 200 in 2 ms
