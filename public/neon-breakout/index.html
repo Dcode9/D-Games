@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Neon Breakout — D'Games</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root { --bg:#06060f; --cyan:#00f0ff; --pink:#ff2d95; --violet:#a855f7; --green:#39ff14; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  background: var(--bg); color:#e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow:hidden; touch-action:none; user-select:none;
+  height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.panel {
+  background: rgba(10,12,24,0.85);
+  border: 1px solid rgba(0,240,255,0.25);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 30px rgba(0,240,255,0.08);
+}
+.btn {
+  background: transparent; border: 2px solid var(--cyan); color: var(--cyan);
+  padding: 12px 28px; border-radius: 999px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; font-size: 13px;
+  cursor: pointer; transition: all 0.25s;
+  box-shadow: 0 0 15px rgba(0,240,255,0.2);
+}
+.btn:hover, .btn:active { background: var(--cyan); color:#000; box-shadow: 0 0 30px rgba(0,240,255,0.6); }
+.glow-cyan { text-shadow: 0 0 8px var(--cyan), 0 0 16px rgba(0,240,255,0.4); }
+.glow-pink { text-shadow: 0 0 8px var(--pink); }
+</style>
+</head>
+<body>
+  <div class="fixed inset-0 pointer-events-none" style="background:radial-gradient(ellipse at 50% 30%,rgba(0,240,255,0.07),transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(168,85,247,0.05),transparent 50%);"></div>
+
+  <header class="w-full max-w-md px-4 flex justify-between items-center z-10 mb-3">
+    <div>
+      <div class="text-[10px] uppercase tracking-[0.25em] text-gray-500 font-bold">Score</div>
+      <div id="score" class="text-3xl font-black text-cyan-400 glow-cyan tabular-nums">0</div>
+    </div>
+    <div class="text-center">
+      <div class="text-[10px] uppercase tracking-[0.25em] text-gray-500 font-bold">Lives</div>
+      <div id="lives" class="text-2xl font-black text-pink-400 glow-pink">3</div>
+    </div>
+    <div class="text-right">
+      <div class="text-[10px] uppercase tracking-[0.25em] text-gray-500 font-bold">Best</div>
+      <div id="best" class="text-3xl font-black text-violet-400 tabular-nums">0</div>
+    </div>
+  </header>
+
+  <main class="relative z-10 panel p-2">
+    <canvas id="game" width="360" height="520"></canvas>
+  </main>
+
+  <p class="text-gray-500 text-xs mt-3 z-10 hidden sm:block">Move with mouse / touch · or ← → keys</p>
+
+  <div id="start-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+    <div class="panel p-8 max-w-sm w-full mx-4 text-center">
+      <div class="text-[10px] uppercase tracking-[0.3em] text-cyan-400 mb-2">D'Games · Instant Play</div>
+      <h1 class="text-4xl font-black mb-1 bg-gradient-to-r from-cyan-400 via-pink-400 to-violet-400 bg-clip-text text-transparent">NEON BREAKOUT</h1>
+      <p class="text-gray-400 text-sm mb-6">Smash the glowing bricks. Don't let the ball fall. Classic arcade, neon heart.</p>
+      <button class="btn" id="start-btn">Start Game</button>
+    </div>
+  </div>
+
+  <div id="gameover-screen" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md">
+    <div class="panel p-8 max-w-sm w-full mx-4 text-center">
+      <h2 id="go-title" class="text-4xl font-black text-pink-400 glow-pink mb-2">GAME OVER</h2>
+      <p class="text-gray-400 mb-1">Score</p>
+      <p id="final-score" class="text-3xl font-black text-cyan-400 glow-cyan mb-6">0</p>
+      <button class="btn" id="restart-btn">Play Again</button>
+    </div>
+  </div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+let paddle, ball, bricks, score, lives, best, running, animId;
+
+const BRICK_ROWS = 6, BRICK_COLS = 8;
+const BRICK_W = 40, BRICK_H = 16, BRICK_PAD = 4, BRICK_OFFSET_TOP = 50, BRICK_OFFSET_LEFT = 12;
+const COLORS = ['#00f0ff','#a855f7','#ff2d95','#39ff14','#ffd700','#3b82f6'];
+
+function init() {
+  paddle = { w: 80, h: 12, x: W/2 - 40, y: H - 30, speed: 8 };
+  ball = { x: W/2, y: H - 50, r: 7, dx: 3.5 * (Math.random() > 0.5 ? 1 : -1), dy: -4.2 };
+  bricks = [];
+  for (let r = 0; r < BRICK_ROWS; r++) {
+    for (let c = 0; c < BRICK_COLS; c++) {
+      bricks.push({
+        x: BRICK_OFFSET_LEFT + c * (BRICK_W + BRICK_PAD),
+        y: BRICK_OFFSET_TOP + r * (BRICK_H + BRICK_PAD),
+        w: BRICK_W, h: BRICK_H,
+        alive: true,
+        color: COLORS[r % COLORS.length]
+      });
+    }
+  }
+  score = 0;
+  lives = 3;
+  best = +localStorage.getItem('neon-breakout-best') || 0;
+  updateUI();
+}
+
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('lives').textContent = lives;
+  document.getElementById('best').textContent = best;
+}
+
+function drawRoundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function draw() {
+  // bg
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, W, H);
+
+  // subtle grid
+  ctx.strokeStyle = 'rgba(0,240,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // bricks
+  bricks.forEach(b => {
+    if (!b.alive) return;
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = b.color;
+    ctx.fillStyle = b.color;
+    drawRoundedRect(b.x, b.y, b.w, b.h, 4);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    drawRoundedRect(b.x + 2, b.y + 2, b.w - 10, 4, 2);
+    ctx.fill();
+  });
+
+  // paddle
+  ctx.shadowBlur = 16;
+  ctx.shadowColor = '#00f0ff';
+  ctx.fillStyle = '#00f0ff';
+  drawRoundedRect(paddle.x, paddle.y, paddle.w, paddle.h, 6);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // ball
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = '#ff2d95';
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff2d95';
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  // core
+  ctx.beginPath();
+  ctx.arc(ball.x - 1, ball.y - 1, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fill();
+}
+
+function update() {
+  // ball movement
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // walls
+  if (ball.x - ball.r < 0 || ball.x + ball.r > W) ball.dx *= -1;
+  if (ball.y - ball.r < 0) ball.dy *= -1;
+
+  // floor
+  if (ball.y + ball.r > H) {
+    lives--;
+    updateUI();
+    if (lives <= 0) {
+      gameOver(false);
+      return;
+    }
+    // reset ball
+    ball.x = W / 2;
+    ball.y = H - 50;
+    ball.dx = 3.5 * (Math.random() > 0.5 ? 1 : -1);
+    ball.dy = -4.2;
+  }
+
+  // paddle collision
+  if (ball.y + ball.r > paddle.y &&
+      ball.y - ball.r < paddle.y + paddle.h &&
+      ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+    // angle based on hit position
+    const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+    ball.dx = hit * 5;
+    ball.dy = -Math.abs(ball.dy);
+    // slight speed up
+    const speed = Math.hypot(ball.dx, ball.dy);
+    const maxSpeed = 9;
+    if (speed < maxSpeed) {
+      ball.dx *= 1.03;
+      ball.dy *= 1.03;
+    }
+  }
+
+  // bricks
+  for (const b of bricks) {
+    if (!b.alive) continue;
+    if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w &&
+        ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
+      b.alive = false;
+      ball.dy *= -1;
+      score += 50;
+      updateUI();
+      // check win
+      if (bricks.every(br => !br.alive)) {
+        gameOver(true);
+        return;
+      }
+      break;
+    }
+  }
+}
+
+function loop() {
+  if (!running) return;
+  update();
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+function startGame() {
+  init();
+  running = true;
+  document.getElementById('start-screen').style.display = 'none';
+  const go = document.getElementById('gameover-screen');
+  go.classList.add('hidden');
+  go.style.display = 'none';
+  cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(loop);
+}
+
+function gameOver(won) {
+  running = false;
+  best = Math.max(best, score);
+  localStorage.setItem('neon-breakout-best', best);
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('go-title').textContent = won ? 'YOU WIN!' : 'GAME OVER';
+  document.getElementById('go-title').className = won
+    ? 'text-4xl font-black text-cyan-400 glow-cyan mb-2'
+    : 'text-4xl font-black text-pink-400 glow-pink mb-2';
+  const go = document.getElementById('gameover-screen');
+  go.classList.remove('hidden');
+  go.style.display = 'flex';
+}
+
+// Controls
+let keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if (!running && (e.key === 'Enter' || e.key === ' ')) startGame();
+});
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+function handlePaddle() {
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) paddle.x = Math.max(0, paddle.x - paddle.speed);
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) paddle.x = Math.min(W - paddle.w, paddle.x + paddle.speed);
+}
+setInterval(handlePaddle, 16);
+
+canvas.addEventListener('mousemove', e => {
+  if (!running) return;
+  const rect = canvas.getBoundingClientRect();
+  const scale = canvas.width / rect.width;
+  paddle.x = (e.clientX - rect.left) * scale - paddle.w / 2;
+  paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x));
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!running) return;
+  const rect = canvas.getBoundingClientRect();
+  const scale = canvas.width / rect.width;
+  paddle.x = (e.touches[0].clientX - rect.left) * scale - paddle.w / 2;
+  paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x));
+}, { passive: false });
+
+document.getElementById('start-btn').onclick = startGame;
+document.getElementById('restart-btn').onclick = startGame;
+
+// show best on load
+best = +localStorage.getItem('neon-breakout-best') || 0;
+document.getElementById('best').textContent = best;
+</script>
+</body>
+</html>
