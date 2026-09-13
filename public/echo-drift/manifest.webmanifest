@@ -1,0 +1,10 @@
+{
+  "name": "Echo Drift — D'Games",
+  "short_name": "Echo Drift",
+  "start_url": "/echo-drift/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#07101c",
+  "theme_color": "#07101c",
+  "description": "A responsive neon arcade game from D'Games."
+}
