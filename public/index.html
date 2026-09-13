@@ -1,34 +1,155 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>D'Games — Instant Play</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:linear-gradient(135deg,#0f2027,#203a43,#2c5364);--text:#f9fafb;--muted:#9ca3af;--glass:rgba(20,25,32,.54);--accent:#ff416c;--hover:rgba(255,255,255,.055)}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,sans-serif;background:#0b1118;color:var(--text);overflow:hidden}.animated{background:var(--bg);background-size:400% 400%;animation:shift 16s ease infinite}@keyframes shift{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.shape{position:absolute;border-radius:50%;filter:blur(120px);opacity:.25;pointer-events:none}.s1{width:430px;height:430px;background:#ff416c;top:-170px;left:-170px}.s2{width:520px;height:520px;background:#2c5364;right:-220px;bottom:-230px}.glass{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1)}
-.nav.active{color:#ff6a87;background:var(--hover)}.scroll::-webkit-scrollbar{width:8px;height:8px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px}.scroll::-webkit-scrollbar-track{background:transparent}.card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}.card:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.2);box-shadow:0 18px 50px rgba(0,0,0,.28)}.card img{transition:transform .35s ease}.card:hover img{transform:scale(1.045)}.enter{animation:enter .45s ease both}@keyframes enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+:root{
+  --bg:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  --text:#f9fafb;
+  --muted:#9ca3af;
+  --glass:rgba(20,25,32,.62);
+  --accent:#ff416c;
+  --hover:rgba(255,255,255,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:Inter,system-ui,sans-serif;background:#0b1118;color:var(--text)}
+.animated{background:var(--bg);background-size:400% 400%;animation:shift 18s ease infinite}
+@keyframes shift{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+.shape{position:absolute;border-radius:50%;filter:blur(100px);opacity:.22;pointer-events:none}
+.s1{width:340px;height:340px;background:#ff416c;top:-140px;left:-120px}
+.s2{width:380px;height:380px;background:#2c5364;right:-160px;bottom:-180px}
+.glass{background:var(--glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.1)}
+.nav.active{color:#ff6a87;background:var(--hover)}
+.scroll{-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{width:5px;height:5px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}
+.card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.card:active{transform:scale(.97)}
+@media (hover:hover){
+  .card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.22);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+  .card:hover img{transform:scale(1.04)}
+}
+.card img{transition:transform .3s ease}
+.enter{animation:enter .4s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* Mobile bottom nav */
+.bottom-nav{display:none}
+@media (max-width:768px){
+  .desktop-sidebar{display:none!important}
+  .bottom-nav{display:flex}
+  body{padding:0!important}
+  .main-wrap{padding:0!important;gap:0!important}
+  .content-area{border-radius:0!important;margin:0!important}
+  .header-bar{border-radius:0!important;margin:0!important}
+  .page{padding:12px 12px 90px}
+}
 </style>
 </head>
-<body class="animated h-screen w-screen p-4">
-<div class="fixed inset-0 overflow-hidden"><div class="shape s1"></div><div class="shape s2"></div></div>
-<div class="relative z-10 flex h-full w-full gap-4">
-<aside id="sidebar" class="glass rounded-3xl p-5 flex-shrink-0 flex flex-col w-72 transition-all duration-300 shadow-2xl">
-<div class="flex items-center justify-between mb-10"><h1 id="logo" class="text-3xl font-extrabold tracking-tight">D'Games</h1><button id="collapse" class="w-10 h-10 rounded-xl hover:bg-white/5 text-gray-300" aria-label="Collapse sidebar">☰</button></div>
-<nav class="space-y-2"><a class="nav active flex items-center gap-4 text-base p-3 rounded-xl" href="#home"><span>⌂</span><span class="nav-text">Home</span></a><a class="nav flex items-center gap-4 text-base p-3 rounded-xl hover:bg-white/5" href="#instant-plays"><span>▶</span><span class="nav-text">Instant Plays</span></a><a class="nav flex items-center gap-4 text-base p-3 rounded-xl hover:bg-white/5" href="#upcoming"><span>◷</span><span class="nav-text">Upcoming</span></a></nav>
-<div class="mt-auto pt-5 border-t border-white/10"><div id="auth-error" class="hidden text-xs text-red-300 bg-red-500/10 rounded-xl p-3 mb-2"></div><div id="profile" class="hidden"><div class="flex items-center gap-3 p-2"><img id="avatar" class="w-10 h-10 rounded-full" src="https://placehold.co/40x40/ff416c/fff?text=U"><div class="nav-text min-w-0"><div id="name" class="font-semibold truncate">User</div><div id="credits" class="text-xs text-gray-400">Credits: 0</div></div></div><button id="signout" class="w-full mt-2 p-3 rounded-xl bg-red-500/15 text-red-300 hover:bg-red-500/25"><span class="nav-text">Sign Out</span></button></div><button id="signin" class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-base"><span>↪</span><span class="nav-text">Sign In</span></button></div>
-</aside>
-<main class="flex-1 min-w-0 flex flex-col"><div class="glass rounded-3xl p-4 mb-4 flex items-center justify-between"><h2 id="title" class="text-2xl sm:text-3xl font-bold">Home</h2><div class="hidden sm:block text-xs text-gray-400">D'Games · Instant Play</div></div><div id="content" class="scroll flex-1 overflow-y-auto px-1 pb-6">
-<section id="home" class="page enter"><div class="flex items-end justify-between mb-4"><div><p class="text-xs uppercase tracking-[.2em] text-pink-300/80 mb-1">New release</p><h3 class="text-2xl font-bold">Featured Game</h3></div></div><div id="featured" class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10"></div><div class="flex items-end justify-between mb-4"><div><p class="text-xs uppercase tracking-[.2em] text-gray-400 mb-1">Play instantly</p><h3 class="text-2xl font-bold">Instant Plays</h3></div><a href="#instant-plays" class="text-sm text-gray-300 hover:text-white">View all →</a></div><div id="home-games" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div></section>
-<section id="instant-plays" class="page hidden"><div class="mb-6"><p class="text-xs uppercase tracking-[.2em] text-gray-400 mb-1">No downloads</p><h3 class="text-3xl font-bold">Instant Plays</h3></div><div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div></section>
-<section id="upcoming" class="page hidden"><div class="mb-6"><p class="text-xs uppercase tracking-[.2em] text-gray-400 mb-1">Coming soon</p><h3 class="text-3xl font-bold">Upcoming</h3></div><div id="upcoming-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div></section>
-</div></main></div>
+<body class="animated h-screen w-screen p-3 sm:p-4">
+<div class="fixed inset-0 overflow-hidden pointer-events-none"><div class="shape s1"></div><div class="shape s2"></div></div>
+
+<div class="relative z-10 flex h-full w-full gap-3 sm:gap-4 main-wrap">
+  <!-- Desktop Sidebar -->
+  <aside id="sidebar" class="desktop-sidebar glass rounded-3xl p-4 sm:p-5 flex-shrink-0 flex flex-col w-64 sm:w-72 transition-all duration-300 shadow-2xl">
+    <div class="flex items-center justify-between mb-8">
+      <h1 id="logo" class="text-2xl sm:text-3xl font-extrabold tracking-tight">D'Games</h1>
+      <button id="collapse" class="w-9 h-9 rounded-xl hover:bg-white/5 text-gray-300 text-lg" aria-label="Collapse">☰</button>
+    </div>
+    <nav class="space-y-1.5">
+      <a class="nav active flex items-center gap-3 text-[15px] p-2.5 rounded-xl" href="#home"><span>⌂</span><span class="nav-text">Home</span></a>
+      <a class="nav flex items-center gap-3 text-[15px] p-2.5 rounded-xl hover:bg-white/5" href="#instant-plays"><span>▶</span><span class="nav-text">Instant Plays</span></a>
+      <a class="nav flex items-center gap-3 text-[15px] p-2.5 rounded-xl hover:bg-white/5" href="#upcoming"><span>◷</span><span class="nav-text">Upcoming</span></a>
+    </nav>
+    <div class="mt-auto pt-4 border-t border-white/10">
+      <div id="auth-error" class="hidden text-xs text-red-300 bg-red-500/10 rounded-xl p-2.5 mb-2"></div>
+      <div id="profile" class="hidden">
+        <div class="flex items-center gap-2.5 p-1.5">
+          <img id="avatar" class="w-9 h-9 rounded-full" src="https://placehold.co/40x40/ff416c/fff?text=U">
+          <div class="nav-text min-w-0">
+            <div id="name" class="font-semibold text-sm truncate">User</div>
+            <div id="credits" class="text-[11px] text-gray-400">Credits: 0</div>
+          </div>
+        </div>
+        <button id="signout" class="w-full mt-2 p-2.5 rounded-xl bg-red-500/15 text-red-300 hover:bg-red-500/25 text-sm"><span class="nav-text">Sign Out</span></button>
+      </div>
+      <button id="signin" class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 text-[15px]"><span>↪</span><span class="nav-text">Sign In</span></button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0 flex flex-col">
+    <div class="glass rounded-2xl sm:rounded-3xl p-3 sm:p-4 mb-2 sm:mb-3 flex items-center justify-between header-bar">
+      <h2 id="title" class="text-xl sm:text-2xl font-bold">Home</h2>
+      <div class="hidden sm:block text-[11px] text-gray-400">D'Games · Instant Play</div>
+    </div>
+    <div id="content" class="scroll flex-1 overflow-y-auto content-area">
+      <!-- Home -->
+      <section id="home" class="page enter px-1 sm:px-0 pb-4">
+        <div class="flex items-end justify-between mb-3 px-1">
+          <div>
+            <p class="text-[10px] uppercase tracking-[.18em] text-pink-300/80 mb-0.5">New release</p>
+            <h3 class="text-lg sm:text-xl font-bold">Featured</h3>
+          </div>
+        </div>
+        <div id="featured" class="grid grid-cols-1 gap-3 mb-6"></div>
+        <div class="flex items-end justify-between mb-3 px-1">
+          <div>
+            <p class="text-[10px] uppercase tracking-[.18em] text-gray-400 mb-0.5">Play instantly</p>
+            <h3 class="text-lg sm:text-xl font-bold">Instant Plays</h3>
+          </div>
+          <a href="#instant-plays" class="text-xs text-gray-300 hover:text-white">View all →</a>
+        </div>
+        <div id="home-games" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4"></div>
+      </section>
+
+      <!-- Instant Plays -->
+      <section id="instant-plays" class="page hidden px-1 sm:px-0 pb-4">
+        <div class="mb-4 px-1">
+          <p class="text-[10px] uppercase tracking-[.18em] text-gray-400 mb-0.5">No downloads</p>
+          <h3 class="text-xl sm:text-2xl font-bold">Instant Plays</h3>
+        </div>
+        <div id="games-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4"></div>
+      </section>
+
+      <!-- Upcoming -->
+      <section id="upcoming" class="page hidden px-1 sm:px-0 pb-4">
+        <div class="mb-4 px-1">
+          <p class="text-[10px] uppercase tracking-[.18em] text-gray-400 mb-0.5">Coming soon</p>
+          <h3 class="text-xl sm:text-2xl font-bold">Upcoming</h3>
+        </div>
+        <div id="upcoming-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-2 pb-[env(safe-area-inset-bottom)] pt-1.5 justify-around items-center h-[62px]">
+  <a class="nav active flex flex-col items-center gap-0.5 text-[10px] font-medium px-3 py-1.5 rounded-xl min-w-[64px]" href="#home">
+    <span class="text-lg leading-none">⌂</span>
+    <span>Home</span>
+  </a>
+  <a class="nav flex flex-col items-center gap-0.5 text-[10px] font-medium px-3 py-1.5 rounded-xl min-w-[64px] text-gray-400" href="#instant-plays">
+    <span class="text-lg leading-none">▶</span>
+    <span>Plays</span>
+  </a>
+  <a class="nav flex flex-col items-center gap-0.5 text-[10px] font-medium px-3 py-1.5 rounded-xl min-w-[64px] text-gray-400" href="#upcoming">
+    <span class="text-lg leading-none">◷</span>
+    <span>Soon</span>
+  </a>
+</nav>
+
 <script>
 const games=[
-  {id:'neon-tetris',title:'Neon Tetris',dev:'Classic · Puzzle',img:'https://placehold.co/800x450/0a0a14/00f0ff?text=Neon+Tetris',url:'/neon-tetris/',tag:'NEW'},
-  {id:'neon-breakout',title:'Neon Breakout',dev:'Classic · Arcade',img:'https://placehold.co/800x450/0a0a14/ff2d95?text=Neon+Breakout',url:'/neon-breakout/',tag:'NEW'},
+  {id:'neon-tetris',title:'Neon Tetris',dev:'Classic · Puzzle',img:'assets/neon-tetris-cover.svg',url:'/neon-tetris/',tag:'NEW'},
+  {id:'neon-breakout',title:'Neon Breakout',dev:'Classic · Arcade',img:'assets/neon-breakout-cover.svg',url:'/neon-breakout/',tag:'NEW'},
   {id:'echo-drift',title:'Echo Drift',dev:'D’Games Original · Arcade',img:'assets/echo-drift-cover.svg',url:'/echo-drift/'},
   {id:'neon',title:'Neon Galaxy',dev:'Arcade',img:'assets/neon-cover.png',url:'/neon-galaxy/'},
   {id:'tower',title:'Tower of Hue',dev:'Puzzle',img:'assets/tower-cover.png',url:'/tower-of-hue/'},
@@ -38,11 +159,100 @@ const games=[
   {id:'3xo',title:'3XO',dev:'Instant Play',img:'/assets/3XO Cover.png',url:'/3xo.html'},
   {id:'snake',title:'Neon Snake',dev:'Classic · Arcade',img:'https://placehold.co/800x450/06060a/39ff14?text=Neon+Snake',url:'/snake/'}
 ];
-const upcoming=[{id:'uncharted',title:'Uncharted: Legacy of Thieves',dev:'Naughty Dog',img:'https://image.api.playstation.com/vulcan/ap/rnd/202109/0222/a003s0V10vmLo1a025V01AvR.png'}];const $=id=>document.getElementById(id);
-function card(g,featured=false){return `<article class="card glass rounded-2xl overflow-hidden cursor-pointer ${featured?'lg:grid lg:grid-cols-2':''}" data-url="${g.url||''}"><div class="relative overflow-hidden ${featured?'lg:min-h-64':''}"><img src="${g.img}" onerror="this.src='https://placehold.co/800x450/101c2a/ffffff?text=D%27Games'" class="w-full h-48 ${featured?'lg:h-full':''} object-cover" alt="${g.title}">${g.tag?`<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/15 backdrop-blur border border-white/15">${g.tag}</span>`:''}<div class="absolute inset-0 bg-black/35 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"><span class="px-4 py-2 rounded-xl bg-white text-black font-bold text-sm">Play now</span></div></div><div class="p-4 ${featured?'lg:p-7 flex flex-col justify-center':''}"><p class="text-xs text-gray-400 mb-1">${g.dev}</p><h4 class="font-bold ${featured?'text-2xl':''}">${g.title}</h4>${featured?'<p class="text-sm text-gray-400 mt-3 leading-relaxed">Polished classic reborn in pure neon. Stack, smash, and chase high scores.</p><span class="mt-5 text-sm font-semibold text-cyan-300">Play now →</span>':''}</div></article>`}
-function render(){$('featured').innerHTML=card(games[0],true);$('home-games').innerHTML=games.map(card).join('');$('games-grid').innerHTML=games.map(card).join('');$('upcoming-grid').innerHTML=upcoming.map(card).join('')}
-function page(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));const el=$(id);el.classList.remove('hidden');el.classList.remove('enter');void el.offsetWidth;el.classList.add('enter');document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.getAttribute('href')==='#'+id));$('title').textContent=id==='instant-plays'?'Instant Plays':id[0].toUpperCase()+id.slice(1)}
-document.querySelectorAll('.nav').forEach(n=>n.onclick=e=>{e.preventDefault();page(n.getAttribute('href').slice(1))});$('content').addEventListener('click',e=>{const c=e.target.closest('[data-url]');if(c&&c.dataset.url)location.href=c.dataset.url});$('collapse').onclick=()=>{$('sidebar').classList.toggle('w-72');$('sidebar').classList.toggle('w-20');$('logo').classList.toggle('opacity-0');document.querySelectorAll('.nav-text').forEach(x=>x.classList.toggle('hidden'))};
-async function auth(){try{const r=await fetch('https://authfordev.dverse.fun/api/user',{credentials:'include'});if(!r.ok)return;const u=await r.json();$('signin').classList.add('hidden');$('profile').classList.remove('hidden');$('name').textContent=u.name;$('credits').textContent=`Credits: ${u.credits}`;$('avatar').src=u.avatarUrl}catch(e){$('auth-error').textContent='Could not check account status.';$('auth-error').classList.remove('hidden')}}
-$('signin').onclick=()=>location.href='https://authfordev.dverse.fun/login?redirect_url='+encodeURIComponent(location.href.split('?')[0]);$('signout').onclick=()=>location.href='https://authfordev.dverse.fun/logout?redirect_url='+encodeURIComponent(location.href);render();auth();page(location.hash.slice(1)||'home');
-</script></body></html>
+const upcoming=[{id:'uncharted',title:'Uncharted: Legacy of Thieves',dev:'Naughty Dog',img:'https://image.api.playstation.com/vulcan/ap/rnd/202109/0222/a003s0V10vmLo1a025V01AvR.png'}];
+const $=id=>document.getElementById(id);
+
+function card(g,featured=false){
+  const isFeatured = featured;
+  return `<article class="card glass rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer ${isFeatured?'sm:grid sm:grid-cols-2':''}" data-url="${g.url||''}">
+    <div class="relative overflow-hidden ${isFeatured?'sm:min-h-56':''}">
+      <img src="${g.img}" loading="lazy" onerror="this.src='https://placehold.co/800x450/101c2a/ffffff?text=D%27Games'" class="w-full h-28 sm:h-44 ${isFeatured?'sm:h-full':''} object-cover" alt="${g.title}">
+      ${g.tag?`<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-white/15 backdrop-blur border border-white/15">${g.tag}</span>`:''}
+      <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+        <span class="px-3 py-1.5 rounded-lg bg-white text-black font-bold text-xs sm:text-sm">Play now</span>
+      </div>
+    </div>
+    <div class="p-2.5 sm:p-4 ${isFeatured?'sm:p-6 flex flex-col justify-center':''}">
+      <p class="text-[10px] sm:text-xs text-gray-400 mb-0.5 truncate">${g.dev}</p>
+      <h4 class="font-bold text-sm sm:text-base ${isFeatured?'sm:text-xl':''} leading-tight">${g.title}</h4>
+      ${isFeatured?'<p class="text-xs sm:text-sm text-gray-400 mt-2 leading-relaxed hidden sm:block">Polished classic reborn in pure neon. Stack, smash, and chase high scores.</p><span class="mt-3 text-xs sm:text-sm font-semibold text-cyan-300">Play now →</span>':''}
+    </div>
+  </article>`;
+}
+
+function render(){
+  $('featured').innerHTML=card(games[0],true);
+  $('home-games').innerHTML=games.map(g=>card(g)).join('');
+  $('games-grid').innerHTML=games.map(g=>card(g)).join('');
+  $('upcoming-grid').innerHTML=upcoming.map(g=>card(g)).join('');
+}
+
+function page(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  const el=$(id);
+  el.classList.remove('hidden');
+  el.classList.remove('enter');
+  void el.offsetWidth;
+  el.classList.add('enter');
+  // update all navs (sidebar + bottom)
+  document.querySelectorAll('.nav').forEach(n=>{
+    const href=n.getAttribute('href');
+    n.classList.toggle('active', href==='#'+id);
+    if(href==='#'+id){
+      n.classList.remove('text-gray-400');
+    } else if(n.closest('.bottom-nav')){
+      n.classList.add('text-gray-400');
+    }
+  });
+  $('title').textContent = id==='instant-plays' ? 'Instant Plays' : id[0].toUpperCase()+id.slice(1);
+  // scroll content to top on page change
+  $('content').scrollTop=0;
+}
+
+// Nav clicks (both sidebar and bottom)
+document.querySelectorAll('.nav').forEach(n=>{
+  n.onclick=e=>{
+    e.preventDefault();
+    page(n.getAttribute('href').slice(1));
+  };
+});
+
+// Card clicks
+$('content').addEventListener('click',e=>{
+  const c=e.target.closest('[data-url]');
+  if(c&&c.dataset.url) location.href=c.dataset.url;
+});
+
+// Collapse (desktop only)
+$('collapse').onclick=()=>{
+  $('sidebar').classList.toggle('w-72');
+  $('sidebar').classList.toggle('w-20');
+  $('logo').classList.toggle('opacity-0');
+  document.querySelectorAll('.nav-text').forEach(x=>x.classList.toggle('hidden'));
+};
+
+async function auth(){
+  try{
+    const r=await fetch('https://authfordev.dverse.fun/api/user',{credentials:'include'});
+    if(!r.ok)return;
+    const u=await r.json();
+    $('signin').classList.add('hidden');
+    $('profile').classList.remove('hidden');
+    $('name').textContent=u.name;
+    $('credits').textContent=`Credits: ${u.credits}`;
+    $('avatar').src=u.avatarUrl;
+  }catch(e){
+    $('auth-error').textContent='Could not check account status.';
+    $('auth-error').classList.remove('hidden');
+  }
+}
+
+$('signin').onclick=()=>location.href='https://authfordev.dverse.fun/login?redirect_url='+encodeURIComponent(location.href.split('?')[0]);
+$('signout').onclick=()=>location.href='https://authfordev.dverse.fun/logout?redirect_url='+encodeURIComponent(location.href);
+
+render();
+auth();
+page(location.hash.slice(1)||'home');
+</script>
+</body>
+</html>
