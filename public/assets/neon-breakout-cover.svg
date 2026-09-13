@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06060f"/>
+      <stop offset="60%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#12081c"/>
+    </linearGradient>
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#00a8ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="ballGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg)"/>
+  
+  <!-- Ambient -->
+  <circle cx="200" cy="80" r="100" fill="#00f0ff" opacity="0.07" filter="url(#softGlow)"/>
+  <circle cx="650" cy="380" r="130" fill="#ff2d95" opacity="0.06" filter="url(#softGlow)"/>
+  
+  <!-- Brick rows -->
+  <!-- Row 1 cyan -->
+  <g filter="url(#glow)">
+    <rect x="120" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="200" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="280" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="360" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="440" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="520" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+    <rect x="600" y="60" width="70" height="22" rx="4" fill="#00f0ff"/>
+  </g>
+  
+  <!-- Row 2 violet -->
+  <g filter="url(#glow)">
+    <rect x="120" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="200" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="280" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="360" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="440" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="520" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+    <rect x="600" y="92" width="70" height="22" rx="4" fill="#a855f7"/>
+  </g>
+  
+  <!-- Row 3 pink -->
+  <g filter="url(#glow)">
+    <rect x="120" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="200" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="280" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="360" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="440" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="520" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+    <rect x="600" y="124" width="70" height="22" rx="4" fill="#ff2d95"/>
+  </g>
+  
+  <!-- Row 4 green -->
+  <g filter="url(#glow)">
+    <rect x="160" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="240" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="320" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="400" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="480" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="560" y="156" width="70" height="22" rx="4" fill="#39ff14"/>
+  </g>
+  
+  <!-- Row 5 gold -->
+  <g filter="url(#glow)">
+    <rect x="200" y="188" width="70" height="22" rx="4" fill="#ffd700"/>
+    <rect x="280" y="188" width="70" height="22" rx="4" fill="#39ff14"/>
+    <rect x="360" y="188" width="70" height="22" rx="4" fill="#ffd700"/>
+    <rect x="440" y="188" width="70" height="22" rx="4" fill="#ffd700"/>
+    <rect x="520" y="188" width="70" height="22" rx="4" fill="#ffd700"/>
+  </g>
+  
+  <!-- Ball -->
+  <circle cx="420" cy="280" r="12" fill="#ff2d95" filter="url(#ballGlow)"/>
+  <circle cx="417" cy="277" r="4" fill="rgba(255,255,255,0.7)"/>
+  
+  <!-- Paddle -->
+  <rect x="340" y="360" width="120" height="14" rx="7" fill="#00f0ff" filter="url(#glow)"/>
+  
+  <!-- Title -->
+  <text x="400" y="410" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="42" fill="#00f0ff" filter="url(#glow)">NEON BREAKOUT</text>
+  <text x="400" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="13" fill="#94a3b8" letter-spacing="3">D'GAMES · INSTANT PLAY</text>
+</svg>

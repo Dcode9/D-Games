@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06060f"/>
+      <stop offset="50%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#0f0a1f"/>
+    </linearGradient>
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#00a8ff"/>
+    </linearGradient>
+    <linearGradient id="neonPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff2d95"/>
+      <stop offset="100%" stop-color="#ff6bcb"/>
+    </linearGradient>
+    <linearGradient id="neonViolet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <filter id="glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowPink" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg)"/>
+  
+  <!-- Ambient orbs -->
+  <circle cx="150" cy="100" r="120" fill="#00f0ff" opacity="0.08" filter="url(#softGlow)"/>
+  <circle cx="680" cy="360" r="140" fill="#a855f7" opacity="0.07" filter="url(#softGlow)"/>
+  <circle cx="400" cy="200" r="80" fill="#ff2d95" opacity="0.05" filter="url(#softGlow)"/>
+  
+  <!-- Grid lines subtle -->
+  <g stroke="#00f0ff" stroke-opacity="0.06" stroke-width="1">
+    <line x1="0" y1="90" x2="800" y2="90"/>
+    <line x1="0" y1="180" x2="800" y2="180"/>
+    <line x1="0" y1="270" x2="800" y2="270"/>
+    <line x1="0" y1="360" x2="800" y2="360"/>
+    <line x1="100" y1="0" x2="100" y2="450"/>
+    <line x1="200" y1="0" x2="200" y2="450"/>
+    <line x1="300" y1="0" x2="300" y2="450"/>
+    <line x1="400" y1="0" x2="400" y2="450"/>
+    <line x1="500" y1="0" x2="500" y2="450"/>
+    <line x1="600" y1="0" x2="600" y2="450"/>
+    <line x1="700" y1="0" x2="700" y2="450"/>
+  </g>
+  
+  <!-- Tetris blocks composition (stylized falling pieces) -->
+  <!-- I piece vertical cyan -->
+  <g filter="url(#glowCyan)">
+    <rect x="180" y="80" width="36" height="36" rx="4" fill="#00f0ff"/>
+    <rect x="180" y="120" width="36" height="36" rx="4" fill="#00f0ff"/>
+    <rect x="180" y="160" width="36" height="36" rx="4" fill="#00f0ff"/>
+    <rect x="180" y="200" width="36" height="36" rx="4" fill="#00f0ff"/>
+  </g>
+  
+  <!-- T piece pink -->
+  <g filter="url(#glowPink)">
+    <rect x="280" y="140" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="240" y="180" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="280" y="180" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="320" y="180" width="36" height="36" rx="4" fill="#ff2d95"/>
+  </g>
+  
+  <!-- O piece gold -->
+  <g filter="url(#glowCyan)">
+    <rect x="400" y="100" width="36" height="36" rx="4" fill="#ffd700"/>
+    <rect x="440" y="100" width="36" height="36" rx="4" fill="#ffd700"/>
+    <rect x="400" y="140" width="36" height="36" rx="4" fill="#ffd700"/>
+    <rect x="440" y="140" width="36" height="36" rx="4" fill="#ffd700"/>
+  </g>
+  
+  <!-- L piece violet -->
+  <g filter="url(#glowPink)">
+    <rect x="520" y="160" width="36" height="36" rx="4" fill="#a855f7"/>
+    <rect x="520" y="200" width="36" height="36" rx="4" fill="#a855f7"/>
+    <rect x="520" y="240" width="36" height="36" rx="4" fill="#a855f7"/>
+    <rect x="560" y="240" width="36" height="36" rx="4" fill="#a855f7"/>
+  </g>
+  
+  <!-- S piece green -->
+  <g filter="url(#glowCyan)">
+    <rect x="300" y="260" width="36" height="36" rx="4" fill="#39ff14"/>
+    <rect x="340" y="260" width="36" height="36" rx="4" fill="#39ff14"/>
+    <rect x="260" y="300" width="36" height="36" rx="4" fill="#39ff14"/>
+    <rect x="300" y="300" width="36" height="36" rx="4" fill="#39ff14"/>
+  </g>
+  
+  <!-- Z piece -->
+  <g filter="url(#glowPink)">
+    <rect x="460" y="280" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="500" y="280" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="500" y="320" width="36" height="36" rx="4" fill="#ff2d95"/>
+    <rect x="540" y="320" width="36" height="36" rx="4" fill="#ff2d95"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="400" y="390" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="48" fill="url(#neonCyan)" filter="url(#glowCyan)">NEON TETRIS</text>
+  <text x="400" y="420" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="14" fill="#94a3b8" letter-spacing="4">D'GAMES · INSTANT PLAY</text>
+</svg>
