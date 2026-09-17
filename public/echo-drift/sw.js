@@ -1,4 +1,4 @@
-const CACHE = 'echo-drift-v4';
+const CACHE = 'echo-drift-v5';
 const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest'];
 const SAME_ORIGIN = self.location.origin;
 
@@ -27,20 +27,35 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   event.respondWith((async () => {
+    const url = new URL(request.url);
+    const isNavigation = request.mode === 'navigate';
+
+    // Network-first for HTML/navigation so new game builds become visible quickly.
+    if (isNavigation) {
+      try {
+        const fresh = await fetch(request);
+        if (fresh.ok && url.origin === SAME_ORIGIN) {
+          const cache = await caches.open(CACHE);
+          await cache.put(request, fresh.clone());
+        }
+        return fresh;
+      } catch {
+        return (await caches.match(request)) || caches.match('/echo-drift/index.html');
+      }
+    }
+
+    // Cache-first for static same-origin assets, with a network fallback.
     const cached = await caches.match(request);
     if (cached) return cached;
 
     try {
       const response = await fetch(request);
-      const url = new URL(request.url);
-      const cacheable = response && response.ok && url.origin === SAME_ORIGIN;
-      if (cacheable) {
+      if (response && response.ok && url.origin === SAME_ORIGIN) {
         const cache = await caches.open(CACHE);
         await cache.put(request, response.clone());
       }
       return response;
     } catch {
-      if (request.mode === 'navigate') return caches.match('/echo-drift/index.html');
       return caches.match('/echo-drift/');
     }
   })());
