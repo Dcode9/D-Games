@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+  <defs>
+    <radialGradient id="orbit-bg" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#0a192f"/>
+      <stop offset="60%" stop-color="#050d1a"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <filter id="oglow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#orbit-bg)"/>
+  
+  <!-- Planetary Center -->
+  <circle cx="600" cy="337" r="85" fill="#0f172a" stroke="url(#shield-grad)" stroke-width="4" filter="url(#oglow)"/>
+  <circle cx="600" cy="337" r="70" fill="#1e293b" opacity="0.6"/>
+  
+  <!-- Orbit Rings -->
+  <ellipse cx="600" cy="337" rx="220" ry="110" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.7" transform="rotate(-25 600 337)" filter="url(#oglow)"/>
+  <ellipse cx="600" cy="337" rx="340" ry="160" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="8 12" opacity="0.5" transform="rotate(35 600 337)"/>
+  
+  <!-- Orbiting Satellites -->
+  <circle cx="430" cy="260" r="14" fill="#38bdf8" filter="url(#oglow)"/>
+  <circle cx="770" cy="415" r="10" fill="#f43f5e" filter="url(#oglow)"/>
+  <circle cx="820" cy="220" r="8" fill="#fbbf24" filter="url(#oglow)"/>
+  
+  <!-- Typography -->
+  <text x="80" y="550" fill="#ffffff" font-family="'Space Grotesk', Inter, sans-serif" font-size="70" font-weight="900" letter-spacing="-1">ORBIT GUARD</text>
+  <text x="85" y="595" fill="#38bdf8" font-family="'Space Grotesk', Inter, sans-serif" font-size="20" font-weight="700" letter-spacing="4">TACTICAL PLANETARY DEFENSE</text>
+</svg>

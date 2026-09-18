@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+  <defs>
+    <radialGradient id="cyber-bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#2a0845"/>
+      <stop offset="50%" stop-color="#0f051d"/>
+      <stop offset="100%" stop-color="#040208"/>
+    </radialGradient>
+    <linearGradient id="sun-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff007f"/>
+      <stop offset="70%" stop-color="#ffb800"/>
+      <stop offset="100%" stop-color="#ff0055"/>
+    </linearGradient>
+    <linearGradient id="grid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ff007f" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#cyber-bg)"/>
+  
+  <!-- Retro Sunset -->
+  <circle cx="600" cy="310" r="140" fill="url(#sun-grad)" filter="url(#glow)"/>
+  <g fill="#0f051d">
+    <rect x="440" y="270" width="320" height="6"/>
+    <rect x="440" y="290" width="320" height="9"/>
+    <rect x="440" y="315" width="320" height="13"/>
+    <rect x="440" y="345" width="320" height="18"/>
+    <rect x="440" y="380" width="320" height="24"/>
+  </g>
+
+  <!-- Mountains -->
+  <polygon points="100,420 300,280 500,420" fill="#140628" opacity="0.8"/>
+  <polygon points="400,420 600,290 800,420" fill="#1b0a33" opacity="0.6"/>
+  <polygon points="700,420 920,270 1150,420" fill="#140628" opacity="0.8"/>
+
+  <!-- Horizon Line -->
+  <line x1="0" y1="420" x2="1200" y2="420" stroke="#00f0ff" stroke-width="3" filter="url(#glow)"/>
+
+  <!-- Perspective Grid -->
+  <g stroke="url(#grid-grad)" stroke-width="2">
+    <!-- Vanishing Lines -->
+    <line x1="600" y1="420" x2="-200" y2="675"/>
+    <line x1="600" y1="420" x2="50" y2="675"/>
+    <line x1="600" y1="420" x2="250" y2="675"/>
+    <line x1="600" y1="420" x2="420" y2="675"/>
+    <line x1="600" y1="420" x2="550" y2="675"/>
+    <line x1="600" y1="420" x2="650" y2="675"/>
+    <line x1="600" y1="420" x2="780" y2="675"/>
+    <line x1="600" y1="420" x2="950" y2="675"/>
+    <line x1="600" y1="420" x2="1150" y2="675"/>
+    <line x1="600" y1="420" x2="1400" y2="675"/>
+    
+    <!-- Horizontal Cross Lines -->
+    <line x1="0" y1="435" x2="1200" y2="435"/>
+    <line x1="0" y1="455" x2="1200" y2="455"/>
+    <line x1="0" y1="485" x2="1200" y2="485"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="0" y1="580" x2="1200" y2="580"/>
+    <line x1="0" y1="650" x2="1200" y2="650"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="80" y="140" fill="#ffffff" font-family="'Space Grotesk', Inter, sans-serif" font-size="72" font-weight="900" letter-spacing="-1">CYBER ROAD</text>
+  <text x="85" y="185" fill="#00f0ff" font-family="'Space Grotesk', Inter, sans-serif" font-size="20" font-weight="700" letter-spacing="4">OUTRUN SYNTHWAVE RACING</text>
+</svg>

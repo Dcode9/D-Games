@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+  <defs>
+    <radialGradient id="snake-bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#061a0c"/>
+      <stop offset="60%" stop-color="#020d06"/>
+      <stop offset="100%" stop-color="#010502"/>
+    </radialGradient>
+    <linearGradient id="neon-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <filter id="sglow">
+      <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#snake-bg)"/>
+  
+  <!-- Cyber Grid -->
+  <g stroke="#10b981" stroke-width="0.5" opacity="0.15">
+    <path d="M0 0h1200v675H0z"/>
+    <!-- Grid pattern -->
+    <path d="M0 75h1200M0 150h1200M0 225h1200M0 300h1200M0 375h1200M0 450h1200M0 525h1200M0 600h1200"/>
+    <path d="M75 0v675M150 0v675M225 0v675M300 0v675M375 0v675M450 0v675M525 0v675M600 0v675M675 0v675M750 0v675M825 0v675M900 0v675M975 0v675M1050 0v675M1125 0v675"/>
+  </g>
+
+  <!-- Serpent Path -->
+  <path d="M300 375 H600 V225 H750 V450 H900" fill="none" stroke="url(#neon-green)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" filter="url(#sglow)"/>
+  
+  <!-- Glowing Apple Food -->
+  <circle cx="975" cy="450" r="16" fill="#f43f5e" filter="url(#sglow)"/>
+
+  <!-- Typography -->
+  <text x="80" y="550" fill="#ffffff" font-family="'Space Grotesk', Inter, sans-serif" font-size="70" font-weight="900" letter-spacing="-1">NEON SNAKE</text>
+  <text x="85" y="595" fill="#34d399" font-family="'Space Grotesk', Inter, sans-serif" font-size="20" font-weight="700" letter-spacing="4">ARCADE CLASSIC REIMAGINED</text>
+</svg>
