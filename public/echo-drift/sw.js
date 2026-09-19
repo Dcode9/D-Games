@@ -1,6 +1,16 @@
-const CACHE = 'echo-drift-v5';
+const CACHE = 'echo-drift-v6';
 const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest'];
 const SAME_ORIGIN = self.location.origin;
+const OWN_CACHE_PREFIX = 'echo-drift-';
+
+async function safePut(cache, request, response) {
+  if (!response || !response.ok || new URL(request.url).origin !== SAME_ORIGIN) return;
+  try {
+    await cache.put(request, response.clone());
+  } catch {
+    // Storage can fail in private mode or when the quota is full; gameplay should continue.
+  }
+}
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -13,7 +23,11 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(keys => Promise.all(
+        keys
+          .filter(key => key.startsWith(OWN_CACHE_PREFIX) && key !== CACHE)
+          .map(key => caches.delete(key))
+      ))
       .then(() => self.clients.claim())
   );
 });
@@ -30,30 +44,24 @@ self.addEventListener('fetch', event => {
     const url = new URL(request.url);
     const isNavigation = request.mode === 'navigate';
 
-    // Network-first for HTML/navigation so new game builds become visible quickly.
     if (isNavigation) {
       try {
         const fresh = await fetch(request);
-        if (fresh.ok && url.origin === SAME_ORIGIN) {
-          const cache = await caches.open(CACHE);
-          await cache.put(request, fresh.clone());
-        }
+        const cache = await caches.open(CACHE);
+        await safePut(cache, request, fresh);
         return fresh;
       } catch {
         return (await caches.match(request)) || caches.match('/echo-drift/index.html');
       }
     }
 
-    // Cache-first for static same-origin assets, with a network fallback.
     const cached = await caches.match(request);
     if (cached) return cached;
 
     try {
       const response = await fetch(request);
-      if (response && response.ok && url.origin === SAME_ORIGIN) {
-        const cache = await caches.open(CACHE);
-        await cache.put(request, response.clone());
-      }
+      const cache = await caches.open(CACHE);
+      await safePut(cache, request, response);
       return response;
     } catch {
       return caches.match('/echo-drift/');
