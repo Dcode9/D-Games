@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Alchemist</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Courier New', Courier, monospace; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 2px solid #55f;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #55f;
+        }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #0f0;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            background: #222;
+            color: #0f0;
+            border: 1px solid #0f0;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #55f;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover { background: #77f; }
+        .gauge-container { margin: 10px 0; }
+        .gauge-label { display: inline-block; width: 120px; text-align: left; }
+        .gauge-bar-bg { display: inline-block; width: 200px; height: 15px; background: #333; position: relative; }
+        .gauge-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: #0f0; transition: width 1s ease-in-out; }
+        .gauge-target { position: absolute; top: -5px; width: 4px; height: 25px; background: #fff; box-shadow: 0 0 5px #fff;}
+        #message { margin-top: 10px; color: #ff5; font-weight: bold; min-height: 20px;}
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <h3>Target Resonance:</h3>
+        <p>Synthesize the <b>Philosopher's Stone</b>.</p>
+        <div class="gauge-container">
+            <span class="gauge-label">Ethereal</span>
+            <div class="gauge-bar-bg">
+                <div id="target-ethereal" class="gauge-target" style="left: 83%"></div>
+            </div>
+            <span> (High)</span>
+        </div>
+        <div class="gauge-container">
+            <span class="gauge-label">Chaos</span>
+            <div class="gauge-bar-bg">
+                <div id="target-chaos" class="gauge-target" style="left: 16%"></div>
+            </div>
+            <span> (Low)</span>
+        </div>
+        <div class="gauge-container">
+            <span class="gauge-label">Creation</span>
+            <div class="gauge-bar-bg">
+                <div id="target-creation" class="gauge-target" style="left: 83%"></div>
+            </div>
+            <span> (High)</span>
+        </div>
+        <p style="font-size:12px; color:#aaa;">(Targets approx. 2.5 / 0.5 / 2.5)</p>
+    </div>
+
+    <div id="ui">
+        <h2>The Crucible of Concepts</h2>
+        <p>Type a concept to feed the machine (e.g. "A perfect diamond", "A raging storm", "The concept of love")</p>
+        <input type="text" id="conceptInput" placeholder="Enter a concept..." autocomplete="off" />
+        <br/>
+        <button id="synthesizeBtn">Synthesize</button>
+        <div id="message"></div>
+        <hr/>
+        <h3>Current Resonance:</h3>
+        <div class="gauge-container">
+            <span class="gauge-label">Ethereal</span>
+            <div class="gauge-bar-bg"><div id="fill-ethereal" class="gauge-bar-fill" style="width: 0%; background: #a5f;"></div></div>
+        </div>
+        <div class="gauge-container">
+            <span class="gauge-label">Chaos</span>
+            <div class="gauge-bar-bg"><div id="fill-chaos" class="gauge-bar-fill" style="width: 0%; background: #f55;"></div></div>
+        </div>
+        <div class="gauge-container">
+            <span class="gauge-label">Creation</span>
+            <div class="gauge-bar-bg"><div id="fill-creation" class="gauge-bar-fill" style="width: 0%; background: #5f5;"></div></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Setup Three.js Scene
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.05);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 12, 15);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x222244);
+        scene.add(ambientLight);
+
+        const crucibleLight = new THREE.PointLight(0x00ff00, 0, 10);
+        crucibleLight.position.set(0, 2, 0);
+        scene.add(crucibleLight);
+        
+        const spotLight = new THREE.SpotLight(0xffffff, 1);
+        spotLight.position.set(5, 15, 5);
+        spotLight.angle = Math.PI / 4;
+        spotLight.penumbra = 0.5;
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+        // Textures
+        const textureLoader = new THREE.TextureLoader();
+        const floorTex = textureLoader.load('assets/floor.jpg');
+        floorTex.wrapS = THREE.RepeatWrapping;
+        floorTex.wrapT = THREE.RepeatWrapping;
+        floorTex.repeat.set(10, 10);
+
+        const metalTex = textureLoader.load('assets/metal.jpg');
+        const runesTex = textureLoader.load('assets/runes.jpg');
+
+        // Floor
+        const floorGeo = new THREE.PlaneGeometry(50, 50);
+        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.8 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Crucible (Center object)
+        const crucibleGroup = new THREE.Group();
+        
+        const baseGeo = new THREE.CylinderGeometry(3, 4, 2, 16);
+        const metalMat = new THREE.MeshStandardMaterial({ map: metalTex, roughness: 0.5, metalness: 0.8 });
+        const base = new THREE.Mesh(baseGeo, metalMat);
+        base.position.y = 1;
+        base.castShadow = true;
+        base.receiveShadow = true;
+        crucibleGroup.add(base);
+
+        const ringGeo = new THREE.TorusGeometry(3.2, 0.4, 8, 32);
+        const runeMat = new THREE.MeshStandardMaterial({ 
+            map: runesTex, 
+            emissiveMap: runesTex,
+            emissive: 0x0055ff,
+            emissiveIntensity: 0.5
+        });
+        const ring1 = new THREE.Mesh(ringGeo, runeMat);
+        ring1.position.y = 3;
+        ring1.rotation.x = Math.PI / 2;
+        crucibleGroup.add(ring1);
+        
+        const ring2 = new THREE.Mesh(ringGeo, runeMat);
+        ring2.position.y = 4;
+        ring2.rotation.x = Math.PI / 2;
+        ring2.scale.set(0.8, 0.8, 0.8);
+        crucibleGroup.add(ring2);
+
+        // Center Energy Orb
+        const orbGeo = new THREE.SphereGeometry(1, 16, 16);
+        const orbMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.8 });
+        const orb = new THREE.Mesh(orbGeo, orbMat);
+        orb.position.y = 3.5;
+        crucibleGroup.add(orb);
+
+        scene.add(crucibleGroup);
+
+        // Animation Loop
+        let targetOrbColor = new THREE.Color(0x000000);
+        let targetRingSpeed = 0.01;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            ring1.rotation.z += targetRingSpeed;
+            ring2.rotation.z -= targetRingSpeed * 1.5;
+            
+            orbMat.color.lerp(targetOrbColor, 0.05);
+            runeMat.emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.005) * 0.2;
+            
+            crucibleLight.color.copy(orbMat.color);
+            crucibleLight.intensity = Math.lerp(crucibleLight.intensity, targetOrbColor.getHex() === 0x000000 ? 0 : 2, 0.05);
+
+            renderer.render(scene, camera);
+        }
+
+        Math.lerp = function (value1, value2, amount) {
+            return value1 + (value2 - value1) * amount;
+        };
+
+        animate();
+
+        // Game Logic
+        const targetEthereal = 2.5; // High
+        const targetChaos = 0.5;    // Low
+        const targetCreation = 2.5; // High
+        
+        const tolerance = 0.4;
+
+        const btn = document.getElementById('synthesizeBtn');
+        const input = document.getElementById('conceptInput');
+        const msg = document.getElementById('message');
+
+        function updateGauge(id, val) {
+            const pct = (val / 3.0) * 100;
+            document.getElementById('fill-' + id).style.width = Math.max(0, Math.min(100, pct)) + '%';
+        }
+
+        btn.addEventListener('click', async () => {
+            const concept = input.value.trim();
+            if(!concept) return;
+
+            msg.innerText = "Crucible is analyzing semantic resonance...";
+            msg.style.color = "#aaa";
+            btn.disabled = true;
+
+            // Visual FX
+            targetRingSpeed = 0.1;
+
+            try {
+                const res = await fetch('/api/evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ concept })
+                });
+                const data = await res.json();
+                
+                updateGauge('ethereal', data.ethereal);
+                updateGauge('chaos', data.chaos);
+                updateGauge('creation', data.creation);
+
+                // Check win condition
+                const eDiff = Math.abs(data.ethereal - targetEthereal);
+                const cDiff = Math.abs(data.chaos - targetChaos);
+                const crDiff = Math.abs(data.creation - targetCreation);
+
+                if (eDiff <= tolerance && cDiff <= tolerance && crDiff <= tolerance) {
+                    msg.innerText = "SUCCESS! Philosopher's Stone Synthesized! You solved the puzzle!";
+                    msg.style.color = "#0f0";
+                    targetOrbColor.setHex(0xffaa00); // Gold
+                    targetRingSpeed = 0.05;
+                } else {
+                    msg.innerText = "Resonance unstable. The elements reject this concept.";
+                    msg.style.color = "#f55";
+                    targetOrbColor.setHex(0xff0000); // Red
+                    targetRingSpeed = 0.01;
+                    
+                    setTimeout(() => {
+                        targetOrbColor.setHex(0x000000);
+                    }, 2000);
+                }
+
+            } catch (err) {
+                msg.innerText = "Error linking to Jev Model.";
+            }
+
+            btn.disabled = false;
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
