@@ -1,5 +1,5 @@
-const CACHE = 'echo-drift-v6';
-const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest'];
+const CACHE = 'echo-drift-v7';
+const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg'];
 const SAME_ORIGIN = self.location.origin;
 const OWN_CACHE_PREFIX = 'echo-drift-';
 
