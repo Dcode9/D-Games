@@ -1,4 +1,4 @@
-const CACHE = 'echo-drift-v7';
+const CACHE = 'echo-drift-v8';
 const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg'];
 const SAME_ORIGIN = self.location.origin;
 const OWN_CACHE_PREFIX = 'echo-drift-';
@@ -40,13 +40,15 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
 
+  const url = new URL(request.url);
+  if (url.origin !== SAME_ORIGIN) return;
+
   event.respondWith((async () => {
-    const url = new URL(request.url);
     const isNavigation = request.mode === 'navigate';
 
     if (isNavigation) {
       try {
-        const fresh = await fetch(request);
+        const fresh = await fetch(request, { cache: 'no-store' });
         const cache = await caches.open(CACHE);
         await safePut(cache, request, fresh);
         return fresh;
