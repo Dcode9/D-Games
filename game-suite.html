@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D'Ai's Game Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        header { text-align: center; padding: 2rem; background: rgba(0,0,0,0.3); width: 100%; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; color: #f39c12; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(243,156,18,0.5); }
+        p { color: #bdc3c7; }
+        .game-selector { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; }
+        button { padding: 1rem 2rem; border: 2px solid #f39c12; background: transparent; color: #f39c12; font-weight: bold; cursor: pointer; transition: all 0.3s; border-radius: 5px; }
+        button:hover { background: #f39c12; color: #1a1a2e; box-shadow: 0 0 15px rgba(243,156,18,0.5); }
+        .game-container { width: 800px; height: 600px; background: #0f0f1a; border-radius: 10px; border: 2px solid #f39c12; box-shadow: 0 0 30px rgba(243,156,18,0.2); position: relative; overflow: hidden; display: none; }
+        .game-container.active { display: block; }
+        .game-canvas { width: 100%; height: 100%; display: block; }
+        .score-board { position: absolute; top: 10px; left: 10px; color: #f39c12; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 5px; }
+        .instructions { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #bdc3c7; font-size: 0.9rem; text-align: center; }
+        #puzzle-game canvas { border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #puzzle-game .score-board { top: 15px; left: 15px; }
+        #puzzle-game .instructions { bottom: 15px; }
+        #reflex-game .player { position: absolute; bottom: 20px; width: 50px; height: 100px; background: #e74c3c; border-radius: 5px 5px 0 0; box-shadow: 0 0 10px rgba(231,76,60,0.5); transition: transform 0.1s; }
+        #reflex-game .target { position: absolute; width: 30px; height: 30px; background: #3498db; border-radius: 50%; transition: all 0.1s; box-shadow: 0 0 10px rgba(52,152,219,0.8); }
+        #arcade-game canvas { border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>D'Ai's Game Suite</h1>
+        <p>A collection of interactive games coded with precision</p>
+    </header>
+
+    <div class="game-selector">
+        <button onclick="showGame('puzzle')">Puzzle Master</button>
+        <button onclick="showGame('reflex')">Reflex Arena</button>
+        <button onclick="showGame('arcade')">Neon Rush</button>
+    </div>
+
+    <div id="puzzle-game" class="game-container">
+        <canvas id="puzzleCanvas"></canvas>
+        <div class="score-board">Score: <span id="puzzleScore">0</span> | Moves: <span id="puzzleMoves">0</span></div>
+        <div class="instructions">Click tiles to flip. Match colors to win! | Press R to reset</div>
+    </div>
+
+    <div id="reflex-game" class="game-container">
+        <div class="score-board">Score: <span id="reflexScore">0</span> | Lives: <span id="reflexLives">3</span></div>
+        <div class="player" id="player"></div>
+        <div class="instructions">Use LEFT and RIGHT arrow keys to move. Catch the blue orbs!</div>
+    </div>
+
+    <div id="arcade-game" class="game-container">
+        <canvas id="arcadeCanvas"></canvas>
+        <div class="score-board">Score: <span id="arcadeScore">0</span> | Level: <span id="arcadeLevel">1</span></div>
+        <div class="instructions">Avoid the falling red blocks. Press SPACE to start/pause.</div>
+    </div>
+
+    <script>
+        // Game State Management
+        let currentGame = null;
+        let gameLoopId = null;
+
+        function showGame(gameId) {
+            // Stop any running game
+            if (gameLoopId) { cancelAnimationFrame(gameLoopId); gameLoopId = null; }
+            
+            // Hide all games
+            document.querySelectorAll('.game-container').forEach(el => el.classList.remove('active'));
+            
+            // Show selected game
+            document.getElementById(gameId + '-game').classList.add('active');
+            currentGame = gameId;
+
+            // Initialize specific game
+            if (gameId === 'puzzle') initPuzzle();
+            if (gameId === 'reflex') initReflex();
+            if (gameId === 'arcade') initArcade();
+        }
+
+        // ========================= PUZZLE MASTER =========================
+        function initPuzzle() {
+            const canvas = document.getElementById('puzzleCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 400;
+            
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'];
+            let gridSize = 4;
+            let tileSize = canvas.width / gridSize;
+            let tiles = [];
+            let matches = 0;
+            let moves = 0;
+            let selected = null;
+
+            function createBoard() {
+                tiles = [];
+                for (let r = 0; r < gridSize; r++) {
+                    let row = [];
+                    for (let c = 0; c < gridSize; c++) {
+                        row.push(colors[Math.floor(Math.random() * colors.length)]);
+                    }
+                    tiles.push(row);
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0f0f1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        const x = c * tileSize;
+                        const y = r * tileSize;
+                        
+                        // Draw tile border
+                        ctx.strokeStyle = '#f39c12';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
+                        
+                        // Draw tile background
+                        ctx.fillStyle = tiles[r][c];
+                        ctx.fillRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
+                        
+                        // Draw selected tile effect
+                        if (selected && selected.r === r && selected.c === c) {
+                            ctx.strokeStyle = '#fff';
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+                        }
+                    }
+                }
+            }
+
+            function checkMatches() {
+                let hasMatches = false;
+                let toMatch = [];
+                
+                // Check rows
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize - 2; c++) {
+                        if (tiles[r][c] === tiles[r][c+1] && tiles[r][c] === tiles[r][c+2]) {
+                            toMatch.push({r, c}, {r, c: c+1}, {r, c: c+2});
+                            hasMatches = true;
+                        }
+                    }
+                }
+                
+                // Check columns
+                for (let c = 0; c < gridSize; c++) {
+                    for (let r = 0; r < gridSize - 2; r++) {
+                        if (tiles[r][c] === tiles[r+1][c] && tiles[r][c] === tiles[r+2][c]) {
+                            toMatch.push({r, c}, {r: r+1, c}, {r: r+2, c});
+                            hasMatches = true;
+                        }
+                    }
+                }
+                
+                if (hasMatches) {
+                    // Remove matched tiles
+                    toMatch.forEach(pos => {
+                        tiles[pos.r][pos.c] = colors[Math.floor(Math.random() * colors.length)];
+                    });
+                    matches++;
+                    document.getElementById('puzzleScore').textContent = matches * 100;
+                    
+                    // Check for win condition
+                    if (matches >= 20) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = '#f39c12';
+                        ctx.font = '30px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('YOU WIN!', canvas.width/2, canvas.height/2);
+                        document.getElementById('puzzleScore').textContent = matches * 100 + 1000;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            canvas.addEventListener('click', (e) => {
+                if (matches >= 20) return;
+                const rect = canvas.getBoundingClientRect();
+                const c = Math.floor((e.clientX - rect.left) / tileSize);
+                const r = Math.floor((e.clientY - rect.top) / tileSize);
+                
+                if (selected === null) {
+                    selected = {r, c};
+                } else {
+                    // Check if adjacent
+                    if (Math.abs(selected.r - r) + Math.abs(selected.c - c) === 1) {
+                        // Swap
+                        let temp = tiles[selected.r][selected.c];
+                        tiles[selected.r][selected.c] = tiles[r][c];
+                        tiles[r][c] = temp;
+                        
+                        moves++;
+                        document.getElementById('puzzleMoves').textContent = moves;
+                        
+                        // Check if match is created by swap
+                        if (!checkMatches()) {
+                            // Swap back if no match
+                            tiles[r][c] = tiles[selected.r][selected.c];
+                            tiles[selected.r][selected.c] = temp;
+                        } else {
+                            selected = null;
+                        }
+                    } else {
+                        selected = {r, c};
+                    }
+                }
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'r') {
+                    matches = 0;
+                    moves = 0;
+                    selected = null;
+                    document.getElementById('puzzleScore').textContent = '0';
+                    document.getElementById('puzzleMoves').textContent = '0';
+                    createBoard();
+                }
+            });
+
+            function gameLoop() {
+                draw();
+                checkMatches();
+                gameLoopId = requestAnimationFrame(gameLoop);
+            }
+
+            createBoard();
+            gameLoop();
+        }
+
+        // ========================= REFLEX ARENA =========================
+        function initReflex() {
+            const container = document.getElementById('reflex-game');
+            const player = document.getElementById('player');
+            let score = 0;
+            let lives = 3;
+            let posX = 50;
+            let targets = [];
+            let speed = 3;
+            let gameOver = false;
+
+            function createTarget() {
+                if (gameOver) return;
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.style.left = Math.random() * (container.offsetWidth - 30) + 'px';
+                target.style.top = '0px';
+                container.appendChild(target);
+                targets.push({el: target, y: 0});
+                
+                setTimeout(() => { if(targets.length > 5) createTarget(); }, 1000 - speed * 50);
+            }
+
+            function gameLoop() {
+                if (gameOver) return;
+
+                // Move targets
+                targets.forEach((target, idx) => {
+                    target.y += speed;
+                    target.el.style.top = target.y + 'px';
+
+                    // Check collision with player
+                    const playerRect = player.getBoundingClientRect();
+                    const targetRect = target.el.getBoundingClientRect();
+
+                    if (targetRect.bottom >= playerRect.top + 10 && 
+                        targetRect.top <= playerRect.bottom &&
+                        targetRect.right >= playerRect.left &&
+                        targetRect.left <= playerRect.right) {
+                        // Catch target
+                        target.el.remove();
+                        targets.splice(idx, 1);
+                        score++;
+                        document.getElementById('reflexScore').textContent = score;
+                        
+                        if (score % 5 === 0) {
+                            speed += 0.5;
+                        }
+
+                        // Spawn new target
+                        setTimeout(() => createTarget(), 1000);
+                    } else if (target.y > container.offsetHeight) {
+                        // Missed target
+                        target.el.remove();
+                        targets.splice(idx, 1);
+                        lives--;
+                        document.getElementById('reflexLives').textContent = lives;
+                        
+                        if (lives <= 0) {
+                            gameOver = true;
+                            alert('Game Over! Final Score: ' + score);
+                        }
+                    }
+                });
+
+                gameLoopId = requestAnimationFrame(gameLoop);
+            }
+
+            // Player movement
+            window.addEventListener('keydown', (e) => {
+                if (currentGame !== 'reflex') return;
+                if (e.key === 'ArrowLeft') {
+                    posX = Math.max(0, posX - 20);
+                    player.style.transform = `translateX(${posX}px)`;
+                }
+                if (e.key === 'ArrowRight') {
+                    posX = Math.min(container.offsetWidth - 50, posX + 20);
+                    player.style.transform = `translateX(${posX}px)`;
+                }
+            });
+
+            createTarget();
+            gameLoop();
+        }
+
+        // ========================= NEON RUSH =========================
+        function initArcade() {
+            const canvas = document.getElementById('arcadeCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 400;
+            
+            let score = 0;
+            let level = 1;
+            let gameRunning = false;
+            let paused = false;
+            let player = { x: 300, y: 350, width: 30, height: 30, color: '#3498db' };
+            let enemies = [];
+            let scoreInterval;
+
+            function drawPlayer() {
+                ctx.fillStyle = player.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = player.color;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.shadowBlur = 0;
+            }
+
+            function spawnEnemy() {
+                const enemy = {
+                    x: Math.random() * (canvas.width - 30),
+                    y: -30,
+                    width: 30,
+                    height: 30,
+                    color: '#e74c3c',
+                    speed: 2 + level * 0.5
+                };
+                enemies.push(enemy);
+                setTimeout(spawnEnemy, 1000 / (level * 0.5));
+            }
+
+            function update() {
+                if (!gameRunning || paused) return;
+
+                ctx.fillStyle = 'rgba(15, 15, 26, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                drawPlayer();
+
+                enemies.forEach((enemy, index) => {
+                    enemy.y += enemy.speed;
+                    
+                    ctx.fillStyle = enemy.color;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = enemy.color;
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    ctx.shadowBlur = 0;
+
+                    // Check collision
+                    if (player.x < enemy.x + enemy.width &&
+                        player.x + player.width > enemy.x &&
+                        player.y < enemy.y + enemy.height &&
+                        player.height + player.y > enemy.y) {
+                        gameRunning = false;
+                        clearInterval(scoreInterval);
+                        alert(`Game Over! Score: ${score}, Level: ${level}`);
+                    }
+
+                    if (enemy.y > canvas.height) {
+                        enemies.splice(index, 1);
+                        score++;
+                        document.getElementById('arcadeScore').textContent = score;
+                        
+                        if (score % 10 === 0) {
+                            level++;
+                            document.getElementById('arcadeLevel').textContent = level;
+                        }
+                    }
+                });
+
+                gameLoopId = requestAnimationFrame(update);
+            }
+
+            // Player movement with keyboard
+            window.addEventListener('keydown', (e) => {
+                if (currentGame !== 'arcade') return;
+                
+                if (e.key === ' ') {
+                    if (!gameRunning) {
+                        gameRunning = true;
+                        gameLoop();
+                        spawnEnemy();
+                        scoreInterval = setInterval(() => {
+                            score += 5;
+                            document.getElementById('arcadeScore').textContent = score;
+                        }, 1000);
+                    } else {
+                        paused = !paused;
+                    }
+                }
+                
+                if (gameRunning && !paused) {
+                    if (e.key === 'ArrowLeft' && player.x > 0) {
+                        player.x -= 15;
+                    }
+                    if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) {
+                        player.x += 15;
+                    }
+                }
+            });
+
+            function gameLoop() {
+                update();
+                gameLoopId = requestAnimationFrame(gameLoop);
+            }
+            gameLoop();
+        }
+    </script>
+</body>
+</html>
