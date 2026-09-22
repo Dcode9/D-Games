@@ -1,35 +1,30 @@
-const CACHE = 'echo-drift-v8';
+const CACHE = 'echo-drift-v9';
 const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg'];
 const SAME_ORIGIN = self.location.origin;
 const OWN_CACHE_PREFIX = 'echo-drift-';
 
 async function safePut(cache, request, response) {
   if (!response || !response.ok || new URL(request.url).origin !== SAME_ORIGIN) return;
-  try {
-    await cache.put(request, response.clone());
-  } catch {
-    // Storage can fail in private mode or when the quota is full; gameplay should continue.
-  }
+  try { await cache.put(request, response.clone()); } catch {}
 }
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.all(APP_SHELL.map(async path => {
+      try { const response = await fetch(path, { cache: 'no-store' }); await safePut(cache, path, response); } catch {}
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys
-          .filter(key => key.startsWith(OWN_CACHE_PREFIX) && key !== CACHE)
-          .map(key => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith(OWN_CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key)));
+    if ('navigationPreload' in self.registration) await self.registration.navigationPreload.enable();
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('message', event => {
@@ -39,16 +34,14 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
   if (url.origin !== SAME_ORIGIN) return;
 
   event.respondWith((async () => {
     const isNavigation = request.mode === 'navigate';
-
     if (isNavigation) {
       try {
-        const fresh = await fetch(request, { cache: 'no-store' });
+        const fresh = await (event.preloadResponse || fetch(request, { cache: 'no-store' }));
         const cache = await caches.open(CACHE);
         await safePut(cache, request, fresh);
         return fresh;
@@ -66,7 +59,7 @@ self.addEventListener('fetch', event => {
       await safePut(cache, request, response);
       return response;
     } catch {
-      return caches.match('/echo-drift/');
+      return (await caches.match('/echo-drift/')) || new Response('Offline', { status: 503, statusText: 'Offline' });
     }
   })());
 });
