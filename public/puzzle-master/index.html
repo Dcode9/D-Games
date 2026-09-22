@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Master - D-Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        header { text-align: center; padding: 2rem; background: rgba(0,0,0,0.3); width: 100%; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; color: #f39c12; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(243,156,18,0.5); }
+        p { color: #bdc3c7; }
+        .game-container { width: 800px; height: 600px; background: #0f0f1a; border-radius: 10px; border: 2px solid #f39c12; box-shadow: 0 0 30px rgba(243,156,18,0.2); position: relative; overflow: hidden; }
+        #puzzleCanvas { border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .score-board { position: absolute; top: 15px; left: 15px; color: #f39c12; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 5px; }
+        .instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); color: #bdc3c7; font-size: 0.9rem; text-align: center; }
+        .back-btn { position: absolute; top: 15px; right: 15px; padding: 0.5rem 1rem; border: 2px solid #f39c12; background: transparent; color: #f39c12; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .back-btn:hover { background: #f39c12; color: #1a1a2e; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Puzzle Master</h1>
+        <p>Match colored tiles to score points! Click adjacent tiles to swap.</p>
+    </header>
+
+    <div class="game-container">
+        <button class="back-btn" onclick="window.location.href='index.html'">← Back to Games</button>
+        <canvas id="puzzleCanvas"></canvas>
+        <div class="score-board">Score: <span id="puzzleScore">0</span> | Moves: <span id="puzzleMoves">0</span></div>
+        <div class="instructions">Click tiles to flip. Match colors to win! | Press R to reset</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('puzzleCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 400;
+        
+        const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#34495e'];
+        const gridSize = 4;
+        const tileSize = canvas.width / gridSize;
+        let tiles = [];
+        let matches = 0;
+        let moves = 0;
+        let selected = null;
+
+        function createBoard() {
+            tiles = [];
+            for (let r = 0; r < gridSize; r++) {
+                let row = [];
+                for (let c = 0; c < gridSize; c++) {
+                    row.push(colors[Math.floor(Math.random() * colors.length)]);
+                }
+                tiles.push(row);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f0f1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const x = c * tileSize;
+                    const y = r * tileSize;
+                    
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
+                    
+                    ctx.fillStyle = tiles[r][c];
+                    ctx.fillRect(x + 5, y + 5, tileSize - 10, tileSize - 10);
+                    
+                    if (selected && selected.r === r && selected.c === c) {
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+                    }
+                }
+            }
+        }
+
+        function checkMatches() {
+            let hasMatches = false;
+            let toMatch = [];
+            
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize - 2; c++) {
+                    if (tiles[r][c] === tiles[r][c+1] && tiles[r][c] === tiles[r][c+2]) {
+                        toMatch.push({r, c}, {r, c: c+1}, {r, c: c+2});
+                        hasMatches = true;
+                    }
+                }
+            }
+            
+            for (let c = 0; c < gridSize; c++) {
+                for (let r = 0; r < gridSize - 2; r++) {
+                    if (tiles[r][c] === tiles[r+1][c] && tiles[r][c] === tiles[r+2][c]) {
+                        toMatch.push({r, c}, {r: r+1, c}, {r: r+2, c});
+                        hasMatches = true;
+                    }
+                }
+            }
+            
+            if (hasMatches) {
+                toMatch.forEach(pos => {
+                    tiles[pos.r][pos.c] = colors[Math.floor(Math.random() * colors.length)];
+                });
+                matches++;
+                document.getElementById('puzzleScore').textContent = matches * 100;
+                
+                if (matches >= 20) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#f39c12';
+                    ctx.font = '30px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('YOU WIN!', canvas.width/2, canvas.height/2);
+                    document.getElementById('puzzleScore').textContent = matches * 100 + 1000;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if (matches >= 20) return;
+            const rect = canvas.getBoundingClientRect();
+            const c = Math.floor((e.clientX - rect.left) / tileSize);
+            const r = Math.floor((e.clientY - rect.top) / tileSize);
+            
+            if (selected === null) {
+                selected = {r, c};
+            } else {
+                if (Math.abs(selected.r - r) + Math.abs(selected.c - c) === 1) {
+                    let temp = tiles[selected.r][selected.c];
+                    tiles[selected.r][selected.c] = tiles[r][c];
+                    tiles[r][c] = temp;
+                    
+                    moves++;
+                    document.getElementById('puzzleMoves').textContent = moves;
+                    
+                    if (!checkMatches()) {
+                        tiles[r][c] = tiles[selected.r][selected.c];
+                        tiles[selected.r][selected.c] = temp;
+                    } else {
+                        selected = null;
+                    }
+                } else {
+                    selected = {r, c};
+                }
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') {
+                matches = 0;
+                moves = 0;
+                selected = null;
+                document.getElementById('puzzleScore').textContent = '0';
+                document.getElementById('puzzleMoves').textContent = '0';
+                createBoard();
+            }
+        });
+
+        function gameLoop() {
+            draw();
+            checkMatches();
+            requestAnimationFrame(gameLoop);
+        }
+
+        createBoard();
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflex Arena - D-Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        header { text-align: center; padding: 2rem; background: rgba(0,0,0,0.3); width: 100%; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; color: #3498db; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(52,152,219,0.5); }
+        p { color: #bdc3c7; }
+        .game-container { width: 800px; height: 600px; background: #0f0f1a; border-radius: 10px; border: 2px solid #3498db; box-shadow: 0 0 30px rgba(52,152,219,0.2); position: relative; overflow: hidden; }
+        .score-board { position: absolute; top: 15px; left: 15px; color: #3498db; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 5px; }
+        .instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); color: #bdc3c7; font-size: 0.9rem; text-align: center; }
+        .back-btn { position: absolute; top: 15px; right: 15px; padding: 0.5rem 1rem; border: 2px solid #3498db; background: transparent; color: #3498db; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .back-btn:hover { background: #3498db; color: #1a1a2e; }
+        .player { position: absolute; bottom: 20px; width: 50px; height: 100px; background: #e74c3c; border-radius: 5px 5px 0 0; box-shadow: 0 0 10px rgba(231,76,60,0.5); transition: transform 0.1s; }
+        .target { position: absolute; width: 30px; height: 30px; background: #3498db; border-radius: 50%; transition: all 0.1s; box-shadow: 0 0 10px rgba(52,152,219,0.8); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Reflex Arena</h1>
+        <p>Catch the blue orbs! Use LEFT and RIGHT arrow keys to move.</p>
+    </header>
+
+    <div class="game-container">
+        <button class="back-btn" onclick="window.location.href='index.html'">← Back to Games</button>
+        <div class="score-board">Score: <span id="reflexScore">0</span> | Lives: <span id="reflexLives">3</span></div>
+        <div class="player" id="player"></div>
+        <div class="instructions">Use LEFT and RIGHT arrow keys to move. Catch the blue orbs!</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('reflex-arena') || document.querySelector('.game-container');
+        const player = document.getElementById('player');
+        let score = 0;
+        let lives = 3;
+        let posX = 375;
+        let targets = [];
+        let speed = 3;
+        let gameOver = false;
+        let animationFrameId;
+
+        function createTarget() {
+            if (gameOver) return;
+            const target = document.createElement('div');
+            target.className = 'target';
+            target.style.left = Math.random() * (container.offsetWidth - 30) + 'px';
+            target.style.top = '0px';
+            container.appendChild(target);
+            targets.push({el: target, y: 0});
+            
+            setTimeout(() => { if(targets.length < 5) createTarget(); }, 1000 - speed * 50);
+        }
+
+        function gameLoop() {
+            if (gameOver) return;
+
+            targets.forEach((target, idx) => {
+                target.y += speed;
+                target.el.style.top = target.y + 'px';
+
+                const playerRect = player.getBoundingClientRect();
+                const targetRect = target.el.getBoundingClientRect();
+
+                if (targetRect.bottom >= playerRect.top + 10 && 
+                    targetRect.top <= playerRect.bottom &&
+                    targetRect.right >= playerRect.left &&
+                    targetRect.left <= playerRect.right) {
+                    target.el.remove();
+                    targets.splice(idx, 1);
+                    score++;
+                    document.getElementById('reflexScore').textContent = score;
+                    
+                    if (score % 5 === 0) {
+                        speed += 0.5;
+                    }
+
+                    setTimeout(() => createTarget(), 1000);
+                } else if (target.y > container.offsetHeight) {
+                    target.el.remove();
+                    targets.splice(idx, 1);
+                    lives--;
+                    document.getElementById('reflexLives').textContent = lives;
+                    
+                    if (lives <= 0) {
+                        gameOver = true;
+                        alert('Game Over! Final Score: ' + score);
+                    }
+                }
+            });
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                posX = Math.max(0, posX - 20);
+                player.style.transform = `translateX(${posX}px)`;
+            }
+            if (e.key === 'ArrowRight') {
+                posX = Math.min(container.offsetWidth - 50, posX + 20);
+                player.style.transform = `translateX(${posX}px)`;
+            }
+        });
+
+        createTarget();
+        gameLoop();
+    </script>
+</body>
+</html>

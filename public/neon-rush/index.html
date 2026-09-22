@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Rush - D-Games</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        header { text-align: center; padding: 2rem; background: rgba(0,0,0,0.3); width: 100%; margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; color: #2ecc71; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(46,204,113,0.5); }
+        p { color: #bdc3c7; }
+        .game-container { width: 800px; height: 600px; background: #0f0f1a; border-radius: 10px; border: 2px solid #2ecc71; box-shadow: 0 0 30px rgba(46,204,113,0.2); position: relative; overflow: hidden; }
+        #arcadeCanvas { border-radius: 5px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .score-board { position: absolute; top: 15px; left: 15px; color: #2ecc71; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 5px; }
+        .instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); color: #bdc3c7; font-size: 0.9rem; text-align: center; }
+        .back-btn { position: absolute; top: 15px; right: 15px; padding: 0.5rem 1rem; border: 2px solid #2ecc71; background: transparent; color: #2ecc71; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .back-btn:hover { background: #2ecc71; color: #1a1a2e; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Neon Rush</h1>
+        <p>Avoid the falling red blocks! Press SPACE to start/pause.</p>
+    </header>
+
+    <div class="game-container">
+        <button class="back-btn" onclick="window.location.href='index.html'">← Back to Games</button>
+        <canvas id="arcadeCanvas"></canvas>
+        <div class="score-board">Score: <span id="arcadeScore">0</span> | Level: <span id="arcadeLevel">1</span></div>
+        <div class="instructions">Avoid the falling red blocks. Press SPACE to start/pause.</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('arcadeCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 400;
+        
+        let score = 0;
+        let level = 1;
+        let gameRunning = false;
+        let paused = false;
+        let player = { x: 285, y: 350, width: 30, height: 30, color: '#3498db' };
+        let enemies = [];
+        let scoreInterval;
+
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.shadowBlur = 0;
+        }
+
+        function spawnEnemy() {
+            if (!gameRunning || paused) return;
+            const enemy = {
+                x: Math.random() * (canvas.width - 30),
+                y: -30,
+                width: 30,
+                height: 30,
+                color: '#e74c3c',
+                speed: 2 + level * 0.5
+            };
+            enemies.push(enemy);
+            setTimeout(spawnEnemy, 1000 / (level * 0.5));
+        }
+
+        function update() {
+            if (!gameRunning || paused) {
+                requestAnimationFrame(update);
+                return;
+            }
+
+            ctx.fillStyle = 'rgba(15, 15, 26, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawPlayer();
+
+            enemies.forEach((enemy, index) => {
+                enemy.y += enemy.speed;
+                
+                ctx.fillStyle = enemy.color;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                ctx.shadowBlur = 0;
+
+                if (player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height &&
+                    player.height + player.y > enemy.y) {
+                    gameRunning = false;
+                    clearInterval(scoreInterval);
+                    alert(`Game Over! Score: ${score}, Level: ${level}`);
+                }
+
+                if (enemy.y > canvas.height) {
+                    enemies.splice(index, 1);
+                    score++;
+                    document.getElementById('arcadeScore').textContent = score;
+                    
+                    if (score % 10 === 0) {
+                        level++;
+                        document.getElementById('arcadeLevel').textContent = level;
+                    }
+                }
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                if (!gameRunning) {
+                    gameRunning = true;
+                    spawnEnemy();
+                    scoreInterval = setInterval(() => {
+                        score += 5;
+                        document.getElementById('arcadeScore').textContent = score;
+                    }, 1000);
+                } else {
+                    paused = !paused;
+                }
+            }
+            
+            if (gameRunning && !paused) {
+                if (e.key === 'ArrowLeft' && player.x > 0) {
+                    player.x -= 15;
+                }
+                if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) {
+                    player.x += 15;
+                }
+            }
+        });
+
+        // Draw initial state
+        ctx.fillStyle = '#0f0f1a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+    </script>
+</body>
+</html>
