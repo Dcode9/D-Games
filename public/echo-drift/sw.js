@@ -1,4 +1,4 @@
-const CACHE = 'echo-drift-v9';
+const CACHE = 'echo-drift-v10';
 const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg'];
 const SAME_ORIGIN = self.location.origin;
 const OWN_CACHE_PREFIX = 'echo-drift-';
@@ -8,11 +8,23 @@ async function safePut(cache, request, response) {
   try { await cache.put(request, response.clone()); } catch {}
 }
 
+async function refresh(request) {
+  try {
+    const response = await fetch(request, { cache: 'no-store' });
+    const cache = await caches.open(CACHE);
+    await safePut(cache, request, response);
+    return response;
+  } catch {
+    return null;
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.all(APP_SHELL.map(async path => {
-      try { const response = await fetch(path, { cache: 'no-store' }); await safePut(cache, path, response); } catch {}
+      const response = await refresh(new Request(path));
+      if (response) await safePut(cache, path, response);
     }));
     await self.skipWaiting();
   })());
@@ -40,26 +52,18 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const isNavigation = request.mode === 'navigate';
     if (isNavigation) {
-      try {
-        const fresh = await (event.preloadResponse || fetch(request, { cache: 'no-store' }));
-        const cache = await caches.open(CACHE);
-        await safePut(cache, request, fresh);
-        return fresh;
-      } catch {
-        return (await caches.match(request)) || caches.match('/echo-drift/index.html');
-      }
+      const fresh = await (event.preloadResponse || refresh(request));
+      if (fresh) return fresh;
+      return (await caches.match(request)) || caches.match('/echo-drift/index.html') || new Response('Offline', { status: 503, statusText: 'Offline' });
     }
 
     const cached = await caches.match(request);
-    if (cached) return cached;
-
-    try {
-      const response = await fetch(request);
-      const cache = await caches.open(CACHE);
-      await safePut(cache, request, response);
-      return response;
-    } catch {
-      return (await caches.match('/echo-drift/')) || new Response('Offline', { status: 503, statusText: 'Offline' });
+    if (cached) {
+      event.waitUntil(refresh(request));
+      return cached;
     }
+
+    const fresh = await refresh(request);
+    return fresh || (await caches.match('/echo-drift/')) || new Response('Offline', { status: 503, statusText: 'Offline' });
   })());
 });
