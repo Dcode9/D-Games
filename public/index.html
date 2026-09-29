@@ -347,13 +347,13 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     </div>
 
     <div class="flex items-center gap-2">
-      <button id="modal-reload" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors">
+      <button id="modal-reload" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors" aria-label="Restart game">
         Restart
       </button>
-      <button id="modal-popout" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors">
+      <button id="modal-popout" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors" aria-label="Open game in a new tab">
         Open in Tab ↗
       </button>
-      <button id="modal-fullscreen" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors">
+      <button id="modal-fullscreen" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors" aria-label="Enter fullscreen">
         Fullscreen
       </button>
     </div>
@@ -502,6 +502,7 @@ const UPCOMING = [
 let currentCategory = 'all';
 let currentSearch = '';
 let currentModalUrl = '';
+let lastFocusedElement = null;
 
 // --- RENDERING ---
 function createCard(game) {
@@ -635,6 +636,7 @@ function launchGame(gameId) {
   const g = GAMES.find(item => item.id === gameId);
   if (!g) return;
 
+  lastFocusedElement = document.activeElement;
   currentModalUrl = g.url;
   document.getElementById('modal-title').textContent = g.title;
   document.getElementById('modal-genre').textContent = g.genre;
@@ -645,10 +647,19 @@ function launchGame(gameId) {
 }
 
 function closeModal() {
-  document.getElementById('game-modal').classList.add('hidden');
+  const modal = document.getElementById('game-modal');
+  modal.classList.add('hidden');
   document.getElementById('game-iframe').src = 'about:blank';
   document.body.classList.remove('modal-open');
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus({ preventScroll: true });
+  }
+  lastFocusedElement = null;
 }
+
+document.getElementById('game-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
 
 document.getElementById('modal-close').addEventListener('click', closeModal);
 document.getElementById('modal-reload').addEventListener('click', () => {
@@ -665,6 +676,13 @@ document.getElementById('modal-fullscreen').addEventListener('click', () => {
   } else {
     document.exitFullscreen().catch(() => {});
   }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  const button = document.getElementById('modal-fullscreen');
+  const active = Boolean(document.fullscreenElement);
+  button.textContent = active ? 'Exit Fullscreen' : 'Fullscreen';
+  button.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
 });
 
 window.addEventListener('keydown', e => {
