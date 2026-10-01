@@ -22,7 +22,9 @@ class Dot{constructor(){this.spawn()}spawn(){this.x=20+Math.random()*(W-40);this
 class Ripple{constructor(x,y){this.x=x;this.y=y;this.r=0;this.life=1;this.flash=0}update(){this.r+=5.8;this.life-=.018;this.flash=Math.max(0,this.flash-.08)}}
 function sync(){document.getElementById('score').textContent=score;document.getElementById('combo').textContent=combo;document.getElementById('lives').textContent=lives}
 function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;const start=document.getElementById('start');start.classList.add('hidden');start.style.display='none';document.getElementById('over').classList.add('hidden');sync()}
-function startGame(){reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+function startGame(){reset();const start=document.getElementById('start');start.classList.add('hidden');start.style.display='none';start.setAttribute('aria-hidden','true');last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+window.addEventListener('pointerdown',()=>{const start=document.getElementById('start');if(!running&&!start.classList.contains('hidden'))startGame()},{capture:true});
+window.addEventListener('keydown',e=>{const start=document.getElementById('start');if(!running&&!start.classList.contains('hidden')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();startGame()}},{capture:true});
 function over(){running=false;document.getElementById('result').textContent='Score '+score+' · Best chain ×'+combo;document.getElementById('over').classList.remove('hidden')}
 function place(x,y){if(running)ripples.push(new Ripple(x,y))}
 c.addEventListener('pointerdown',e=>{e.preventDefault();place(e.clientX,e.clientY)});
