@@ -1,307 +1,197 @@
-
 (() => {
   const GAMES = [
-    { id:'echo-drift', title:'Echo Drift', category:'arcade', genre:'Arcade · High-Speed', tag:'SPOTLIGHT', desc:'A fast, tactile drift through a luminous signal field. Chain echoes, dodge pulse hazards, and keep the channel alive.', img:'assets/covers/echo-drift.svg', url:'/echo-drift/', pace:'FAST', players:'1P', time:'2–5 MIN' },
-    { id:'neon-tetris', title:'Neon Tetris', category:'puzzle', genre:'Classic · Puzzle', tag:'CLASSIC', desc:'Falling blocks, clean rotations, rising pressure. Built for short sessions and long score chases.', img:'assets/covers/neon-tetris.svg', url:'/neon-tetris/', pace:'FOCUS', players:'1P', time:'3–10 MIN' },
-    { id:'neon-breakout', title:'Neon Breakout', category:'arcade', genre:'Classic · Arcade', tag:'ARCADE', desc:'Read the bounce, break the wall, and stack up combos with a tight paddle and punchy feedback.', img:'assets/covers/neon-breakout.svg', url:'/neon-breakout/', pace:'FAST', players:'1P', time:'2–6 MIN' },
-    { id:'cyber-road', title:'Cyber Road', category:'action', genre:'Racing · Retro', tag:'RUN', desc:'A synth-road endurance run. Thread the hazards, hold the line, and push the score without losing the rhythm.', img:'assets/covers/cyber-road.svg', url:'/cyber-road/', pace:'FAST', players:'1P', time:'1–4 MIN' },
-    { id:'neon-galaxy', title:'Neon Galaxy', category:'action', genre:'Arcade · Shooter', tag:'WAVES', desc:'Clear hostile waves, keep the screen readable, and survive long enough to turn pressure into score.', img:'assets/covers/neon-galaxy.svg', url:'/neon-galaxy/', pace:'FAST', players:'1P', time:'3–8 MIN' },
-    { id:'tower-of-hue', title:'Tower of Hue', category:'puzzle', genre:'Puzzle · Physics', tag:'PRECISION', desc:'Stack color blocks with controlled timing. Every clean placement buys you another layer.', img:'assets/covers/tower-of-hue.svg', url:'/tower-of-hue/', pace:'STEADY', players:'1P', time:'2–5 MIN' },
-    { id:'orbit-guard', title:'Orbit Guard', category:'action', genre:'Action · Defense', tag:'DEFENSE', desc:'Rotate your shield and keep the core safe. Timing is everything when the field starts closing in.', img:'assets/covers/orbit-guard.svg', url:'/orbit-guard/', pace:'FAST', players:'1P', time:'2–6 MIN' },
-    { id:'ripple-reaction', title:'Ripple Reaction', category:'puzzle', genre:'Casual · Chain Reaction', tag:'CHAIN', desc:'Place the right ripple at the right moment and turn a single click into a cascading field reaction.', img:'assets/covers/ripple-reaction.svg', url:'/ripple-reaction/', pace:'CALM', players:'1P', time:'1–4 MIN' },
-    { id:'snake', title:'Neon Snake', category:'classic', genre:'Classic · Arcade', tag:'CLASSIC', desc:'The old rulebook with a cleaner control loop. Grow the chain, route the turns, beat your best.', img:'assets/covers/neon-snake.svg', url:'/snake/', pace:'STEADY', players:'1P', time:'2–7 MIN' },
-    { id:'3xo', title:'3XO', category:'classic', genre:'Strategy · 3-Player', tag:'TABLE', desc:'A five-by-five three-player strategy duel. First to four in a row takes the board.', img:'assets/covers/3xo.svg', url:'/3xo.html', pace:'THINK', players:'3P', time:'3–8 MIN' }
+    {id:'echo-drift',title:'Echo Drift',category:'arcade',genre:'Arcade',tag:'Fast',desc:'Chain echoes, dodge pulse hazards, and keep the signal alive.',img:'/assets/covers/echo-drift.svg',url:'/echo-drift/',time:'2–5 min'},
+    {id:'neon-tetris',title:'Neon Tetris',category:'puzzle',genre:'Puzzle',tag:'Classic',desc:'Drop, rotate, clear. Clean rules and endless score chasing.',img:'/assets/covers/neon-tetris.svg',url:'/neon-tetris/',time:'3–10 min'},
+    {id:'neon-breakout',title:'Neon Breakout',category:'arcade',genre:'Arcade',tag:'Classic',desc:'Read the bounce, break the wall, build the combo.',img:'/assets/covers/neon-breakout.svg',url:'/neon-breakout/',time:'2–6 min'},
+    {id:'cyber-road',title:'Cyber Road',category:'action',genre:'Racing',tag:'Run',desc:'Hold the line, thread the hazards, and push the distance.',img:'/assets/covers/cyber-road.svg',url:'/cyber-road/',time:'1–4 min'},
+    {id:'neon-galaxy',title:'Neon Galaxy',category:'action',genre:'Shooter',tag:'Waves',desc:'Clear hostile waves and turn pressure into score.',img:'/assets/covers/neon-galaxy.svg',url:'/neon-galaxy/',time:'3–8 min'},
+    {id:'tower-of-hue',title:'Tower of Hue',category:'puzzle',genre:'Puzzle',tag:'Precision',desc:'Place every block cleanly and build the tallest stack.',img:'/assets/covers/tower-of-hue.svg',url:'/tower-of-hue/',time:'2–5 min'},
+    {id:'orbit-guard',title:'Orbit Guard',category:'action',genre:'Defense',tag:'Shield',desc:'Rotate your shield and keep the core safe under pressure.',img:'/assets/covers/orbit-guard.svg',url:'/orbit-guard/',time:'2–6 min'},
+    {id:'ripple-reaction',title:'Ripple Reaction',category:'puzzle',genre:'Puzzle',tag:'Chain',desc:'Turn one ripple into a full-field cascade.',img:'/assets/covers/ripple-reaction.svg',url:'/ripple-reaction/',time:'1–4 min'},
+    {id:'snake',title:'Neon Snake',category:'classic',genre:'Classic',tag:'Classic',desc:'Route the turns, grow the chain, beat your best.',img:'/assets/covers/neon-snake.svg',url:'/snake/',time:'2–7 min'},
+    {id:'3xo',title:'3XO',category:'classic',genre:'Strategy',tag:'Table',desc:'A three-player board duel built for quick rematches.',img:'/assets/covers/3xo.svg',url:'/3xo.html',time:'3–8 min'}
   ];
-  const ALBUMS=[{title:'Retro Vibes',count:'12 games',img:'assets/albums/retro-vibes.svg',copy:'Fast classics, familiar rules, fresh runs.'},{title:'Space Adventures',count:'8 games',img:'assets/albums/space-adventures.svg',copy:'Orbit, survive and push deeper.'},{title:'Neon Nights',count:'10 games',img:'assets/albums/neon-nights.svg',copy:'Electric arcade sessions after dark.'},{title:'Puzzle Masters',count:'7 games',img:'assets/albums/puzzle-masters.svg',copy:'Think clean. Move once. Repeat.'},{title:'Arcade Classics',count:'6 games',img:'assets/albums/arcade-classics.svg',copy:'Short loops built for high scores.'}];
-  const UPCOMING = [
-    { code:'01', title:'Mini Metro', status:'IN DEVELOPMENT', desc:'A tactile network-planning session built around routes, capacity, and clean decisions.' },
-    { code:'02', title:'Rise Up', status:'PROTOTYPE', desc:'A reflex shield game designed around one-finger control and readable timing.' },
-    { code:'03', title:'UNKNOWN FLIGHT', status:'CLASSIFIED', desc:'A new daily-scale experiment is being prepared for the hangar.' }
+  const ALBUMS=[
+    {title:'Retro Vibes',count:'12 games',img:'/assets/albums/retro-vibes.svg'},
+    {title:'Space Adventures',count:'8 games',img:'/assets/albums/space-adventures.svg'},
+    {title:'Neon Nights',count:'10 games',img:'/assets/albums/neon-nights.svg'},
+    {title:'Puzzle Masters',count:'7 games',img:'/assets/albums/puzzle-masters.svg'},
+    {title:'Arcade Classics',count:'6 games',img:'/assets/albums/arcade-classics.svg'}
+  ];
+  const UPCOMING=[
+    {title:'Mini Metro',status:'In development',desc:'Build routes. Balance capacity.'},
+    {title:'Rise Up',status:'Prototype',desc:'One-finger defense and timing.'},
+    {title:'Unknown Flight',status:'In progress',desc:'A new short-session experiment.'}
   ];
 
-  const state = {
-    view: 'home',
-    category: 'all',
-    search: '',
-    favorites: JSON.parse(localStorage.getItem('dgames-favorites') || '[]'),
-    recent: JSON.parse(localStorage.getItem('dgames-recent') || '[]'),
-    modalGame: null,
-    lastFocus: null
+  const ICONS={
+    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 4Z"/></svg>',
+    play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 6 9 6-9 6z"/></svg>',
+    arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg>',
+    close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 7 10 10M17 7 7 17"/></svg>',
+    fullscreen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4"/></svg>'
   };
+  const icon=name=>ICONS[name]||'';
+  const state={
+    view:'home',
+    category:'all',
+    search:'',
+    favorites:JSON.parse(localStorage.getItem('dgames-favorites')||'[]'),
+    modalGame:null,
+    lastFocus:null
+  };
+  const $=(sel,root=document)=>root.querySelector(sel);
+  const $$=(sel,root=document)=>Array.from(root.querySelectorAll(sel));
+  const gameById=id=>GAMES.find(game=>game.id===id);
+  const esc=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const gameById = id => GAMES.find(g => g.id === id);
-
-  function esc(value) {
-    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function saveFavorites(){localStorage.setItem('dgames-favorites',JSON.stringify(state.favorites));}
+  function isFavorite(id){return state.favorites.includes(id);}
+  function toast(message){
+    const el=$('#toast');el.textContent=message;el.classList.add('is-visible');
+    clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('is-visible'),1500);
   }
-
-  function icon(name) {
-    const icons = {
-      play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m9 6 9 6-9 6z"/></svg>',
-      star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z"/></svg>'
-    };
-    return icons[name] || '';
+  function dailyGame(){return GAMES[Math.floor(Date.now()/86400000)%GAMES.length];}
+  function filteredGames(){
+    const query=state.search.toLowerCase();
+    return GAMES.filter(game=>(state.category==='all'||game.category===state.category)&&(!query||[game.title,game.genre,game.desc,game.tag].some(value=>value.toLowerCase().includes(query))));
   }
-
-  function saveFavorites() { localStorage.setItem('dgames-favorites', JSON.stringify(state.favorites)); }
-  function saveRecent() { localStorage.setItem('dgames-recent', JSON.stringify(state.recent.slice(0,6))); }
-  function isFavorite(id) { return state.favorites.includes(id); }
-
-  function toast(message) {
-    const el = $('#toast');
-    el.textContent = message;
-    el.classList.add('is-visible');
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => el.classList.remove('is-visible'), 1800);
+  function createCard(game){
+    return '<article class="dg-game-card" tabindex="0" role="button" data-game-id="'+esc(game.id)+'" aria-label="Play '+esc(game.title)+'">'+
+      '<div class="dg-game-art"><img src="'+esc(game.img)+'" alt="" loading="lazy" decoding="async">'+
+      '<div class="dg-game-hover" aria-hidden="true"><span>'+icon('play')+'</span></div>'+
+      '<button class="dg-save-btn '+(isFavorite(game.id)?'is-on':'')+'" type="button" aria-label="'+(isFavorite(game.id)?'Remove ':'Save ')+esc(game.title)+'">'+icon('star')+'</button></div>'+
+      '<div class="dg-game-copy"><h3>'+esc(game.title)+'</h3><div class="dg-game-meta"><span>'+esc(game.genre)+'</span><span aria-hidden="true">•</span><span>'+esc(game.time)+'</span></div></div></article>';
   }
-
-  function toggleFavorite(id, event) {
+  function emptyState(title,copy,showAction){
+    return '<div class="dg-empty" style="grid-column:1/-1;"><div><strong>'+esc(title)+'</strong><p>'+esc(copy)+'</p>'+(showAction?'<button type="button" class="dg-empty-btn" data-clear-filters>Clear filters</button>':'')+'</div></div>';
+  }
+  function wireCards(root){
+    $$('.dg-game-card',root).forEach(card=>{
+      const id=card.dataset.gameId;
+      card.addEventListener('click',event=>{if(!event.target.closest('.dg-save-btn'))openGame(id);});
+      card.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&!event.target.closest('.dg-save-btn')){event.preventDefault();openGame(id);}});
+      $('.dg-save-btn',card)?.addEventListener('click',event=>toggleFavorite(id,event));
+    });
+  }
+  function renderGames(){
+    const list=filteredGames();
+    const limited=list.slice(0,6);
+    $('#home-games-grid').innerHTML=limited.length?limited.map(createCard).join(''):emptyState('No games found','Try another search or genre.');
+    $('#all-games-grid').innerHTML=list.length?list.map(createCard).join(''):emptyState('Nothing here yet','Try another search or genre.',true);
+    wireCards($('#home-games-grid'));wireCards($('#all-games-grid'));
+    $('#result-count').textContent=list.length+' '+(list.length===1?'game':'games');
+    $('#plays-count').textContent=list.length;
+    $('#saved-count').textContent=state.favorites.length;
+  }
+  function renderFavorites(){
+    const list=state.favorites.map(gameById).filter(Boolean);
+    $('#favorites-count').textContent=list.length+' saved';
+    $('#saved-count').textContent=list.length;
+    $('#favorites-grid').innerHTML=list.length?list.map(createCard).join(''):emptyState('Nothing saved','Tap the star on any game to keep it here.');
+    wireCards($('#favorites-grid'));
+  }
+  function renderFeatured(){
+    const game=dailyGame();
+    $('#featured-image').src=game.img;
+    $('#featured-image').alt=game.title+' artwork';
+    $('#featured-title').textContent=game.title;
+    $('#featured-desc').textContent=game.desc;
+    $('#featured-genre').textContent=game.genre;
+    $('#featured-time').textContent=game.time;
+    $('#featured-tag').textContent=game.tag;
+    $('#featured-play').dataset.gameId=game.id;
+  }
+  function renderAlbums(){
+    $('#albums-grid').innerHTML=ALBUMS.map(album=>'<article class="dg-album"><img src="'+esc(album.img)+'" alt="" loading="lazy" decoding="async"><div><h3>'+esc(album.title)+'</h3><span>'+esc(album.count)+'</span></div></article>').join('');
+  }
+  function upcomingMarkup(limit){
+    return UPCOMING.slice(0,limit).map(item=>'<article class="dg-upcoming-card"><div class="dg-upcoming-art"></div><div><span class="dg-upcoming-status">'+esc(item.status)+'</span><h3>'+esc(item.title)+'</h3><p>'+esc(item.desc)+'</p></div></article>').join('');
+  }
+  function renderUpcoming(){
+    $('#upcoming-grid').innerHTML=upcomingMarkup(UPCOMING.length);
+    $('#home-upcoming-grid').innerHTML=upcomingMarkup(2);
+  }
+  function setCategory(category){
+    state.category=category;
+    $$('[data-category]').forEach(button=>button.classList.toggle('is-active',button.dataset.category===category));
+    renderGames();
+    if(state.view!=='plays')setView('plays');
+  }
+  function setView(view){
+    state.view=view;
+    $$('.dg-view').forEach(panel=>panel.classList.toggle('is-active',panel.id==='view-'+view));
+    $$('[data-view]').forEach(button=>button.classList.toggle('is-active',button.dataset.view===view));
+    $('#page-title').textContent=view==='home'?'Home':view==='plays'?'Games':view==='favorites'?'Saved':'Upcoming';
+    $('#content-scroll').scrollTop=0;
+    if(view==='favorites')renderFavorites();
+  }
+  function toggleFavorite(id,event){
     event?.stopPropagation();
-    state.favorites = isFavorite(id) ? state.favorites.filter(v => v !== id) : [id].concat(state.favorites);
-    saveFavorites();
-    renderGames();
-    toast(isFavorite(id) ? 'Pinned to the flight deck' : 'Removed from pinned');
+    state.favorites=isFavorite(id)?state.favorites.filter(value=>value!==id):[id,...state.favorites];
+    saveFavorites();renderGames();renderFavorites();toast(isFavorite(id)?'Saved':'Removed');
   }
-
-  function dailyGame() {
-    const day = Math.floor(new Date().getTime() / 86400000);
-    return GAMES[day % GAMES.length];
-  }
-
-  function filteredGames() {
-    const query = state.search.toLowerCase();
-    return GAMES.filter(g => {
-      const categoryMatch = state.category === 'all' || g.category === state.category;
-      const queryMatch = !query || [g.title,g.genre,g.desc,g.tag].some(v => v.toLowerCase().includes(query));
-      return categoryMatch && queryMatch;
-    });
-  }
-
-  function createCard(game, index) {
-    return '<article class="dg-card" tabindex="0" role="button" data-game-id="' + esc(game.id) + '" aria-label="Play ' + esc(game.title) + '">' +
-      '<div class="dg-card-media">' +
-        '<img src="' + esc(game.img) + '" alt="" loading="lazy" decoding="async">' +
-        '<span class="dg-card-plate">DG-' + String(index + 1).padStart(2,'0') + ' · ' + esc(game.tag) + '</span>' +
-        '<button class="dg-fav ' + (isFavorite(game.id) ? 'is-on' : '') + '" type="button" aria-label="' + (isFavorite(game.id) ? 'Remove ' : 'Pin ') + esc(game.title) + '">' + icon('star') + '</button>' +
-        '<div class="dg-card-overlay"><button class="dg-card-play" type="button">Launch</button></div>' +
-      '</div>' +
-      '<div class="dg-card-body">' +
-        '<div class="dg-card-topline"><span class="dg-card-code">' + esc(game.genre) + '</span><span class="dg-status-dot"></span></div>' +
-        '<h3 class="dg-card-title">' + esc(game.title) + '</h3>' +
-        '<div class="dg-card-genre">' + esc(game.desc) + '</div>' +
-        '<div class="dg-card-footer"><span class="dg-card-meta">' + esc(game.players) + ' · ' + esc(game.time) + '</span><span class="dg-card-meta">' + esc(game.pace) + '</span></div>' +
-      '</div>' +
-    '</article>';
-  }
-
-  function wireCardEvents(root) {
-    $$('.dg-card', root).forEach(card => {
-      const id = card.getAttribute('data-game-id');
-      card.addEventListener('click', e => {
-        if (e.target.closest('.dg-fav')) return;
-        openGame(id);
-      });
-      card.addEventListener('keydown', e => {
-        if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.dg-fav')) {
-          e.preventDefault();
-          openGame(id);
-        }
-      });
-      const fav = $('.dg-fav', card);
-      fav?.addEventListener('click', e => toggleFavorite(id, e));
-    });
-  }
-
-  function renderGames() {
-    const list = filteredGames();
-    const html = list.length ? list.map((g,i) => createCard(g,i)).join('') :
-      '<div class="dg-empty" style="grid-column:1/-1;"><div><strong>No missions found</strong><p>Try a different search term or category.</p></div></div>';
-    $('#home-games-grid').innerHTML = html;
-    $('#all-games-grid').innerHTML = html;
-    wireCardEvents($('#home-games-grid'));
-    wireCardEvents($('#all-games-grid'));
-    $('#result-count').textContent = list.length + ' OF ' + GAMES.length;
-    $('#plays-count').textContent = list.length;
-  }
-
-  function renderFeatured() {
-    const featured = dailyGame();
-    $('#featured-image').src = featured.img;
-    $('#featured-image').alt = featured.title;
-    $('#featured-title').textContent = featured.title;
-    $('#featured-desc').textContent = featured.desc;
-    $('#featured-genre').textContent = featured.genre;
-    $('#featured-tag').textContent = featured.tag;
-    $('#featured-pace').textContent = featured.pace;
-    $('#featured-time').textContent = featured.time;
-    $('#featured-players').textContent = featured.players;
-    $('#featured-play').dataset.gameId = featured.id;
-    $('#featured-popout').href = featured.url;
-    $('#daily-game-name').textContent = featured.title;
-    $('#daily-game-copy').textContent = featured.desc;
-  }
-
-  function renderRecent() {
-    const recentGames = state.recent.map(gameById).filter(Boolean);
-    const section = $('#recent-section');
-    if (!recentGames.length) {
-      section.hidden = true;
-      return;
-    }
-    section.hidden = false;
-    $('#recent-grid').innerHTML = recentGames.map(game =>
-      '<article class="dg-recent-card">' +
-        '<img src="' + esc(game.img) + '" alt="" loading="lazy" decoding="async">' +
-        '<div><h3 class="dg-recent-title">' + esc(game.title) + '</h3><div class="dg-recent-meta">' + esc(game.genre) + '<br>LAST PLAYED</div></div>' +
-        '<button class="dg-mini-play" type="button" data-recent-id="' + esc(game.id) + '" aria-label="Resume ' + esc(game.title) + '">' + icon('play') + '</button>' +
-      '</article>'
-    ).join('');
-    $$('.dg-mini-play').forEach(btn => btn.addEventListener('click', () => openGame(btn.dataset.recentId)));
-  }
-
-  function renderAlbums(){const el=document.getElementById('albums-grid');if(!el)return;el.innerHTML=ALBUMS.map((a,i)=>'<article class="dg-album" tabindex="0"><div class="dg-album-art"><img src="'+esc(a.img)+'" alt="" loading="lazy" decoding="async"><span>COLLECTION '+String(i+1).padStart(2,'0')+'</span></div><div class="dg-album-body"><h3>'+esc(a.title)+'</h3><p>'+esc(a.copy)+'</p><small>'+esc(a.count)+'</small></div></article>').join('');}
-
-  function renderUpcoming() {
-    $('#upcoming-grid').innerHTML = UPCOMING.map(u =>
-      '<article class="dg-upcoming">' +
-        '<div class="dg-upcoming-code">FLIGHT NOTE ' + esc(u.code) + '</div>' +
-        '<div class="dg-upcoming-title">' + esc(u.title) + '</div>' +
-        '<span class="dg-upcoming-status">' + esc(u.status) + '</span>' +
-        '<p>' + esc(u.desc) + '</p>' +
-      '</article>'
-    ).join('');
-  }
-
-  function setView(view) {
-    state.view = view;
-    $$('.dg-view').forEach(v => v.classList.toggle('is-active', v.id === 'view-' + view));
-    $$('.dg-nav [data-view], .dg-mobile-nav [data-view]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.view === view));
-    const labels = {home:'Home', plays:'Instant Plays', upcoming:'Upcoming'};
-    $('#page-title').firstChild.textContent = labels[view] + ' ';
-    $('#page-sub').textContent = view === 'home' ? 'FIELD CONSOLE / DAILY PLAY' : view === 'plays' ? 'HANGAR / ALL TITLES' : 'FLIGHT PLAN / IN DEVELOPMENT';
-    $('#content-scroll').scrollTop = 0;
-  }
-
-  function setCategory(category) {
-    state.category = category;
-    $$('.dg-category').forEach(btn => btn.classList.toggle('is-active', btn.dataset.category === category));
-    renderGames();
-    if (state.view !== 'plays') setView('plays');
-  }
-
-  function openGame(id) {
-    const game = gameById(id);
-    if (!game) return;
-    state.modalGame = game;
-    state.lastFocus = document.activeElement;
-    state.recent = [game.id].concat(state.recent.filter(v => v !== game.id)).slice(0,6);
-    saveRecent();
-    renderRecent();
-    $('#modal-title').textContent = game.title;
-    $('#modal-genre').textContent = game.genre + ' · ' + game.players;
-    $('#game-iframe').src = game.url;
-    $('#game-modal').classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+  function openGame(id){
+    const game=gameById(id);if(!game)return;
+    state.modalGame=game;state.lastFocus=document.activeElement;
+    $('#modal-title').textContent=game.title;$('#modal-genre').textContent=game.genre+' · '+game.time;
+    $('#game-iframe').src=game.url;$('#game-modal').classList.add('is-open');document.body.classList.add('modal-open');
     $('#modal-close').focus();
   }
-
-  function closeGame() {
-    $('#game-modal').classList.remove('is-open');
-    $('#game-iframe').src = 'about:blank';
-    document.body.style.overflow = '';
-    if (state.lastFocus && state.lastFocus.focus) state.lastFocus.focus({preventScroll:true});
-    state.lastFocus = null;
-    state.modalGame = null;
+  function closeGame(){
+    $('#game-modal').classList.remove('is-open');$('#game-iframe').src='about:blank';document.body.classList.remove('modal-open');
+    if(state.lastFocus&&state.lastFocus.focus)state.lastFocus.focus({preventScroll:true});
+    state.lastFocus=null;state.modalGame=null;
   }
-
-  function reloadGame() {
-    const frame = $('#game-iframe');
-    const current = frame.src;
-    frame.src = 'about:blank';
-    requestAnimationFrame(() => { frame.src = current; });
+  function reloadGame(){
+    const frame=$('#game-iframe'),current=frame.src;frame.src='about:blank';
+    requestAnimationFrame(()=>{frame.src=current;});
   }
-
-  function toggleFullscreen() {
-    const modal = $('#game-modal');
-    if (!document.fullscreenElement) modal.requestFullscreen?.().catch(() => {});
-    else document.exitFullscreen?.().catch(() => {});
+  function toggleFullscreen(){
+    const modal=$('#game-modal');
+    if(!document.fullscreenElement)modal.requestFullscreen?.().catch(()=>{});else document.exitFullscreen?.().catch(()=>{});
   }
-
-  function checkAuth() {
-    fetch('https://authfordev.dverse.fun/api/user', {credentials:'include'})
-      .then(res => res.ok ? res.json() : null)
-      .then(user => {
-        if (!user) return;
-        $('#btn-signin').hidden = true;
-        $('#btn-signout').hidden = false;
-        $('#user-profile').classList.add('is-visible');
-        $('#user-name').textContent = user.name || 'Player';
-        $('#user-credits').textContent = String(user.credits || 0) + ' Credits';
-        if (user.avatarUrl) $('#user-avatar').src = user.avatarUrl;
-      })
-      .catch(() => {});
-  }
-
-  function bindNavigation() {
-    $$('.dg-nav [data-view], .dg-mobile-nav [data-view]').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
-    $$('.dg-category').forEach(btn => btn.addEventListener('click', () => setCategory(btn.dataset.category)));
-
-    $('[data-view-action="plays"]')?.addEventListener('click', () => setView('plays'));
-
-    $('#search-input').addEventListener('input', e => {
-      state.search = e.target.value.trim();
-      renderGames();
-      if (state.search && state.view !== 'plays') setView('plays');
+  function bindSearch(){
+    const input=$('#search-input'),shell=$('#search-shell');
+    $('#search-toggle').addEventListener('click',()=>{
+      const open=shell.classList.toggle('is-open');$('#search-toggle').setAttribute('aria-expanded',String(open));
+      if(open)requestAnimationFrame(()=>input.focus());
     });
-    $('#search-focus').addEventListener('click', () => $('#search-input').focus());
-
-    $('#featured-play').addEventListener('click', () => openGame($('#featured-play').dataset.gameId));
-    $('#modal-close').addEventListener('click', closeGame);
-    $('#modal-home').addEventListener('click', closeGame);
-    $('#modal-reload').addEventListener('click', reloadGame);
-    $('#modal-popout').addEventListener('click', () => { if (state.modalGame) window.open(state.modalGame.url, '_blank', 'noopener,noreferrer'); });
-    $('#modal-fullscreen').addEventListener('click', toggleFullscreen);
-    $('#game-modal').addEventListener('click', e => { if (e.target === $('#game-modal')) closeGame(); });
-
-    $('#btn-signin').addEventListener('click', () => { location.href = 'https://authfordev.dverse.fun/login?redirect_url=' + encodeURIComponent(location.href.split('?')[0]); });
-    $('#btn-signout').addEventListener('click', () => { location.href = 'https://authfordev.dverse.fun/logout?redirect_url=' + encodeURIComponent(location.href); });
+    $('#search-clear').addEventListener('click',()=>{
+      input.value='';state.search='';$('#search-clear').hidden=true;renderGames();input.focus();
+    });
+    input.addEventListener('input',event=>{
+      state.search=event.target.value.trim();$('#search-clear').hidden=!state.search;renderGames();
+      if(state.search&&state.view!=='plays')setView('plays');
+    });
   }
-
-  function bindKeyboard() {
-    document.addEventListener('keydown', e => {
-      const modalOpen = $('#game-modal').classList.contains('is-open');
-      if (e.key === '/' && !modalOpen && document.activeElement !== $('#search-input')) {
-        e.preventDefault(); $('#search-input').focus(); return;
-      }
-      if (e.key === 'Escape' && modalOpen) { e.preventDefault(); closeGame(); return; }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault(); $('#search-input').focus(); return;
-      }
-      if (!modalOpen && ['1','2','3'].includes(e.key)) {
-        setView(e.key === '1' ? 'home' : e.key === '2' ? 'plays' : 'upcoming');
+  function bindNavigation(){
+    $$('[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
+    $$('[data-category]').forEach(button=>button.addEventListener('click',()=>setCategory(button.dataset.category)));
+    $('[data-view-action="plays"]')?.addEventListener('click',()=>setView('plays'));
+    $('[data-view-action="upcoming"]')?.addEventListener('click',()=>setView('upcoming'));
+    $('#featured-play').addEventListener('click',()=>openGame($('#featured-play').dataset.gameId));
+    $('#modal-close').addEventListener('click',closeGame);
+    $('#modal-reload').addEventListener('click',reloadGame);
+    $('#modal-fullscreen').addEventListener('click',toggleFullscreen);
+    $('#game-modal').addEventListener('click',event=>{if(event.target===$('#game-modal'))closeGame();});
+    document.addEventListener('click',event=>{
+      if(event.target.closest('[data-clear-filters]')){
+        state.search='';state.category='all';$('#search-input').value='';$('#search-clear').hidden=true;
+        $$('[data-category]').forEach(button=>button.classList.toggle('is-active',button.dataset.category==='all'));renderGames();
       }
     });
   }
-
-  window.addEventListener('message', e => {
-    if (e?.data?.type === 'dgames:home') closeGame();
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){
+      if($('#game-modal').classList.contains('is-open'))closeGame();
+      else if($('#search-shell').classList.contains('is-open')){$('#search-shell').classList.remove('is-open');$('#search-toggle').setAttribute('aria-expanded','false');}
+    }
   });
-
-  document.addEventListener('fullscreenchange', () => {
-    const btn = $('#modal-fullscreen');
-    const active = !!document.fullscreenElement;
-    btn.textContent = active ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
-    btn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+  document.addEventListener('fullscreenchange',()=>{
+    const btn=$('#modal-fullscreen'),active=!!document.fullscreenElement;
+    btn.innerHTML=active?icon('close'):'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4"/></svg>';
+    btn.setAttribute('aria-label',active?'Exit fullscreen':'Enter fullscreen');
   });
-
-  renderFeatured();
-  renderGames();
-  renderRecent();
-  renderAlbums();
-  renderUpcoming();
-  bindNavigation();
-  bindKeyboard();
-  checkAuth();
+  renderFeatured();renderGames();renderFavorites();renderAlbums();renderUpcoming();bindSearch();bindNavigation();
 })();

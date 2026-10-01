@@ -3,199 +3,144 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#061321">
-<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#08111b">
+<meta name="color-scheme" content="dark">
 <meta name="description" content="D'Games — instant-play browser games from D'Verse.">
-<title>D'Games — Field Console</title>
+<title>D'Games</title>
 <link rel="stylesheet" href="/assets/dgames-home.css">
 </head>
 <body>
-<div class="dg-home">
-  <aside class="dg-rail" aria-label="D'Games navigation">
-    <div class="dg-brand-lockup">
-      <div class="dg-brand-mark">D</div>
-      <div>
-        <div class="dg-brand-name">D'Games</div>
-        <div class="dg-brand-sub">D'Verse Play Deck</div>
+<div class="dg-app">
+  <aside class="dg-sidebar" aria-label="Primary navigation">
+    <a class="dg-brand" href="/" aria-label="D'Games home">
+      <span class="dg-brand-mark">D</span>
+      <span class="dg-brand-word">D'Games</span>
+    </a>
+    <nav class="dg-sidebar-nav">
+      <button type="button" class="dg-nav-item is-active" data-view="home"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></span><span>Home</span></button>
+      <button type="button" class="dg-nav-item" data-view="plays"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span><span>Games</span><span class="dg-count" id="plays-count">10</span></button>
+      <button type="button" class="dg-nav-item" data-view="upcoming"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span>Upcoming</span></button>
+      <button type="button" class="dg-nav-item" data-view="favorites"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 4Z"/></svg></span><span>Saved</span><span class="dg-count" id="saved-count">0</span></button>
+    </nav>
+    <div class="dg-sidebar-divider"></div>
+    <div class="dg-filter-block">
+      <p class="dg-sidebar-label">Genres</p>
+      <div class="dg-sidebar-filters">
+        <button type="button" class="dg-filter is-active" data-category="all">All games</button>
+        <button type="button" class="dg-filter" data-category="arcade">Arcade</button>
+        <button type="button" class="dg-filter" data-category="puzzle">Puzzle</button>
+        <button type="button" class="dg-filter" data-category="action">Action</button>
+        <button type="button" class="dg-filter" data-category="classic">Classic</button>
       </div>
     </div>
-
-    <div>
-      <div class="dg-rail-section-label">Navigate</div>
-      <nav class="dg-nav">
-        <button type="button" data-view="home" class="is-active">
-          <span class="dg-iconbox">⌂</span><span class="dg-nav-text">Home</span>
-        </button>
-        <button type="button" data-view="plays">
-          <span class="dg-iconbox">▶</span><span class="dg-nav-text">Instant Plays</span><span class="dg-nav-count" id="plays-count">10</span>
-        </button>
-        <button type="button" data-view="upcoming">
-          <span class="dg-iconbox">◷</span><span class="dg-nav-text">Upcoming</span>
-        </button>
-      </nav>
-    </div>
-
-    <div>
-      <div class="dg-rail-section-label">Categories</div>
-      <div class="dg-nav">
-        <button type="button" class="dg-category is-active" data-category="all"><span class="dg-iconbox">A</span><span class="dg-category-label">All Titles</span></button>
-        <button type="button" class="dg-category" data-category="arcade"><span class="dg-iconbox">A</span><span class="dg-category-label">Arcade</span></button>
-        <button type="button" class="dg-category" data-category="puzzle"><span class="dg-iconbox">P</span><span class="dg-category-label">Puzzle</span></button>
-        <button type="button" class="dg-category" data-category="action"><span class="dg-iconbox">X</span><span class="dg-category-label">Action</span></button>
-        <button type="button" class="dg-category" data-category="classic"><span class="dg-iconbox">C</span><span class="dg-category-label">Classic</span></button>
-      </div>
-    </div>
-
-    <div class="dg-rail-spacer"></div>
-
-    <div class="dg-rail-note">
-      <strong>Built for the short run.</strong>
-      <p>No download. No queue. Pick a mission and go.</p>
-    </div>
-
-    <div class="dg-auth">
-      <div id="user-profile" class="dg-user">
-        <img id="user-avatar" src="https://placehold.co/64x64/e8e2d4/202729?text=D" alt="User avatar">
-        <div class="dg-user-copy">
-          <div id="user-name" class="dg-user-name">Player</div>
-          <div id="user-credits" class="dg-user-credits">0 Credits</div>
-        </div>
-      </div>
-      <button id="btn-signin" type="button">Sign in to D'Verse</button>
-      <button id="btn-signout" type="button" hidden>Sign out</button>
-      <a class="dg-rail-link" href="https://d-verse.in" target="_blank" rel="noopener noreferrer"><span class="dg-iconbox">↗</span><span class="dg-category-label">D'Verse Portal</span></a>
-    </div>
+    <div class="dg-sidebar-spacer"></div>
+    <a class="dg-verse-link" href="https://d-verse.in" target="_blank" rel="noopener noreferrer">D'Verse</a>
   </aside>
 
   <main class="dg-main">
-    <header class="dg-topbar">
-      <div class="dg-topbar-copy">
-        <div class="dg-kicker"><span class="dg-dot"></span>D'Games / <span id="page-sub">FIELD CONSOLE / DAILY PLAY</span></div>
-        <h1 id="page-title" class="dg-page-title">Home <span>Field Console</span></h1>
+    <header class="dg-header">
+      <div class="dg-header-title">
+        <span class="dg-mobile-brand">D'Games</span>
+        <span id="page-title">Home</span>
       </div>
-      <div class="dg-search-wrap">
-        <label class="dg-search" aria-label="Search games">
-          <span aria-hidden="true">⌕</span>
-          <input id="search-input" type="search" autocomplete="off" inputmode="search" placeholder="Search titles, genres, mechanics…" aria-label="Search D'Games">
-          <kbd class="dg-search-key">/</kbd>
-        </label>
+      <div class="dg-search" id="search-shell">
+        <span class="dg-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></span>
+        <input id="search-input" type="search" autocomplete="off" inputmode="search" placeholder="Search games" aria-label="Search D'Games">
+        <button id="search-clear" class="dg-search-clear" type="button" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 7 10 10M17 7 7 17"/></svg></button>
       </div>
-      <div class="dg-top-actions">
-        <button id="search-focus" class="dg-plain-btn" type="button">Search</button>
-        <button class="dg-outline-btn dg-desktop-only" type="button" onclick="document.querySelector('[data-view=plays]').click()">Browse deck</button>
+      <div class="dg-header-actions">
+        <button id="search-toggle" class="dg-icon-btn dg-mobile-search" type="button" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
       </div>
     </header>
 
-    <div id="content-scroll" class="dg-scroll">
-      <section id="view-home" class="dg-view is-active" aria-labelledby="home-heading">
-        <article class="dg-hero">
-          <div class="dg-hero-copy">
-            <span class="dg-eyebrow"><span class="dg-dot"></span> Daily field test · instant play</span>
-            <h2 id="featured-title">Echo Drift</h2>
-            <p id="featured-desc"></p>
-            <div class="dg-hero-meta">
-              <span id="featured-genre" class="dg-chip">Arcade</span>
-              <span class="dg-chip"><span id="featured-pace">FAST</span></span>
-              <span class="dg-chip"><span id="featured-time">2–5 MIN</span></span>
-              <span class="dg-chip"><span id="featured-players">1P</span></span>
-            </div>
-            <div class="dg-hero-actions">
-              <button id="featured-play" class="dg-play-btn" type="button">Launch mission →</button>
-              <a id="featured-popout" class="dg-tab-btn" href="#" target="_blank" rel="noopener noreferrer">Open in tab</a>
-            </div>
-            <div class="dg-instrument-strip" aria-label="D'Games status">
-              <div class="dg-instrument"><div class="dg-instrument-label">Playable</div><div class="dg-instrument-value">10</div></div>
-              <div class="dg-instrument"><div class="dg-instrument-label">Categories</div><div class="dg-instrument-value">04</div></div>
-              <div class="dg-instrument"><div class="dg-instrument-label">Install</div><div class="dg-instrument-value">0</div></div>
-              <div class="dg-instrument"><div class="dg-instrument-label">Mode</div><div class="dg-instrument-value">LIVE</div></div>
-            </div>
+    <div id="content-scroll" class="dg-content">
+      <section id="view-home" class="dg-view is-active" aria-labelledby="home-featured-title">
+        <article class="dg-featured">
+          <div class="dg-featured-art">
+            <img id="featured-image" src="/assets/covers/neon-galaxy.svg" alt="" fetchpriority="high">
+            <span id="featured-tag" class="dg-featured-tag">Featured</span>
           </div>
-          <div class="dg-hero-media">
-            <img id="featured-image" src="assets/covers/neon-galaxy.svg" alt="Neon Galaxy featured artwork">
-            <div id="featured-tag" class="dg-hero-stamp">SPOTLIGHT</div>
+          <div class="dg-featured-copy">
+            <div class="dg-eyebrow">Featured today</div>
+            <h1 id="featured-title">Neon Galaxy</h1>
+            <p id="featured-desc"></p>
+            <div class="dg-featured-meta">
+              <span id="featured-genre">Arcade</span><span aria-hidden="true">•</span><span id="featured-time">3–8 min</span>
+            </div>
+            <div class="dg-featured-actions">
+              <button id="featured-play" class="dg-primary-btn" type="button">Play now <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
+            </div>
           </div>
         </article>
 
-        <section id="recent-section" class="dg-section" hidden>
-          <div class="dg-section-head">
-            <div><h2 class="dg-section-title">Continue flight</h2><p class="dg-section-sub">Your most recent launches</p></div>
-          </div>
-          <div id="recent-grid" class="dg-recent-grid"></div>
+        <section class="dg-section">
+          <div class="dg-section-header"><h2>Games</h2><button type="button" class="dg-text-btn" data-view-action="plays">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
+          <div id="home-games-grid" class="dg-game-grid"></div>
         </section>
 
         <section class="dg-section">
-          <div class="dg-section-head">
-            <div><h2 class="dg-section-title">Hangar deck</h2><p class="dg-section-sub">Pick a title and launch instantly</p></div>
-            <button class="dg-section-action" type="button" data-view-action="plays">Browse all →</button>
-          </div>
-          <div id="home-games-grid" class="dg-grid"></div>
+          <div class="dg-section-header"><h2>Collections</h2></div>
+          <div id="albums-grid" class="dg-albums"></div>
         </section>
-
-        <section class="dg-section dg-albums-section"><div class="dg-section-head"><div><h2 class="dg-section-title">Albums</h2><p class="dg-section-sub">Curated collections for different play moods</p></div><button class="dg-section-action" type="button">View all →</button></div><div id="albums-grid" class="dg-albums-grid"></div></section>
 
         <section class="dg-section">
-          <div class="dg-section-head">
-            <div><h2 class="dg-section-title">Daily dispatch</h2><p class="dg-section-sub">One game rotated every day</p></div>
-          </div>
-          <div class="dg-dispatch">
-            <div class="dg-dispatch-panel dark">
-              <div class="dg-dispatch-label">Today's test</div>
-              <div id="daily-game-name" class="dg-dispatch-title">Echo Drift</div>
-              <p id="daily-game-copy" class="dg-dispatch-copy"></p>
-            </div>
-            <div class="dg-dispatch-panel">
-              <div class="dg-dispatch-label">Control map</div>
-              <div class="dg-dispatch-title">Touch + keyboard</div>
-              <p class="dg-dispatch-copy">Every mission is tuned for short sessions, responsive input, and a safe restart path.</p>
-            </div>
-          </div>
+          <div class="dg-section-header"><h2>Coming soon</h2><button type="button" class="dg-text-btn" data-view-action="upcoming">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
+          <div id="home-upcoming-grid" class="dg-upcoming-grid compact"></div>
         </section>
       </section>
 
-      <section id="view-plays" class="dg-view" aria-labelledby="plays-heading">
-        <div class="dg-results-bar"><span>HANGAR / ALL INSTANT PLAYS</span><span id="result-count" class="dg-results-strong">10 OF 10</span></div>
-        <div id="all-games-grid" class="dg-grid"></div>
-      </section>
-
-      <section id="view-upcoming" class="dg-view">
-        <div class="dg-section-head">
-          <div><h2 class="dg-section-title">Upcoming flight plan</h2><p class="dg-section-sub">Experiments currently being prepared</p></div>
+      <section id="view-plays" class="dg-view" aria-labelledby="games-heading">
+        <div class="dg-page-heading">
+          <div><span class="dg-eyebrow">Library</span><h1 id="games-heading">All games</h1></div>
+          <span id="result-count" class="dg-result-count">10 games</span>
         </div>
+        <div class="dg-mobile-filters" aria-label="Game genres">
+          <button type="button" class="dg-filter-chip is-active" data-category="all">All</button>
+          <button type="button" class="dg-filter-chip" data-category="arcade">Arcade</button>
+          <button type="button" class="dg-filter-chip" data-category="puzzle">Puzzle</button>
+          <button type="button" class="dg-filter-chip" data-category="action">Action</button>
+          <button type="button" class="dg-filter-chip" data-category="classic">Classic</button>
+        </div>
+        <div id="all-games-grid" class="dg-game-grid"></div>
+      </section>
+
+      <section id="view-favorites" class="dg-view" aria-labelledby="favorites-heading">
+        <div class="dg-page-heading">
+          <div><span class="dg-eyebrow">Your picks</span><h1 id="favorites-heading">Saved games</h1></div>
+          <span id="favorites-count" class="dg-result-count">0 saved</span>
+        </div>
+        <div id="favorites-grid" class="dg-game-grid"></div>
+      </section>
+
+      <section id="view-upcoming" class="dg-view" aria-labelledby="upcoming-heading">
+        <div class="dg-page-heading"><div><span class="dg-eyebrow">Next</span><h1 id="upcoming-heading">Coming soon</h1></div></div>
         <div id="upcoming-grid" class="dg-upcoming-grid"></div>
       </section>
     </div>
   </main>
 
   <nav class="dg-mobile-nav" aria-label="Mobile navigation">
-    <button type="button" data-view="home" class="is-active">Home</button>
-    <button type="button" data-view="plays">Plays</button>
-    <button type="button" data-view="upcoming">Upcoming</button>
+    <button type="button" class="is-active" data-view="home"><span class="dg-nav-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></span><span>Home</span></button>
+    <button type="button" data-view="plays"><span class="dg-nav-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span><span>Games</span></button>
+    <button type="button" data-view="favorites"><span class="dg-nav-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 4Z"/></svg></span><span>Saved</span></button>
+    <button type="button" data-view="upcoming"><span class="dg-nav-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span>Upcoming</span></button>
   </nav>
 </div>
 
-<div id="game-modal" class="dg-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-genre">
+<div id="game-modal" class="dg-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="dg-modal-bar">
     <div class="dg-modal-left">
-      <button id="modal-close" class="dg-modal-btn" type="button">Back</button>
-      <div class="dg-modal-title">
-        <strong id="modal-title">Game</strong>
-        <span id="modal-genre">Instant Play</span>
-      </div>
+      <button id="modal-close" class="dg-modal-icon" type="button" aria-label="Back to games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 6 8 12l6 6M9 12h10"/></svg></button>
+      <div class="dg-modal-heading"><strong id="modal-title">Game</strong><span id="modal-genre">Instant play</span></div>
     </div>
     <div class="dg-modal-actions">
-      <button id="modal-reload" class="dg-modal-btn" data-action="reload" type="button">↻ Restart</button>
-      <button id="modal-popout" class="dg-modal-btn" data-action="popout" type="button">Open tab</button>
-      <button id="modal-fullscreen" class="dg-modal-btn" type="button" aria-label="Enter fullscreen">⛶ Fullscreen</button>
-      <button id="modal-home" class="dg-modal-btn" type="button">Deck</button>
+      <button id="modal-reload" class="dg-modal-icon" type="button" aria-label="Restart game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11a8 8 0 1 0 1 4"/><path d="M20 5v6h-6"/></svg></button>
+      <button id="modal-fullscreen" class="dg-modal-icon" type="button" aria-label="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4"/></svg></button>
     </div>
   </div>
-  <div class="dg-modal-stage">
-    <iframe id="game-iframe" title="D'Games player" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
-    <div class="dg-modal-hint">ESC · BACK &nbsp;&nbsp; // &nbsp;&nbsp; GAME INPUT STAYS INSIDE FRAME</div>
-  </div>
+  <div class="dg-modal-stage"><iframe id="game-iframe" title="D'Games player" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe></div>
 </div>
 <div id="toast" class="dg-toast" role="status" aria-live="polite"></div>
-
 <script src="/assets/dgames-home.js" defer></script>
 </body>
 </html>
