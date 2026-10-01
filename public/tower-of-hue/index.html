@@ -9,8 +9,9 @@
 .hud{position:fixed;left:50%;top:88px;transform:translateX(-50%);z-index:4;text-align:center;color:#f4efe2;padding:8px 13px;border:1px solid rgba(242,238,224,.2);border-radius:10px;background:rgba(13,21,23,.72);backdrop-filter:blur(8px)}.hud small{display:block;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em;color:#98a19d}.hud b{display:block;margin-top:4px;font:900 24px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;font:800 7px/1 JetBrains Mono,monospace;color:#a6afab}
 .overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,8,9,.8);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,25,27,.96);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#83a36f;letter-spacing:.16em}.panel h1{margin:10px 0 8px;font:900 42px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
 </style>
+<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
-<body>
+<body class="dg-retro-skin" data-game="tower">
 <canvas id="canvas" aria-label="Tower of Hue game"></canvas><div class="hud"><small>TOWER HEIGHT</small><b id="score">0</b><span>BEST <i id="best">0</i> · TAP TO PLACE</span></div>
 <div id="start" class="overlay"><div class="panel"><div class="code">DG-06 · Puzzle / Physics</div><h1>TOWER OF HUE</h1><p>Place the moving block over the previous layer. Every imperfect placement trims the tower. Build high before the overhang becomes impossible.</p><button id="startBtn">Start Stack</button></div></div>
 <div id="over" class="overlay hidden"><div class="panel"><div class="code">STRUCTURE LOST</div><h1>TOPPLE</h1><p id="result">Height 0</p><button id="againBtn">Build Again</button></div></div>
