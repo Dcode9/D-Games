@@ -27,7 +27,7 @@ function over(){running=false;document.getElementById('result').textContent='Sco
 function place(x,y){if(running)ripples.push(new Ripple(x,y))}
 c.addEventListener('pointerdown',e=>{e.preventDefault();place(e.clientX,e.clientY)});
 function frame(t){const dt=Math.min(.05,(t-last)/16.67);last=t;ctx.fillStyle='rgba(11,20,23,.28)';ctx.fillRect(0,0,W,H);if(running){for(const d of dots)d.update();for(let ri=ripples.length-1;ri>=0;ri--){const r=ripples[ri];r.update();for(const d of dots){const dx=r.x-d.x,dy=r.y-d.y,dist=Math.hypot(dx,dy);if(dist<r.r){if(d.bad&&dist<16){d.spawn();r.life=.12;lives--;combo=1;sync();if(lives<=0){over();break}}else if(!d.bad&&dist<20){d.spawn();score+=combo;combo=Math.min(12,combo+1);r.flash=1;sync()}}else if(dist<r.r+55&&!d.bad){d.x+=dx*.006*dt;d.y+=dy*.006*dt}}}if(r.life<=0)ripples.splice(ri,1)}dots.forEach(d=>{ctx.fillStyle=d.color;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()});ripples.forEach(r=>{ctx.strokeStyle=r.flash>0?'rgba(242,239,224,.95)':'rgba(104,214,189,'+Math.max(0,r.life)+')';ctx.lineWidth=r.flash>0?4:2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke()})}raf=requestAnimationFrame(frame)}
-document.getElementById('againBtn').addEventListener('click',startGame);raf=requestAnimationFrame(frame);
+document.getElementById('startBtn').addEventListener('pointerup',e=>{e.preventDefault();startGame()});document.getElementById('againBtn').addEventListener('click',startGame);raf=requestAnimationFrame(frame);
 </script>
 <script src="/assets/dgames-ui.js" defer></script>
 </body>
