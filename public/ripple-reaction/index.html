@@ -1,160 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ripple Reaction</title>
-    <style>
-        body { margin: 0; background: #1a1a2e; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; }
-        #ui {
-            position: absolute; top: 20px; left: 20px; color: #e94560; font-size: 24px;
-            text-shadow: 0 0 5px #e94560; pointer-events: none;
-        }
-        #instructions {
-            position: absolute; bottom: 20px; width: 100%; text-align: center; color: #aaa;
-            pointer-events: none; font-size: 14px;
-        }
-    </style>
-  <link rel="stylesheet" href="/assets/dgames-ui.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ripple Reaction — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1417}body{touch-action:none;font-family:Inter,system-ui,sans-serif}canvas{width:100%;height:100%;display:block}
+.hud{position:fixed;left:16px;top:88px;z-index:4;color:#f4efe2;padding:10px 12px;border:1px solid rgba(242,238,224,.22);border-radius:10px;background:rgba(9,17,20,.76);backdrop-filter:blur(9px)}.hud small{display:block;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em}.hud b{display:block;margin-top:4px;font:900 22px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace}
+.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,10,12,.82);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,28,31,.95);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#74cdb8;letter-spacing:.16em;text-transform:uppercase}.panel h1{margin:10px 0 7px;font:900 40px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
+</style>
 </head>
 <body>
-    <div id="ui">Score: <span id="s">0</span></div>
-    <div id="instructions">Click to create a Gravity Well. Collect Blue dots. Avoid Red dots.</div>
-    <canvas id="c"></canvas>
-    <script>
-        const c = document.getElementById('c');
-        const ctx = c.getContext('2d');
-        let w, h;
-
-        let score = 0;
-        let particles = [];
-        let ripples = [];
-        
-        // Colors
-        const GOOD = '#4dfff3';
-        const BAD = '#e94560';
-        
-        function resize() {
-            w = c.width = window.innerWidth;
-            h = c.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Dot {
-            constructor() {
-                this.x = Math.random() * w;
-                this.y = Math.random() * h;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                this.type = Math.random() > 0.2 ? 'good' : 'bad';
-                this.rad = this.type === 'good' ? 4 : 6;
-                this.color = this.type === 'good' ? GOOD : BAD;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // Bounce
-                if(this.x < 0 || this.x > w) this.vx *= -1;
-                if(this.y < 0 || this.y > h) this.vy *= -1;
-                
-                // Interaction with ripples
-                ripples.forEach(r => {
-                    const dx = r.x - this.x;
-                    const dy = r.y - this.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist < r.size && this.type === 'good') {
-                        // Suck in good particles
-                        this.x += dx * 0.1;
-                        this.y += dy * 0.1;
-                        if(dist < 10) {
-                            this.respawn();
-                            score++;
-                            document.getElementById('s').innerText = score;
-                            // Visual flair
-                            r.flash = true;
-                        }
-                    } else if (dist < r.size && this.type === 'bad') {
-                        // Repel bad particles? Or Game over?
-                        // Let's make it game over if they touch the center
-                        if(dist < 10) {
-                           score = 0;
-                           document.getElementById('s').innerText = score;
-                           document.body.style.background = '#500';
-                           setTimeout(() => document.body.style.background = '#1a1a2e', 100);
-                           this.respawn();
-                           // Remove all ripples
-                           ripples = [];
-                        }
-                    }
-                });
-            }
-            respawn() {
-                this.x = Math.random() * w;
-                this.y = Math.random() * h;
-                this.type = Math.random() > 0.2 ? 'good' : 'bad';
-                this.color = this.type === 'good' ? GOOD : BAD;
-                this.rad = this.type === 'good' ? 4 : 6;
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.rad, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
-
-        class Ripple {
-            constructor(x, y) {
-                this.x = x; this.y = y;
-                this.size = 0;
-                this.maxSize = 150;
-                this.life = 1;
-                this.flash = false;
-            }
-            update() {
-                if(this.size < this.maxSize) this.size += 5;
-                this.life -= 0.01;
-                this.flash = false; // Reset flash
-            }
-            draw() {
-                ctx.strokeStyle = `rgba(77, 255, 243, ${this.life})`;
-                if(this.flash) ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                ctx.stroke();
-            }
-        }
-
-        // Init
-        for(let i=0; i<50; i++) particles.push(new Dot());
-
-        window.addEventListener('mousedown', e => ripples.push(new Ripple(e.clientX, e.clientY)));
-        window.addEventListener('touchstart', e => {
-            e.preventDefault();
-            ripples.push(new Ripple(e.touches[0].clientX, e.touches[0].clientY));
-        }, {passive: false});
-
-        function loop() {
-            requestAnimationFrame(loop);
-            // Trail effect
-            ctx.fillStyle = 'rgba(26, 26, 46, 0.2)';
-            ctx.fillRect(0, 0, w, h);
-
-            particles.forEach(p => { p.update(); p.draw(); });
-            
-            ripples.forEach((r, i) => {
-                r.update();
-                r.draw();
-                if(r.life <= 0) ripples.splice(i, 1);
-            });
-        }
-        loop();
-    </script>
-  <script src="/assets/dgames-ui.js" defer></script>
+<canvas id="c" aria-label="Ripple Reaction game"></canvas>
+<div class="hud"><small>REACTION SCORE</small><b id="score">0</b><span>COMBO ×<i id="combo">1</i> · LIVES <i id="lives">3</i></span></div>
+<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn">Begin Reaction</button></div></div>
+<div id="over" class="overlay hidden"><div class="panel"><div class="code">FIELD COLLAPSE</div><h1>REACTION LOST</h1><p id="result">Score 0</p><button id="againBtn">Restart Field</button></div></div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,running=false,score=0,combo=1,lives=3,dots=[],ripples=[],last=performance.now(),raf=0;
+function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+class Dot{constructor(){this.spawn()}spawn(){this.x=20+Math.random()*(W-40);this.y=90+Math.random()*Math.max(80,H-130);this.vx=(Math.random()-.5)*1.5;this.vy=(Math.random()-.5)*1.5;this.bad=Math.random()<.2;this.r=this.bad?7:5;this.color=this.bad?'#dc6b63':'#68d6bd'}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<this.r||this.x>W-this.r)this.vx*=-1;if(this.y<75+this.r||this.y>H-30-this.r)this.vy*=-1}}
+class Ripple{constructor(x,y){this.x=x;this.y=y;this.r=0;this.life=1;this.flash=0}update(){this.r+=5.8;this.life-=.018;this.flash=Math.max(0,this.flash-.08)}}
+function sync(){document.getElementById('score').textContent=score;document.getElementById('combo').textContent=combo;document.getElementById('lives').textContent=lives}
+function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');sync()}
+function over(){running=false;document.getElementById('result').textContent='Score '+score+' · Best chain ×'+combo;document.getElementById('over').classList.remove('hidden')}
+function place(x,y){if(running)ripples.push(new Ripple(x,y))}
+c.addEventListener('pointerdown',e=>{e.preventDefault();place(e.clientX,e.clientY)});
+function frame(t){const dt=Math.min(.05,(t-last)/16.67);last=t;ctx.fillStyle='rgba(11,20,23,.28)';ctx.fillRect(0,0,W,H);if(running){for(const d of dots)d.update();for(let ri=ripples.length-1;ri>=0;ri--){const r=ripples[ri];r.update();for(const d of dots){const dx=r.x-d.x,dy=r.y-d.y,dist=Math.hypot(dx,dy);if(dist<r.r){if(d.bad&&dist<16){d.spawn();r.life=.12;lives--;combo=1;sync();if(lives<=0){over();break}}else if(!d.bad&&dist<20){d.spawn();score+=combo;combo=Math.min(12,combo+1);r.flash=1;sync()}}else if(dist<r.r+55&&!d.bad){d.x+=dx*.006*dt;d.y+=dy*.006*dt}}}if(r.life<=0)ripples.splice(ri,1)}dots.forEach(d=>{ctx.fillStyle=d.color;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()});ripples.forEach(r=>{ctx.strokeStyle=r.flash>0?'rgba(242,239,224,.95)':'rgba(104,214,189,'+Math.max(0,r.life)+')';ctx.lineWidth=r.flash>0?4:2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke()})}raf=requestAnimationFrame(frame)}
+document.getElementById('startBtn').addEventListener('click',()=>{reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)});document.getElementById('againBtn').addEventListener('click',()=>{reset();last=performance.now()});raf=requestAnimationFrame(frame);
+</script>
+<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>

@@ -1,223 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tower of Hue</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
-        canvas { display: block; }
-        #ui {
-            position: absolute; top: 10%; width: 100%; text-align: center;
-            pointer-events: none; opacity: 0.8;
-        }
-        #score { font-size: 80px; color: white; font-weight: bold; text-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #msg { font-size: 20px; color: #aaa; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;}
-    </style>
-  <link rel="stylesheet" href="/assets/dgames-ui.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tower of Hue — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0e1517}body{touch-action:none;font-family:Inter,system-ui,sans-serif}canvas{width:100%;height:100%;display:block}
+.hud{position:fixed;left:50%;top:88px;transform:translateX(-50%);z-index:4;text-align:center;color:#f4efe2;padding:8px 13px;border:1px solid rgba(242,238,224,.2);border-radius:10px;background:rgba(13,21,23,.72);backdrop-filter:blur(8px)}.hud small{display:block;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em;color:#98a19d}.hud b{display:block;margin-top:4px;font:900 24px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;font:800 7px/1 JetBrains Mono,monospace;color:#a6afab}
+.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,8,9,.8);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,25,27,.96);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#83a36f;letter-spacing:.16em}.panel h1{margin:10px 0 8px;font:900 42px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
+</style>
 </head>
 <body>
-    <div id="ui">
-        <div id="score">0</div>
-        <div id="msg">Tap to Stack</div>
-    </div>
-    <canvas id="canvas"></canvas>
-
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let w, h;
-        
-        let score = 0;
-        let blocks = [];
-        let debris = [];
-        let hue = 0;
-        let state = 'start'; // start, play, over
-        
-        const INITIAL_WIDTH = 300;
-        const BLOCK_HEIGHT = 40;
-        const SPEED = 5;
-
-        let currentBlock = null;
-        let direction = 1; // 1 or -1
-        let offset = 0; // Current moving offset
-
-        function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            if(state === 'start') reset();
-        }
-        window.addEventListener('resize', resize);
-
-        function reset() {
-            blocks = [];
-            debris = [];
-            score = 0;
-            hue = Math.random() * 360;
-            document.getElementById('score').innerText = score;
-            document.getElementById('msg').innerText = "Tap to Stack";
-            
-            // Base block
-            blocks.push({
-                x: (w - INITIAL_WIDTH) / 2,
-                y: h - 100,
-                w: INITIAL_WIDTH,
-                h: BLOCK_HEIGHT,
-                color: `hsl(${hue}, 60%, 50%)`
-            });
-            
-            spawnNext();
-            state = 'play';
-        }
-
-        function spawnNext() {
-            const prev = blocks[blocks.length - 1];
-            hue += 10;
-            
-            currentBlock = {
-                x: -prev.w, // Start off screen
-                y: prev.y - BLOCK_HEIGHT,
-                w: prev.w,
-                h: BLOCK_HEIGHT,
-                color: `hsl(${hue}, 60%, 50%)`
-            };
-            
-            // Random start side
-            direction = Math.random() > 0.5 ? 1 : -1;
-            if (direction === -1) currentBlock.x = w;
-            else currentBlock.x = -currentBlock.w;
-        }
-
-        function placeBlock() {
-            if(state !== 'play') {
-                reset();
-                return;
-            }
-
-            const prev = blocks[blocks.length - 1];
-            const curr = currentBlock;
-            
-            const dist = curr.x - prev.x;
-            
-            // Missed completely
-            if (Math.abs(dist) >= prev.w) {
-                gameOver();
-                return;
-            }
-
-            // Sliced
-            const overlap = prev.w - Math.abs(dist);
-            
-            // Cut falling part
-            const fallingPart = {
-                y: curr.y,
-                h: curr.h,
-                color: curr.color,
-                vy: 0
-            };
-
-            if (dist > 0) {
-                // Sliced right side
-                curr.w = overlap;
-                // curr.x remains same
-                
-                fallingPart.x = curr.x + overlap;
-                fallingPart.w = dist;
-            } else {
-                // Sliced left side
-                curr.x = prev.x; // Snap to prev x
-                curr.w = overlap;
-                
-                fallingPart.x = curr.x - Math.abs(dist); // The original x
-                fallingPart.w = Math.abs(dist);
-            }
-            
-            debris.push(fallingPart);
-            blocks.push(curr);
-            
-            score++;
-            document.getElementById('score').innerText = score;
-            document.getElementById('msg').innerText = "";
-            
-            // Camera shift down if too high
-            if(blocks.length > 10) {
-                blocks.forEach(b => b.y += BLOCK_HEIGHT);
-                debris.forEach(d => d.y += BLOCK_HEIGHT);
-                // Remove bottom one
-                blocks.shift();
-            }
-            
-            spawnNext();
-        }
-
-        function gameOver() {
-            state = 'over';
-            document.getElementById('msg').innerText = "Game Over - Tap to Retry";
-            
-            // Add current block to debris as it falls
-            debris.push({
-                x: currentBlock.x, y: currentBlock.y, w: currentBlock.w, h: currentBlock.h,
-                color: currentBlock.color, vy: 0
-            });
-            currentBlock = null;
-        }
-
-        // Input
-        window.addEventListener('mousedown', placeBlock);
-        window.addEventListener('touchstart', (e) => { e.preventDefault(); placeBlock(); }, {passive: false});
-
-        function loop() {
-            requestAnimationFrame(loop);
-            
-            // Background gradient
-            const g = ctx.createLinearGradient(0, 0, 0, h);
-            g.addColorStop(0, '#222');
-            g.addColorStop(1, '#111');
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, w, h);
-
-            // Update Current Block
-            if (state === 'play' && currentBlock) {
-                currentBlock.x += SPEED * direction;
-                
-                // Bounce edges? No, in this game typical is pass through or ping pong
-                // Let's do ping pong
-                if (currentBlock.x + currentBlock.w > w + 200 && direction === 1) direction = -1;
-                if (currentBlock.x < -200 && direction === -1) direction = 1;
-                
-                // Draw current
-                ctx.fillStyle = currentBlock.color;
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = currentBlock.color;
-                ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.w, currentBlock.h);
-                ctx.shadowBlur = 0;
-            }
-
-            // Draw Stack
-            blocks.forEach(b => {
-                ctx.fillStyle = b.color;
-                ctx.fillRect(b.x, b.y, b.w, b.h);
-                // Highlight top
-                ctx.fillStyle = 'rgba(255,255,255,0.2)';
-                ctx.fillRect(b.x, b.y, b.w, 5);
-            });
-
-            // Physics for Debris
-            debris.forEach((d, i) => {
-                d.y += d.vy;
-                d.vy += 1; // Gravity
-                
-                ctx.fillStyle = d.color;
-                ctx.fillRect(d.x, d.y, d.w, d.h);
-                
-                if (d.y > h) debris.splice(i, 1);
-            });
-        }
-
-        resize();
-        loop();
-
-    </script>
-  <script src="/assets/dgames-ui.js" defer></script>
+<canvas id="canvas" aria-label="Tower of Hue game"></canvas><div class="hud"><small>TOWER HEIGHT</small><b id="score">0</b><span>BEST <i id="best">0</i> · TAP TO PLACE</span></div>
+<div id="start" class="overlay"><div class="panel"><div class="code">DG-06 · Puzzle / Physics</div><h1>TOWER OF HUE</h1><p>Place the moving block over the previous layer. Every imperfect placement trims the tower. Build high before the overhang becomes impossible.</p><button id="startBtn">Start Stack</button></div></div>
+<div id="over" class="overlay hidden"><div class="panel"><div class="code">STRUCTURE LOST</div><h1>TOPPLE</h1><p id="result">Height 0</p><button id="againBtn">Build Again</button></div></div>
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,state='idle',score=0,best=+localStorage.getItem('tower-best')||0,blocks=[],debris=[],current=null,dir=1,last=performance.now(),raf=0,hue=92;
+function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(state==='idle')setup()}addEventListener('resize',resize);resize();
+function setup(){blocks=[];debris=[];score=0;hue=80+Math.random()*40;const baseW=Math.min(280,W*.42);blocks.push({x:(W-baseW)/2,y:H-90,w:baseW,h:34,color:color()});spawn();sync()}
+function color(){const out='hsl('+hue+' 34% 58%)';hue+=13;return out}
+function spawn(){const p=blocks.at(-1);dir=Math.random()<.5?-1:1;current={x:dir>0?-p.w:W,y:p.y-34,w:p.w,h:34,color:color()}}
+function sync(){document.getElementById('score').textContent=score;document.getElementById('best').textContent=best}
+function start(){state='play';document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');setup();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+function place(){if(state!=='play'){if(state==='over')start();return}const p=blocks.at(-1),c=current,dist=c.x-p.x;if(Math.abs(dist)>=p.w){gameOver();return}const overlap=p.w-Math.abs(dist);const cut={x:dist>0?c.x+overlap:c.x-Math.abs(dist),y:c.y,w:Math.abs(dist),h:c.h,color:c.color,vy:-1-Math.random()*2};c.w=overlap;if(dist<0)c.x=p.x;debris.push(cut);blocks.push({x:c.x,y:c.y,w:c.w,h:c.h,color:c.color});score++;best=Math.max(best,score);localStorage.setItem('tower-best',best);sync();if(blocks.length>12){blocks.forEach(b=>b.y+=34);debris.forEach(d=>d.y+=34);blocks.shift()}spawn()}
+function gameOver(){state='over';if(current)debris.push({x:current.x,y:current.y,w:current.w,h:current.h,color:current.color,vy:0});current=null;document.getElementById('result').textContent='Height '+score+' · Best '+best;document.getElementById('over').classList.remove('hidden')}
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();place()});
+function frame(t){const dt=Math.min(.04,(t-last)/16.67);last=t;ctx.fillStyle='#0e1517';ctx.fillRect(0,0,W,H);const g=ctx.createRadialGradient(W/2,H*.32,20,W/2,H*.32,260);g.addColorStop(0,'rgba(127,169,110,.18)');g.addColorStop(1,'rgba(127,169,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);if(state==='play'&&current){current.x+=5*dir*dt;if(current.x+current.w>W+140)dir=-1;if(current.x<-140)dir=1;ctx.fillStyle=current.color;ctx.fillRect(current.x,current.y,current.w,current.h)}blocks.forEach(b=>{ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(b.x,b.y,b.w,4)});for(let i=debris.length-1;i>=0;i--){const d=debris[i];d.vy+=.22*dt;d.y+=d.vy*dt*60;ctx.fillStyle=d.color;ctx.fillRect(d.x,d.y,d.w,d.h);if(d.y>H+30)debris.splice(i,1)}raf=requestAnimationFrame(frame)}
+document.getElementById('startBtn').addEventListener('click',start);document.getElementById('againBtn').addEventListener('click',start);raf=requestAnimationFrame(frame);
+</script>
+<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>

@@ -1,251 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3XO: Three-Player Tic-Tac-Toe</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom styles for player symbols for better visual distinction */
-        .player-triangle { color: #22c55e; } /* green-500 */
-        .player-x { color: #3b82f6; } /* blue-500 */
-        .player-o { color: #ef4444; } /* red-500 */
-
-        /* Animation for winning cells */
-        .win-cell {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.1);
-                opacity: 0.9;
-            }
-        }
-    </style>
-  <link rel="stylesheet" href="/assets/dgames-ui.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>3XO — D'Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Space+Grotesk:wght@700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+:root{--paper:#e9e3d2;--paper2:#f4efe2;--ink:#202729;--muted:#707874;--line:rgba(32,39,41,.22);--olive:#7d916c;--blue:#476e86;--brick:#a45946}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:auto;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+body{display:flex;align-items:center;justify-content:center;padding:88px 14px 92px}
+.shell{width:min(940px,100%);display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;align-items:stretch}
+.placard,.board-panel,.legend{border:2px solid var(--ink);border-radius:16px;background:rgba(244,239,226,.86);box-shadow:0 8px 0 rgba(32,39,41,.08),0 20px 36px rgba(32,39,41,.10)}
+.placard{padding:20px;display:flex;flex-direction:column;justify-content:space-between;min-height:520px}
+.kicker{font:800 9px/1 JetBrains Mono,monospace;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+h1{font:900 clamp(44px,7vw,66px)/.82 "Space Grotesk",sans-serif;letter-spacing:-.06em;margin:12px 0 10px}
+.deck-copy{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+.player-list{display:grid;gap:7px;margin-top:22px}
+.player{display:grid;grid-template-columns:35px 1fr auto;align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.35)}
+.swatch{width:27px;height:27px;border:2px solid currentColor;border-radius:8px;display:grid;place-items:center;font:900 14px/1 JetBrains Mono,monospace}
+.player strong{font:800 10px/1 JetBrains Mono,monospace;text-transform:uppercase}.player span:last-child{font:800 8px/1 JetBrains Mono,monospace;color:var(--muted)}
+.p-tri{color:var(--olive)}.p-x{color:var(--blue)}.p-o{color:var(--brick)}
+.mission{margin-top:18px;padding:11px 12px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font:800 8px/1.5 JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:.05em}
+.board-panel{padding:18px;display:flex;flex-direction:column;min-width:0}
+.board-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.board-title{margin:0;font:900 22px/1 "Space Grotesk",sans-serif;letter-spacing:-.03em}
+#status{margin:5px 0 0;color:var(--muted);font:800 9px/1.4 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}
+.turn-chip{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.38);font:900 9px/1 JetBrains Mono,monospace;text-transform:uppercase;white-space:nowrap}
+#board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;width:min(560px,100%);margin:auto;aspect-ratio:1}
+.cell{border:1px solid rgba(32,39,41,.28);border-radius:9px;background:#d8d1bf;display:grid;place-items:center;color:var(--ink);font:900 clamp(28px,6vw,54px)/1 JetBrains Mono,monospace;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.4);transition:transform .12s ease,background .12s ease}
+.cell:hover{background:#e2dccd;transform:translateY(-1px)}.cell:disabled{cursor:default}
+.cell.tri{color:#56684e;background:#d7dfce}.cell.x{color:var(--blue);background:#d6e0e5}.cell.o{color:var(--brick);background:#ead7d0}.cell.win{background:#c8d4b8;box-shadow:inset 0 0 0 2px var(--olive);animation:win .8s ease-in-out infinite alternate}
+@keyframes win{to{transform:scale(.97);filter:brightness(1.04)}}
+.actions{display:flex;gap:8px;margin-top:14px}button.action{flex:1;min-height:43px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:var(--paper2);font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}button.action.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.legend{grid-column:1/-1;padding:11px 13px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:800 8px/1.4 JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:760px){body{padding:82px 10px 86px}.shell{grid-template-columns:1fr;gap:10px}.placard{min-height:0}.board-panel{padding:12px}.player-list{grid-template-columns:repeat(3,1fr)}.player{grid-template-columns:1fr;text-align:center;justify-items:center}.player span:last-child{display:none}.legend{flex-direction:column}}
+</style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
-
-    <div class="w-full max-w-md text-center">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">3XO Game</h1>
-        <p class="text-gray-400 mb-6">First to get 4 in a row wins!</p>
-
-        <!-- Game Status Display -->
-        <div id="status" class="text-xl sm:text-2xl font-medium mb-6 h-8 transition-all duration-300"></div>
-
-        <!-- Game Board -->
-        <div id="board" class="grid grid-cols-5 gap-2 bg-gray-800 p-3 rounded-lg shadow-2xl">
-            <!-- Cells will be generated by JavaScript -->
-        </div>
-
-        <!-- Restart Button -->
-        <button id="restartButton" class="mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-            Restart Game
-        </button>
-    </div>
-
-    <script>
-        // --- DOM Elements ---
-        const boardElement = document.getElementById('board');
-        const statusElement = document.getElementById('status');
-        const restartButton = document.getElementById('restartButton');
-
-        // --- Game Constants ---
-        const BOARD_SIZE = 5;
-        const WIN_CONDITION = 4;
-        const PLAYERS = [
-            { symbol: '△', className: 'player-triangle' },
-            { symbol: 'X', className: 'player-x' },
-            { symbol: 'O', className: 'player-o' }
-        ];
-
-        // --- Game State ---
-        let boardState;
-        let currentPlayerIndex;
-        let gameActive;
-
-        // --- Game Logic ---
-
-        /**
-         * Initializes or resets the game to its starting state.
-         */
-        function initializeGame() {
-            boardState = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-            currentPlayerIndex = 0;
-            gameActive = true;
-            
-            // Clear the board UI and recreate cells
-            boardElement.innerHTML = '';
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                for (let col = 0; col < BOARD_SIZE; col++) {
-                    const cell = document.createElement('div');
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
-                    // Use aspect-square for perfect squares and responsive font sizes
-                    cell.classList.add(
-                        'aspect-square', // <-- This is the key change for even spacing
-                        'flex', 'items-center', 'justify-center', 
-                        'text-4xl', 'sm:text-5xl',
-                        'font-bold', 'bg-gray-700', 'rounded-md', 'cursor-pointer', 
-                        'transition-all', 'duration-200', 'hover:bg-gray-600'
-                    );
-                    cell.addEventListener('click', handleCellClick);
-                    boardElement.appendChild(cell);
-                }
-            }
-            updateStatus();
-        }
-
-        /**
-         * Handles the logic when a player clicks on a cell.
-         * @param {MouseEvent} event - The click event from the cell.
-         */
-        function handleCellClick(event) {
-            if (!gameActive) return;
-
-            const cell = event.target;
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-
-            // Check if the cell is already taken
-            if (boardState[row][col]) {
-                return;
-            }
-
-            // Update state and UI
-            const currentPlayer = PLAYERS[currentPlayerIndex];
-            boardState[row][col] = currentPlayer.symbol;
-            cell.textContent = currentPlayer.symbol;
-            cell.classList.add(currentPlayer.className);
-            cell.classList.remove('hover:bg-gray-600'); // Disable hover effect after click
-
-            // Check for a winner or a draw
-            if (checkWin(row, col)) {
-                gameActive = false;
-                statusElement.innerHTML = `Player <span class="${currentPlayer.className}">${currentPlayer.symbol}</span> Wins!`;
-            } else if (isDraw()) {
-                gameActive = false;
-                statusElement.textContent = "It's a Draw!";
-            } else {
-                // Switch to the next player
-                currentPlayerIndex = (currentPlayerIndex + 1) % PLAYERS.length;
-                updateStatus();
-            }
-        }
-
-        /**
-         * Updates the status display to show whose turn it is.
-         */
-        function updateStatus() {
-            const currentPlayer = PLAYERS[currentPlayerIndex];
-            statusElement.innerHTML = `Player <span class="${currentPlayer.className}">${currentPlayer.symbol}</span>'s Turn`;
-        }
-
-        /**
-         * Checks if the board is full, resulting in a draw.
-         * @returns {boolean} - True if the game is a draw, false otherwise.
-         */
-        function isDraw() {
-            return boardState.flat().every(cell => cell !== null);
-        }
-        
-        /**
-         * Checks all directions from the last move to see if it resulted in a win.
-         * @param {number} row - The row of the last move.
-         * @param {number} col - The column of the last move.
-         * @returns {boolean} - True if a win is detected, false otherwise.
-         */
-        function checkWin(row, col) {
-            const symbol = boardState[row][col];
-            const directions = [
-                { r: 0, c: 1 },  // Horizontal
-                { r: 1, c: 0 },  // Vertical
-                { r: 1, c: 1 },  // Diagonal (down-right)
-                { r: 1, c: -1 }  // Diagonal (down-left)
-            ];
-
-            for (const dir of directions) {
-                const count = 1 + countInDirection(row, col, symbol, dir) + countInDirection(row, col, symbol, { r: -dir.r, c: -dir.c });
-                if (count >= WIN_CONDITION) {
-                    highlightWinningCells(row, col, symbol, dir);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Counts consecutive symbols in a single direction from a starting point.
-         * @param {number} r - Starting row.
-         * @param {number} c - Starting column.
-         * @param {string} symbol - The player's symbol to count.
-         * @param {{r: number, c: number}} dir - The direction to check {row_change, col_change}.
-         * @returns {number} - The number of consecutive symbols found.
-         */
-        function countInDirection(r, c, symbol, dir) {
-            let count = 0;
-            let nextR = r + dir.r;
-            let nextC = c + dir.c;
-            while (
-                nextR >= 0 && nextR < BOARD_SIZE &&
-                nextC >= 0 && nextC < BOARD_SIZE &&
-                boardState[nextR][nextC] === symbol
-            ) {
-                count++;
-                nextR += dir.r;
-                nextC += dir.c;
-            }
-            return count;
-        }
-
-        /**
-         * Highlights the winning cells on the board.
-         */
-        function highlightWinningCells(row, col, symbol, dir) {
-            const winningCells = [{r: row, c: col}];
-            
-            // Check in the primary direction
-            let nextR = row + dir.r;
-            let nextC = col + dir.c;
-            while (nextR >= 0 && nextR < BOARD_SIZE && nextC >= 0 && nextC < BOARD_SIZE && boardState[nextR][nextC] === symbol) {
-                winningCells.push({r: nextR, c: nextC});
-                nextR += dir.r;
-                nextC += dir.c;
-            }
-            
-            // Check in the opposite direction
-            nextR = row - dir.r;
-            nextC = col - dir.c;
-            while (nextR >= 0 && nextR < BOARD_SIZE && nextC >= 0 && nextC < BOARD_SIZE && boardState[nextR][nextC] === symbol) {
-                winningCells.push({r: nextR, c: nextC});
-                nextR -= dir.r;
-                nextC -= dir.c;
-            }
-
-            winningCells.forEach(cellCoord => {
-                const cellElement = document.querySelector(`[data-row='${cellCoord.r}'][data-col='${cellCoord.c}']`);
-                if(cellElement) {
-                    cellElement.classList.add('bg-yellow-500', 'text-gray-900', 'win-cell');
-                }
-            });
-        }
-
-
-        // --- Event Listeners ---
-        restartButton.addEventListener('click', initializeGame);
-
-        // --- Initial Game Start ---
-        window.onload = initializeGame;
-    </script>
-  <script src="/assets/dgames-ui.js" defer></script>
+<body>
+<div class="shell">
+<aside class="placard"><div><div class="kicker">DG-10 · Strategy Table</div><h1>3XO</h1><p class="deck-copy">A five-by-five three-player line game. Place your symbol, read the board, and become the first to complete four.</p><div class="player-list"><div class="player p-tri"><span class="swatch">△</span><strong>Player 1</strong><span>OLIVE</span></div><div class="player p-x"><span class="swatch">X</span><strong>Player 2</strong><span>BLUE</span></div><div class="player p-o"><span class="swatch">O</span><strong>Player 3</strong><span>BRICK</span></div></div></div><div class="mission">RULE: 4 IN A ROW · HORIZONTAL · VERTICAL · DIAGONAL</div></aside>
+<main class="board-panel"><div class="board-head"><div><h2 class="board-title">Board</h2><div id="status">Player 1's turn</div></div><div id="turn-chip" class="turn-chip">△ / OLIVE</div></div><div id="board" role="grid" aria-label="3XO five by five game board"></div><div class="actions"><button id="restartButton" class="action">Restart Game</button><button id="newButton" class="action alt">New Match</button></div></main>
+<div class="legend"><span>Tap a square to place a mark</span><span>First to 4 connected cells wins</span></div>
+</div>
+<script>
+const boardEl=document.getElementById('board'),statusEl=document.getElementById('status'),turnEl=document.getElementById('turn-chip');
+const N=5,WIN=4,players=[{s:'△',cls:'tri',name:'Player 1',tone:'OLIVE'},{s:'X',cls:'x',name:'Player 2',tone:'BLUE'},{s:'O',cls:'o',name:'Player 3',tone:'BRICK'}];
+let board=[],turn=0,active=true,winning=[];
+function build(){board=Array.from({length:N*N},()=>null);turn=0;active=true;winning=[];boardEl.innerHTML='';for(let i=0;i<N*N;i++){const b=document.createElement('button');b.className='cell';b.setAttribute('role','gridcell');b.setAttribute('aria-label','Row '+(Math.floor(i/N)+1)+', column '+(i%N+1)+', empty');b.addEventListener('click',()=>move(i));boardEl.appendChild(b)}render()}
+function render(){const p=players[turn];statusEl.textContent=active?p.name+' · '+p.s+"'s turn":statusEl.textContent;turnEl.textContent=p.s+' / '+p.tone;[...boardEl.children].forEach((b,i)=>{const v=board[i],q=v===null?null:players[v];b.textContent=q?q.s:'';b.className='cell'+(q?' '+q.cls:'')+(winning.includes(i)?' win':'');b.disabled=!active||v!==null;b.setAttribute('aria-label','Row '+(Math.floor(i/N)+1)+', column '+(i%N+1)+', '+(q?q.name:'empty'))})}
+function linesFrom(i){const r=Math.floor(i/N),c=i%N;return [[0,1],[1,0],[1,1],[1,-1]].map(([dr,dc])=>{const line=[];for(let k=-3;k<=3;k++){const rr=r+k*dr,cc=c+k*dc;if(rr>=0&&rr<N&&cc>=0&&cc<N)line.push(rr*N+cc)}return line})}
+function checkWin(i){const v=board[i];for(const line of linesFrom(i)){let streak=[];for(const idx of line){if(board[idx]===v){streak.push(idx);if(streak.length>=WIN)return streak.slice(-WIN)}else streak=[]}}return null}
+function move(i){if(!active||board[i]!==null)return;board[i]=turn;winning=checkWin(i)||[];if(winning.length){active=false;statusEl.textContent=players[turn].name+' '+players[turn].s+' wins';render();return}if(board.every(Boolean)){active=false;statusEl.textContent='Match drawn · board full';render();return}turn=(turn+1)%players.length;statusEl.textContent=players[turn].name+' · '+players[turn].s+"'s turn";render()}
+document.getElementById('restartButton').addEventListener('click',build);document.getElementById('newButton').addEventListener('click',build);build();
+</script>
+<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>
