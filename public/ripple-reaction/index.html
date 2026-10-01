@@ -13,8 +13,8 @@
 <body>
 <canvas id="c" aria-label="Ripple Reaction game"></canvas>
 <div class="hud"><small>REACTION SCORE</small><b id="score">0</b><span>COMBO ×<i id="combo">1</i> · LIVES <i id="lives">3</i></span></div>
-<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn">Begin Reaction</button></div></div>
-<div id="over" class="overlay hidden"><div class="panel"><div class="code">FIELD COLLAPSE</div><h1>REACTION LOST</h1><p id="result">Score 0</p><button id="againBtn">Restart Field</button></div></div>
+<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn" type="button" onclick="startGame()">Begin Reaction</button></div></div>
+<div id="over" class="overlay hidden"><div class="panel"><div class="code">FIELD COLLAPSE</div><h1>REACTION LOST</h1><p id="result">Score 0</p><button id="againBtn" type="button">Restart Field</button></div></div>
 <script>
 const c=document.getElementById('c'),ctx=c.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,running=false,score=0,combo=1,lives=3,dots=[],ripples=[],last=performance.now(),raf=0;
 function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
@@ -22,11 +22,12 @@ class Dot{constructor(){this.spawn()}spawn(){this.x=20+Math.random()*(W-40);this
 class Ripple{constructor(x,y){this.x=x;this.y=y;this.r=0;this.life=1;this.flash=0}update(){this.r+=5.8;this.life-=.018;this.flash=Math.max(0,this.flash-.08)}}
 function sync(){document.getElementById('score').textContent=score;document.getElementById('combo').textContent=combo;document.getElementById('lives').textContent=lives}
 function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');sync()}
+function startGame(){reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
 function over(){running=false;document.getElementById('result').textContent='Score '+score+' · Best chain ×'+combo;document.getElementById('over').classList.remove('hidden')}
 function place(x,y){if(running)ripples.push(new Ripple(x,y))}
 c.addEventListener('pointerdown',e=>{e.preventDefault();place(e.clientX,e.clientY)});
 function frame(t){const dt=Math.min(.05,(t-last)/16.67);last=t;ctx.fillStyle='rgba(11,20,23,.28)';ctx.fillRect(0,0,W,H);if(running){for(const d of dots)d.update();for(let ri=ripples.length-1;ri>=0;ri--){const r=ripples[ri];r.update();for(const d of dots){const dx=r.x-d.x,dy=r.y-d.y,dist=Math.hypot(dx,dy);if(dist<r.r){if(d.bad&&dist<16){d.spawn();r.life=.12;lives--;combo=1;sync();if(lives<=0){over();break}}else if(!d.bad&&dist<20){d.spawn();score+=combo;combo=Math.min(12,combo+1);r.flash=1;sync()}}else if(dist<r.r+55&&!d.bad){d.x+=dx*.006*dt;d.y+=dy*.006*dt}}}if(r.life<=0)ripples.splice(ri,1)}dots.forEach(d=>{ctx.fillStyle=d.color;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()});ripples.forEach(r=>{ctx.strokeStyle=r.flash>0?'rgba(242,239,224,.95)':'rgba(104,214,189,'+Math.max(0,r.life)+')';ctx.lineWidth=r.flash>0?4:2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke()})}raf=requestAnimationFrame(frame)}
-document.getElementById('startBtn').addEventListener('click',()=>{reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)});document.getElementById('againBtn').addEventListener('click',()=>{reset();last=performance.now()});raf=requestAnimationFrame(frame);
+document.getElementById('againBtn').addEventListener('click',startGame);raf=requestAnimationFrame(frame);
 </script>
 <script src="/assets/dgames-ui.js" defer></script>
 </body>
