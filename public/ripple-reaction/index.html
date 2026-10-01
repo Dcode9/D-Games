@@ -9,8 +9,9 @@
 .hud{position:fixed;left:16px;top:88px;z-index:4;color:#f4efe2;padding:10px 12px;border:1px solid rgba(242,238,224,.22);border-radius:10px;background:rgba(9,17,20,.76);backdrop-filter:blur(9px)}.hud small{display:block;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em}.hud b{display:block;margin-top:4px;font:900 22px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace}
 .overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,10,12,.82);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,28,31,.95);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#74cdb8;letter-spacing:.16em;text-transform:uppercase}.panel h1{margin:10px 0 7px;font:900 40px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
 </style>
+<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
-<body>
+<body class="dg-retro-skin" data-game="ripple">
 <canvas id="c" aria-label="Ripple Reaction game"></canvas>
 <div class="hud"><small>REACTION SCORE</small><b id="score">0</b><span>COMBO ×<i id="combo">1</i> · LIVES <i id="lives">3</i></span></div>
 <div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn" type="button" onclick="startGame()" aria-label="Begin Ripple Reaction">Begin Reaction</button></div></div>
