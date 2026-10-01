@@ -13,7 +13,7 @@
 <body>
 <canvas id="c" aria-label="Ripple Reaction game"></canvas>
 <div class="hud"><small>REACTION SCORE</small><b id="score">0</b><span>COMBO ×<i id="combo">1</i> · LIVES <i id="lives">3</i></span></div>
-<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn" type="button" onclick="startGame()">Begin Reaction</button></div></div>
+<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn" type="button" onclick="startGame()" aria-label="Begin Ripple Reaction">Begin Reaction</button></div></div>
 <div id="over" class="overlay hidden"><div class="panel"><div class="code">FIELD COLLAPSE</div><h1>REACTION LOST</h1><p id="result">Score 0</p><button id="againBtn" type="button">Restart Field</button></div></div>
 <script>
 const c=document.getElementById('c'),ctx=c.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,running=false,score=0,combo=1,lives=3,dots=[],ripples=[],last=performance.now(),raf=0;
@@ -21,7 +21,7 @@ function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight
 class Dot{constructor(){this.spawn()}spawn(){this.x=20+Math.random()*(W-40);this.y=90+Math.random()*Math.max(80,H-130);this.vx=(Math.random()-.5)*1.5;this.vy=(Math.random()-.5)*1.5;this.bad=Math.random()<.2;this.r=this.bad?7:5;this.color=this.bad?'#dc6b63':'#68d6bd'}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<this.r||this.x>W-this.r)this.vx*=-1;if(this.y<75+this.r||this.y>H-30-this.r)this.vy*=-1}}
 class Ripple{constructor(x,y){this.x=x;this.y=y;this.r=0;this.life=1;this.flash=0}update(){this.r+=5.8;this.life-=.018;this.flash=Math.max(0,this.flash-.08)}}
 function sync(){document.getElementById('score').textContent=score;document.getElementById('combo').textContent=combo;document.getElementById('lives').textContent=lives}
-function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');sync()}
+function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;const start=document.getElementById('start');start.classList.add('hidden');start.style.display='none';document.getElementById('over').classList.add('hidden');sync()}
 function startGame(){reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
 function over(){running=false;document.getElementById('result').textContent='Score '+score+' · Best chain ×'+combo;document.getElementById('over').classList.remove('hidden')}
 function place(x,y){if(running)ripples.push(new Ripple(x,y))}
