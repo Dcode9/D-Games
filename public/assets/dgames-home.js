@@ -1,17 +1,18 @@
 
 (() => {
   const GAMES = [
-    { id:'echo-drift', title:'Echo Drift', category:'arcade', genre:'Arcade · High-Speed', tag:'SPOTLIGHT', desc:'A fast, tactile drift through a luminous signal field. Chain echoes, dodge pulse hazards, and keep the channel alive.', img:'assets/echo-drift-cover.svg', url:'/echo-drift/', pace:'FAST', players:'1P', time:'2–5 MIN' },
-    { id:'neon-tetris', title:'Neon Tetris', category:'puzzle', genre:'Classic · Puzzle', tag:'CLASSIC', desc:'Falling blocks, clean rotations, rising pressure. Built for short sessions and long score chases.', img:'assets/neon-tetris-poster.jpg', url:'/neon-tetris/', pace:'FOCUS', players:'1P', time:'3–10 MIN' },
-    { id:'neon-breakout', title:'Neon Breakout', category:'arcade', genre:'Classic · Arcade', tag:'ARCADE', desc:'Read the bounce, break the wall, and stack up combos with a tight paddle and punchy feedback.', img:'assets/neon-breakout-poster.jpg', url:'/neon-breakout/', pace:'FAST', players:'1P', time:'2–6 MIN' },
-    { id:'cyber-road', title:'Cyber Road', category:'action', genre:'Racing · Retro', tag:'RUN', desc:'A synth-road endurance run. Thread the hazards, hold the line, and push the score without losing the rhythm.', img:'assets/cyber-cover.svg', url:'/cyber-road/', pace:'FAST', players:'1P', time:'1–4 MIN' },
-    { id:'neon-galaxy', title:'Neon Galaxy', category:'action', genre:'Arcade · Shooter', tag:'WAVES', desc:'Clear hostile waves, keep the screen readable, and survive long enough to turn pressure into score.', img:'assets/neon-galaxy-poster.jpg', url:'/neon-galaxy/', pace:'FAST', players:'1P', time:'3–8 MIN' },
-    { id:'tower-of-hue', title:'Tower of Hue', category:'puzzle', genre:'Puzzle · Physics', tag:'PRECISION', desc:'Stack color blocks with controlled timing. Every clean placement buys you another layer.', img:'assets/tower-cover.png', url:'/tower-of-hue/', pace:'STEADY', players:'1P', time:'2–5 MIN' },
-    { id:'orbit-guard', title:'Orbit Guard', category:'action', genre:'Action · Defense', tag:'DEFENSE', desc:'Rotate your shield and keep the core safe. Timing is everything when the field starts closing in.', img:'assets/orbit-cover.svg', url:'/orbit-guard/', pace:'FAST', players:'1P', time:'2–6 MIN' },
-    { id:'ripple-reaction', title:'Ripple Reaction', category:'puzzle', genre:'Casual · Chain Reaction', tag:'CHAIN', desc:'Place the right ripple at the right moment and turn a single click into a cascading field reaction.', img:'assets/ripple-cover.svg', url:'/ripple-reaction/', pace:'CALM', players:'1P', time:'1–4 MIN' },
-    { id:'snake', title:'Neon Snake', category:'classic', genre:'Classic · Arcade', tag:'CLASSIC', desc:'The old rulebook with a cleaner control loop. Grow the chain, route the turns, beat your best.', img:'assets/neon-snake-poster.jpg', url:'/snake/', pace:'STEADY', players:'1P', time:'2–7 MIN' },
-    { id:'3xo', title:'3XO', category:'classic', genre:'Strategy · 3-Player', tag:'TABLE', desc:'A five-by-five three-player strategy duel. First to four in a row takes the board.', img:'assets/3XO Cover.png', url:'/3xo.html', pace:'THINK', players:'3P', time:'3–8 MIN' }
+    { id:'echo-drift', title:'Echo Drift', category:'arcade', genre:'Arcade · High-Speed', tag:'SPOTLIGHT', desc:'A fast, tactile drift through a luminous signal field. Chain echoes, dodge pulse hazards, and keep the channel alive.', img:'assets/covers/echo-drift.svg', url:'/echo-drift/', pace:'FAST', players:'1P', time:'2–5 MIN' },
+    { id:'neon-tetris', title:'Neon Tetris', category:'puzzle', genre:'Classic · Puzzle', tag:'CLASSIC', desc:'Falling blocks, clean rotations, rising pressure. Built for short sessions and long score chases.', img:'assets/covers/neon-tetris.svg', url:'/neon-tetris/', pace:'FOCUS', players:'1P', time:'3–10 MIN' },
+    { id:'neon-breakout', title:'Neon Breakout', category:'arcade', genre:'Classic · Arcade', tag:'ARCADE', desc:'Read the bounce, break the wall, and stack up combos with a tight paddle and punchy feedback.', img:'assets/covers/neon-breakout.svg', url:'/neon-breakout/', pace:'FAST', players:'1P', time:'2–6 MIN' },
+    { id:'cyber-road', title:'Cyber Road', category:'action', genre:'Racing · Retro', tag:'RUN', desc:'A synth-road endurance run. Thread the hazards, hold the line, and push the score without losing the rhythm.', img:'assets/covers/cyber-road.svg', url:'/cyber-road/', pace:'FAST', players:'1P', time:'1–4 MIN' },
+    { id:'neon-galaxy', title:'Neon Galaxy', category:'action', genre:'Arcade · Shooter', tag:'WAVES', desc:'Clear hostile waves, keep the screen readable, and survive long enough to turn pressure into score.', img:'assets/covers/neon-galaxy.svg', url:'/neon-galaxy/', pace:'FAST', players:'1P', time:'3–8 MIN' },
+    { id:'tower-of-hue', title:'Tower of Hue', category:'puzzle', genre:'Puzzle · Physics', tag:'PRECISION', desc:'Stack color blocks with controlled timing. Every clean placement buys you another layer.', img:'assets/covers/tower-of-hue.svg', url:'/tower-of-hue/', pace:'STEADY', players:'1P', time:'2–5 MIN' },
+    { id:'orbit-guard', title:'Orbit Guard', category:'action', genre:'Action · Defense', tag:'DEFENSE', desc:'Rotate your shield and keep the core safe. Timing is everything when the field starts closing in.', img:'assets/covers/orbit-guard.svg', url:'/orbit-guard/', pace:'FAST', players:'1P', time:'2–6 MIN' },
+    { id:'ripple-reaction', title:'Ripple Reaction', category:'puzzle', genre:'Casual · Chain Reaction', tag:'CHAIN', desc:'Place the right ripple at the right moment and turn a single click into a cascading field reaction.', img:'assets/covers/ripple-reaction.svg', url:'/ripple-reaction/', pace:'CALM', players:'1P', time:'1–4 MIN' },
+    { id:'snake', title:'Neon Snake', category:'classic', genre:'Classic · Arcade', tag:'CLASSIC', desc:'The old rulebook with a cleaner control loop. Grow the chain, route the turns, beat your best.', img:'assets/covers/neon-snake.svg', url:'/snake/', pace:'STEADY', players:'1P', time:'2–7 MIN' },
+    { id:'3xo', title:'3XO', category:'classic', genre:'Strategy · 3-Player', tag:'TABLE', desc:'A five-by-five three-player strategy duel. First to four in a row takes the board.', img:'assets/covers/3xo.svg', url:'/3xo.html', pace:'THINK', players:'3P', time:'3–8 MIN' }
   ];
+  const ALBUMS=[{title:'Retro Vibes',count:'12 games',img:'assets/albums/retro-vibes.svg',copy:'Fast classics, familiar rules, fresh runs.'},{title:'Space Adventures',count:'8 games',img:'assets/albums/space-adventures.svg',copy:'Orbit, survive and push deeper.'},{title:'Neon Nights',count:'10 games',img:'assets/albums/neon-nights.svg',copy:'Electric arcade sessions after dark.'},{title:'Puzzle Masters',count:'7 games',img:'assets/albums/puzzle-masters.svg',copy:'Think clean. Move once. Repeat.'},{title:'Arcade Classics',count:'6 games',img:'assets/albums/arcade-classics.svg',copy:'Short loops built for high scores.'}];
   const UPCOMING = [
     { code:'01', title:'Mini Metro', status:'IN DEVELOPMENT', desc:'A tactile network-planning session built around routes, capacity, and clean decisions.' },
     { code:'02', title:'Rise Up', status:'PROTOTYPE', desc:'A reflex shield game designed around one-finger control and readable timing.' },
@@ -160,6 +161,8 @@
     $$('.dg-mini-play').forEach(btn => btn.addEventListener('click', () => openGame(btn.dataset.recentId)));
   }
 
+  function renderAlbums(){const el=document.getElementById('albums-grid');if(!el)return;el.innerHTML=ALBUMS.map((a,i)=>'<article class="dg-album" tabindex="0"><div class="dg-album-art"><img src="'+esc(a.img)+'" alt="" loading="lazy" decoding="async"><span>COLLECTION '+String(i+1).padStart(2,'0')+'</span></div><div class="dg-album-body"><h3>'+esc(a.title)+'</h3><p>'+esc(a.copy)+'</p><small>'+esc(a.count)+'</small></div></article>').join('');}
+
   function renderUpcoming() {
     $('#upcoming-grid').innerHTML = UPCOMING.map(u =>
       '<article class="dg-upcoming">' +
@@ -296,6 +299,7 @@
   renderFeatured();
   renderGames();
   renderRecent();
+  renderAlbums();
   renderUpcoming();
   bindNavigation();
   bindKeyboard();
