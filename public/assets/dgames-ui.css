@@ -1,0 +1,170 @@
+/* D'Games Retro Flight UI — shared game chrome inspired by the supplied reference */
+:root {
+  --dg-ink: #303841;
+  --dg-muted: #657079;
+  --dg-paper: rgba(241, 243, 234, 0.96);
+  --dg-paper-soft: rgba(241, 243, 234, 0.82);
+  --dg-edge: rgba(48, 56, 65, 0.34);
+  --dg-accent: #91a97f;
+}
+.dg-chrome, .dg-chrome * { box-sizing: border-box; }
+.dg-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  color: var(--dg-ink);
+}
+.dg-top {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.dg-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 2px solid var(--dg-edge);
+  border-radius: 12px;
+  background: var(--dg-paper);
+  box-shadow: 0 5px 0 rgba(48,56,65,.12), 0 10px 26px rgba(0,0,0,.10);
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+.dg-mark {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--dg-ink);
+  border-radius: 7px;
+  background: #e7eadf;
+  font-size: 13px;
+  line-height: 1;
+}
+.dg-title {
+  max-width: min(42vw, 250px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.dg-live {
+  display: block;
+  margin-top: 2px;
+  color: var(--dg-muted);
+  font-size: 8px;
+  letter-spacing: .12em;
+}
+.dg-actions {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+.dg-btn {
+  min-width: 42px;
+  min-height: 42px;
+  border: 2px solid var(--dg-edge);
+  border-radius: 11px;
+  background: var(--dg-paper);
+  color: var(--dg-ink);
+  font: 900 11px/1 "JetBrains Mono", monospace;
+  box-shadow: 0 5px 0 rgba(48,56,65,.12);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dg-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(48,56,65,.12); }
+.dg-btn:focus-visible { outline: 3px solid #6f8d62; outline-offset: 2px; }
+.dg-bottom {
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dg-status {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 2px solid var(--dg-edge);
+  border-radius: 13px;
+  background: var(--dg-paper);
+  box-shadow: 0 5px 0 rgba(48,56,65,.12), 0 10px 26px rgba(0,0,0,.10);
+  backdrop-filter: blur(10px);
+}
+.dg-led {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--dg-accent);
+  box-shadow: 0 0 0 3px rgba(145,169,127,.18);
+}
+.dg-status-copy { min-width: 0; }
+.dg-status-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.dg-status-sub {
+  margin-top: 2px;
+  color: var(--dg-muted);
+  font-size: 8px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.dg-meter {
+  width: clamp(110px, 25vw, 260px);
+  height: 31px;
+  padding: 6px 8px;
+  border: 2px solid var(--dg-edge);
+  border-radius: 11px;
+  background: var(--dg-paper);
+  box-shadow: 0 5px 0 rgba(48,56,65,.12);
+}
+.dg-meter-track {
+  position: relative;
+  height: 7px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg, #7e8a91 0 2px, transparent 2px 14px);
+}
+.dg-meter-fill {
+  width: 23%;
+  height: 100%;
+  border-radius: 4px;
+  background: #91a97f;
+}
+@media (max-width: 650px) {
+  .dg-brand { padding: 6px 8px; }
+  .dg-mark { width: 25px; height: 25px; }
+  .dg-title { max-width: 46vw; font-size: 10px; }
+  .dg-live { font-size: 7px; }
+  .dg-btn { min-width: 38px; min-height: 38px; }
+  .dg-status { max-width: 58vw; padding: 8px 10px; }
+  .dg-status-main { font-size: 9px; }
+  .dg-status-sub { font-size: 7px; }
+  .dg-meter { width: 30vw; min-width: 90px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dg-btn { transition: none !important; }
+}
