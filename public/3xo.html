@@ -39,8 +39,9 @@ h1{font:900 clamp(44px,7vw,66px)/.82 "Space Grotesk",sans-serif;letter-spacing:-
 .legend{grid-column:1/-1;padding:11px 13px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:800 8px/1.4 JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:.06em}
 @media(max-width:760px){body{padding:82px 10px 86px}.shell{grid-template-columns:1fr;gap:10px}.placard{min-height:0}.board-panel{padding:12px}.player-list{grid-template-columns:repeat(3,1fr)}.player{grid-template-columns:1fr;text-align:center;justify-items:center}.player span:last-child{display:none}.legend{flex-direction:column}}
 </style>
+<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
-<body>
+<body class="dg-retro-skin" data-game="3xo">
 <div class="shell">
 <aside class="placard"><div><div class="kicker">DG-10 · Strategy Table</div><h1>3XO</h1><p class="deck-copy">A five-by-five three-player line game. Place your symbol, read the board, and become the first to complete four.</p><div class="player-list"><div class="player p-tri"><span class="swatch">△</span><strong>Player 1</strong><span>OLIVE</span></div><div class="player p-x"><span class="swatch">X</span><strong>Player 2</strong><span>BLUE</span></div><div class="player p-o"><span class="swatch">O</span><strong>Player 3</strong><span>BRICK</span></div></div></div><div class="mission">RULE: 4 IN A ROW · HORIZONTAL · VERTICAL · DIAGONAL</div></aside>
 <main class="board-panel"><div class="board-head"><div><h2 class="board-title">Board</h2><div id="status">Player 1's turn</div></div><div id="turn-chip" class="turn-chip">△ / OLIVE</div></div><div id="board" role="grid" aria-label="3XO five by five game board"></div><div class="actions"><button id="restartButton" class="action">Restart Game</button><button id="newButton" class="action alt">New Match</button></div></main>
