@@ -43,9 +43,9 @@ body{touch-action:none;user-select:none}
     <div class="stat"><small>SCORE</small><b id="score">00000</b></div>
     <div class="stat"><small>ROUND</small><b id="round">01</b></div>
     <div class="stat"><small>COMBO</small><b id="combo">×1</b></div>
-    <div class="stat"><small>BEST</small><b id="best">00000</b></div>
+    <div class="stat"><small>LIVES</small><b id="lives">●●●</b></div>
   </div>
-  <div class="hint">SORT EACH PARCEL BEFORE IT REACHES THE END · 3 MISSES CLOSE THE DESK</div>
+  <div id="hint" class="hint">STAGE 1 · SORT EACH PARCEL BEFORE IT REACHES THE END · 3 MISSES CLOSE THE DESK</div>
   <div class="bins" aria-label="Sorting bins">
     <button class="bin" data-lane="0" type="button"><b>GREEN</b><span>A / 1</span></button>
     <button class="bin" data-lane="1" type="button"><b>BLUE</b><span>S / 2</span></button>
@@ -64,7 +64,7 @@ body{touch-action:none;user-select:none}
 <script>
 (() => {
   const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-  const scoreEl=document.getElementById('score'),roundEl=document.getElementById('round'),comboEl=document.getElementById('combo');
+  const scoreEl=document.getElementById('score'),roundEl=document.getElementById('round'),comboEl=document.getElementById('combo'),livesEl=document.getElementById('lives'),hintEl=document.getElementById('hint');
   const overlay=document.getElementById('overlay'),start=document.getElementById('start'),message=document.getElementById('message');
   const bins=[...document.querySelectorAll('.bin')];
   const colors=['#718466','#55758a','#a85d49'],labels=['GREEN','BLUE','RED'];
@@ -74,7 +74,7 @@ body{touch-action:none;user-select:none}
   function laneY(){return H*.51}
   function laneX(i){return W*(i+.5)/3}
   function fmt(n){return String(Math.max(0,n)).padStart(5,'0')}
-  function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');comboEl.textContent='×'+combo;document.getElementById('best').textContent=fmt(Math.max(best,score))}
+  function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');comboEl.textContent='×'+combo;livesEl.textContent='●'.repeat(lives)+'○'.repeat(3-lives);hintEl.textContent='STAGE '+stage+' · '+(stage>=4?'BELT HOT · ':stage>=2?'BELT ACCELERATING · ':'SORT EACH PARCEL · ')+'3 MISSES CLOSE THE DESK'}
   function newParcel(){const lane=Math.floor(Math.random()*3);const rush=stage>=2&&round%5===0;const bonus=round%9===0;parcel={lane,x:laneX(lane),y:laneY()-(rush?H*.16:H*.29),size:Math.max(24,Math.min(38,W*.075)),stamp:Math.floor(Math.random()*3),rot:(Math.random()-.5)*.15,bonus,rush};}
   function reset(){score=0;round=1;stage=1;lastStage=1;combo=1;lives=3;speed=78;particles=[];shake=0;newParcel();setHud()}
   function startGame(){overlay.style.display='none';running=true;reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
