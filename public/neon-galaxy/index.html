@@ -1,725 +1,382 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Neon Galaxy — D'Games</title>
-<link rel="stylesheet" href="/assets/game-utilities.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
+<title>Neon Galaxy - D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
-:root {
-  --bg: #05060a;
-  --surface: rgba(14, 16, 24, 0.85);
-  --border: rgba(255, 255, 255, 0.08);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  width: 100%; height: 100%;
-  background: var(--bg);
-  color: #f4f4f5;
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
-  touch-action: none;
-  user-select: none;
-}
-.font-display { font-family: 'Space Grotesk', sans-serif; }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
-
-.glass-panel {
-  background: var(--surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
-}
-
-.action-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.15s ease;
-}
-.action-btn:active {
-  background: rgba(255, 255, 255, 0.18);
-  transform: scale(0.95);
-}
-
-canvas { display: block; width: 100%; height: 100%; }
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#c4503c;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background-image:linear-gradient(#242a2a1f 1px,transparent 1px),linear-gradient(90deg,#242a2a1f 1px,transparent 1px);background-size:32px 32px}
+.ui{position:fixed;z-index:3;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:max(86px,calc(env(safe-area-inset-top) + 78px));padding-bottom:max(94px,calc(env(safe-area-inset-bottom) + 90px));pointer-events:none}
+.top{display:flex;gap:6px;padding:7px 10px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:none}
+.stat{min-width:54px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 16px/1 ui-monospace,monospace}
+.hint{margin-top:6px;padding:6px 11px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.04em;text-align:center;max-width:calc(100% - 20px);min-height:26px;flex:none}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin-top:6px;display:flex;gap:8px;pointer-events:auto;flex:none}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:8px 9px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+.stage{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center;margin:6px 0;pointer-events:none}
+.boardwrap{border:3px solid #242a2a;border-radius:6px;background:#eee8d9;box-shadow:0 6px 0 #242a2a30;pointer-events:auto;line-height:0}
+#cv{display:block;touch-action:none}
+.pad{width:min(440px,calc(100% - 16px));display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px;pointer-events:auto;flex:none}
+.k{position:relative;height:54px;padding:0;border:0;border-radius:14px;background:var(--base);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none;color:#fff;touch-action:none}
+.k .cap{position:absolute;inset:0 0 7px 0;border-radius:14px;background:linear-gradient(180deg,#ffffff40,#ffffff00 46%),var(--cap);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff70,inset 0 -5px 8px #00000022;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:transform .05s}
+.k b{font:900 20px/1 ui-monospace,monospace;text-shadow:0 1px 0 #0006}
+.k span{font:800 7px/1 ui-monospace,monospace;letter-spacing:.1em;opacity:.9}
+.k.is-down .cap{transform:translateY(6px);box-shadow:inset 0 2px 0 #ffffff30,inset 0 -2px 4px #00000040;transition-duration:.02s}
+.k.red{--cap:var(--brick);--base:#8a3a2a}.k.blue{--cap:#3b72d8;--base:#27489a}.k.lime{--cap:var(--lime);--base:var(--limed);color:#1d2a0c}.k.lime b{text-shadow:none}
+.k.guide .cap{animation:ring .9s ease-in-out infinite;outline:4px solid #fff;outline-offset:2px}
+.k.guide::before{content:"PRESS";position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:var(--ink);color:#fff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.12em;z-index:2}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 #ffffffcc,inset 0 2px 0 #ffffff70}50%{box-shadow:0 0 0 10px #ffffff00,inset 0 2px 0 #ffffff70}}
+.k:focus-visible .cap{outline:3px solid var(--ink)}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.overlay[hidden]{display:none}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(32px,9vw,46px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .05s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+.keys{margin-top:10px;font:800 9px/1.5 ui-monospace,monospace;color:#6a706b}
+.stats{margin:12px auto 0;display:grid;gap:5px;font:800 11px/1.3 ui-monospace,monospace;max-width:260px}
+.stats div{display:flex;justify-content:space-between;padding:6px 9px;border-radius:8px;background:#d9d1be88}
+@media(orientation:landscape) and (max-height:560px){.hint{display:none}.ui{padding-top:66px;padding-bottom:76px}.k{height:44px}}
+@media(prefers-reduced-motion:reduce){.k .cap,.k.guide .cap{transition:none;animation:none}}
 </style>
-  <link rel="stylesheet" href="/assets/dgames-ui.css">
-<link rel="stylesheet" href="/assets/dgames-game-skin.css">
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
-<body class="relative w-full h-full flex flex-col justify-between dg-retro-skin" data-game="galaxy">
-
-  <!-- TOP OVERLAY HUD -->
-  <header class="absolute top-3 left-3 right-3 flex items-center justify-between px-3.5 py-2 rounded-2xl glass-panel z-20 max-w-4xl mx-auto pointer-events-auto">
-    <div class="flex items-center gap-3">
-      <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-      <div>
-        <h1 class="font-display text-sm font-bold text-white tracking-tight leading-none">NEON GALAXY</h1>
-        <div class="flex items-center gap-2 mt-1">
-          <div class="w-24 h-1.5 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
-            <div id="hud-shield-bar" class="h-full bg-cyan-400 transition-all duration-200" style="width: 100%;"></div>
-          </div>
-          <span id="hud-shield-txt" class="text-[10px] font-mono text-cyan-300">100%</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-4 text-xs font-mono">
-      <div class="text-right">
-        <span class="text-[10px] text-zinc-500 uppercase">Score</span>
-        <div id="hud-score" class="font-bold text-white tabular-nums text-sm sm:text-base">0</div>
-      </div>
-      <div class="text-right">
-        <span class="text-[10px] text-zinc-500 uppercase">Sector</span>
-        <div id="hud-sector" class="font-bold text-amber-400 tabular-nums text-sm sm:text-base">1</div>
-      </div>
-      <div class="text-right hidden sm:block">
-        <span class="text-[10px] text-zinc-500 uppercase">Weapon</span>
-        <div id="hud-weapon" class="font-bold text-cyan-300 text-xs">PULSE</div>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-1.5">
-      <button id="btn-sound" class="action-btn w-8 h-8 rounded-xl flex items-center justify-center text-xs text-zinc-300" title="Toggle Sound">
-        🔊
-      </button>
-      <button id="btn-pause" class="action-btn w-8 h-8 rounded-xl flex items-center justify-center text-xs text-zinc-300" title="Pause Game">
-        ⏸
-      </button>
-    </div>
-  </header>
-
-  <!-- GAME CANVAS (FULLSCREEN FLUID) -->
-  <canvas id="game-canvas" class="absolute inset-0 z-0"></canvas>
-
-  <!-- BOTTOM HINT -->
-  <footer class="absolute bottom-2 left-0 right-0 text-center text-[11px] font-mono text-zinc-500 z-10 pointer-events-none">
-    <span class="hidden sm:inline">Move: Mouse / Touch drag / <kbd class="px-1 py-0.5 rounded bg-white/10 text-zinc-300">WASD</kbd> · Fire: Auto / <kbd class="px-1 py-0.5 rounded bg-white/10 text-zinc-300">Space</kbd></span>
-  </footer>
-
-  <!-- START OVERLAY -->
-  <div id="overlay-start" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-4">
-      <div class="w-12 h-12 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 flex items-center justify-center text-xl font-bold mx-auto">
-        ✦
-      </div>
-      <div>
-        <h2 class="font-display text-2xl font-bold text-white">NEON GALAXY</h2>
-        <p class="text-xs text-zinc-400 mt-1">Multi-vector space combat, regenerating kinetic shield, dreadnought bosses, and weapon drops.</p>
-      </div>
-      <button id="btn-start" class="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-zinc-200 transition-colors cursor-pointer">
-        Launch Mission
-      </button>
-    </div>
-  </div>
-
-  <!-- PAUSE OVERLAY -->
-  <div id="overlay-pause" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 rounded-3xl max-w-xs w-full text-center space-y-4">
-      <h3 class="font-display text-xl font-bold text-white">Paused</h3>
-      <div class="space-y-2">
-        <button id="btn-resume" class="w-full py-2.5 rounded-xl bg-white text-black font-medium text-xs">Resume</button>
-        <button id="btn-restart" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs">Restart</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- GAME OVER OVERLAY -->
-  <div id="overlay-gameover" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-4">
-      <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Ship Lost</span>
-      <h2 class="font-display text-2xl font-bold text-white">MISSION FAILED</h2>
-      <div class="py-2 border-y border-white/10 space-y-1">
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Score</span>
-          <span id="go-score" class="text-white font-mono font-bold">0</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Enemies Neutralized</span>
-          <span id="go-kills" class="text-cyan-400 font-mono font-bold">0</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Sectors Cleared</span>
-          <span id="go-sector" class="text-amber-400 font-mono font-bold">1</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Career Best</span>
-          <span id="go-best" class="text-rose-400 font-mono font-bold">0</span>
-        </div>
-      </div>
-      <button id="btn-playagain" class="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-zinc-200 transition-colors cursor-pointer">
-        Deploy Again
-      </button>
-    </div>
-  </div>
-
+<body class="dg-retro-skin" data-game="galaxy">
+<div class="ui" id="ui">
+<div class="top" aria-live="polite">
+<div class="stat"><small>SCORE</small><b id="hud-score">0</b></div>
+<div class="stat"><small>SHIELD</small><b id="hud-shield">100</b></div>
+<div class="stat"><small>SECTOR</small><b id="hud-sector">1</b></div>
+<div class="stat"><small>GUN</small><b id="hud-weapon">PULSE</b></div>
+</div>
+<div id="hint" class="hint">Press Play to start</div>
+<div class="tools" id="tools">
+<button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE: ON</button>
+<button id="soundBtn" class="mini" type="button" aria-pressed="true">SOUND: ON</button>
+<button id="helpBtn" class="mini" type="button">HOW TO</button>
+</div>
+<div class="stage" id="stage"><div class="boardwrap"><canvas id="cv" aria-label="Galaxy playfield"></canvas></div></div>
+<div class="pad" id="pad">
+<button class="k blue" id="kL" type="button" aria-label="Move left"><div class="cap"><b>&#9664;</b><span>LEFT</span></div></button>
+<button class="k lime" id="kU" type="button" aria-label="Move up"><div class="cap"><b>&#9650;</b><span>UP</span></div></button>
+<button class="k lime" id="kD" type="button" aria-label="Move down"><div class="cap"><b>&#9660;</b><span>DOWN</span></div></button>
+<button class="k blue" id="kR" type="button" aria-label="Move right"><div class="cap"><b>&#9654;</b><span>RIGHT</span></div></button>
+</div>
+</div>
+<div id="overlay" class="overlay">
+<section class="panel" role="dialog" aria-labelledby="headline">
+<div class="eyebrow">D'GAMES &#183; SKY DESK</div>
+<h1 id="headline">Neon Galaxy</h1>
+<p id="message">Your ship fires on its own. Fly, dodge, and clear the sectors. New here? The tutorial walks through each button.</p>
+<div id="statsBox" class="stats" hidden></div>
+<div class="btns">
+<button id="start" class="big" type="button">Play</button>
+<button id="tutBtn" class="big alt" type="button">Tutorial</button>
+</div>
+<ul class="rules" id="rules">
+<li>Hold the arrow keys to fly. You can also drag on the board.</li>
+<li>Auto-fire is always on. Rams cost 30 shield, bullets cost 15.</li>
+<li>Capsules: G upgrades your gun for a while, S restores shield.</li>
+<li>Enemy colors start vivid and get dustier every sector. Scouts, interceptors, heavies.</li>
+</ul>
+<div class="keys">Keys: arrows or WASD fly, P pause.</div>
+</section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
 <script>
-// --- PROCEDURAL WEB AUDIO SYNTHESIZER ---
-let audioCtx = null;
-let soundEnabled = true;
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+(() => {
+const $=id=>document.getElementById(id);
+const W=360,H=480;
+const cv=$('cv'),ctx=cv.getContext('2d');
+cv.width=W;cv.height=H;
+const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message'),hintEl=$('hint'),statsBox=$('statsBox'),rules=$('rules');
+const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),helpBtn=$('helpBtn');
+const kL=$('kL'),kR=$('kR'),kU=$('kU'),kD=$('kD');
+const BASEH={scout:190,interceptor:38,heavy:280};
+function ecol(type,sec){const L=Math.min(8,sec-1);return 'hsl('+((BASEH[type]+L*14)%360)+' '+Math.max(34,84-L*7)+'% '+(50+L)+'%)'}
+let ship,bullets,eb,enemies,caps,parts,stars=[];
+let score=0,kills=0,sector=1,running=false,paused=false,frame=0,lastShot=0,lastHit=0,hold={L:0,R:0,U:0,D:0};
+let best=+localStorage.getItem('neon-galaxy-best')||0;
+let guideOn=true,guideTouched=false,sound=true,tut=null,raf=0,overlayMode='menu',flash=0;
+for(let i=0;i<60;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()<.2?2:1,v:.4+Math.random()*1.6});
+let ac=null;
+function tone(f,d,type,g){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'triangle';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function layout(){
+const st=$('stage');
+const ah=st.clientHeight-12,aw=st.clientWidth-16;
+const s=Math.max(.3,Math.min(ah/(H+6),aw/(W+6),1.5));
+cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px';
 }
-
-function playTone(freq, type = 'sawtooth', duration = 0.08, gainVal = 0.1) {
-  if (!soundEnabled || !audioCtx) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {}
+addEventListener('resize',layout);
+function reset(){
+ship={x:W/2,y:H-60,tx:W/2,ty:H-60,shield:100,wl:1,wt:0};
+bullets=[];eb=[];enemies=[];caps=[];parts=[];
+score=0;kills=0;sector=1;frame=0;lastHit=0;flash=0;
+hud();
 }
-
-const sfx = {
-  shoot: () => playTone(900, 'sawtooth', 0.06, 0.05),
-  enemyShoot: () => playTone(340, 'triangle', 0.07, 0.04),
-  hit: () => playTone(220, 'square', 0.08, 0.08),
-  shieldDamage: () => playTone(140, 'sawtooth', 0.15, 0.12),
-  explode: () => {
-    if (!soundEnabled || !audioCtx) return;
-    [180, 140, 90].forEach((f, idx) => setTimeout(() => playTone(f, 'square', 0.12, 0.08), idx * 40));
-  },
-  powerup: () => {
-    if (!soundEnabled || !audioCtx) return;
-    [440, 659, 880].forEach((f, idx) => setTimeout(() => playTone(f, 'sine', 0.1, 0.09), idx * 50));
-  },
-  sectorWin: () => {
-    if (!soundEnabled || !audioCtx) return;
-    [330, 440, 554, 659].forEach((f, idx) => setTimeout(() => playTone(f, 'triangle', 0.12, 0.1), idx * 70));
-  }
-};
-
-document.getElementById('btn-sound').addEventListener('click', () => {
-  soundEnabled = !soundEnabled;
-  document.getElementById('btn-sound').textContent = soundEnabled ? '🔊' : '🔇';
+function hud(){
+$('hud-score').textContent=score;$('hud-shield').textContent=Math.max(0,Math.round(ship.shield));$('hud-sector').textContent=sector;
+$('hud-weapon').textContent=['PULSE','DUAL','TRIPLE','SPREAD'][ship.wl-1]||'SPREAD';
+}
+function setHint(h){hintEl.innerHTML=h}
+function defHint(){if(tut)return;if(!running){setHint('Press Play to start');return}setHint(guideOn?'<em>Rings</em> mark bullets and capsules.':'Guide off. Dodge on instinct.')}
+function setGuide(on,user){guideOn=on;if(user)guideTouched=true;guideBtn.textContent='GUIDE: '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));defHint()}
+function setSound(on){sound=on;soundBtn.textContent='SOUND: '+(on?'ON':'OFF');soundBtn.setAttribute('aria-pressed',String(on))}
+function spawn(forceType,x){
+const types=['scout','interceptor','heavy'];
+const type=forceType||types[Math.floor(Math.random()*(sector>2?3:2))];
+const w=type==='heavy'?40:26;
+enemies.push({x:x!==undefined?x:Math.random()*(W-w-30)+15,y:-40,w:w,h:w,type:type,hp:type==='heavy'?6:type==='interceptor'?3:1,vy:tut?1.2:1.3+Math.random()*1.3,vx:tut?0:(Math.random()-.5)*1.4,st:60+Math.floor(Math.random()*90)});
+}
+function shoot(){
+tone(900,.05,'sawtooth',.03);
+const x=ship.x,y=ship.y,c='#242a2a';
+const B=(dx,dy,vx,vy)=>bullets.push({x:x+dx,y:y+dy,vx:vx,vy:vy});
+if(ship.wl===1)B(0,-16,0,-9);
+else if(ship.wl===2){B(-9,-10,0,-9);B(9,-10,0,-9)}
+else if(ship.wl===3){B(0,-16,0,-9);B(-11,-8,-1.6,-8.7);B(11,-8,1.6,-8.7)}
+else{B(-5,-16,-.6,-9);B(5,-16,.6,-9);B(-14,-8,-2.6,-8.4);B(14,-8,2.6,-8.4)}
+}
+function burst(x,y,c,n){for(let i=0;i<(n||14);i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*7,vy:(Math.random()-.5)*7,c:c,l:1})}
+function dmg(a){
+ship.shield-=a;lastHit=performance.now();flash=.25;tone(140,.15,'sawtooth',.08);buzz(a>20?[60,30,60]:30);
+if(tut){if(ship.shield<30)ship.shield=100}
+else if(ship.shield<=0){hud();gameOver();return}
+hud();
+}
+function update(now){
+frame++;
+const sp=5.2;
+if(hold.L)ship.tx-=sp;if(hold.R)ship.tx+=sp;if(hold.U)ship.ty-=sp;if(hold.D)ship.ty+=sp;
+ship.tx=Math.max(16,Math.min(W-16,ship.tx));ship.ty=Math.max(24,Math.min(H-24,ship.ty));
+ship.x+=(ship.tx-ship.x)*.25;ship.y+=(ship.ty-ship.y)*.25;
+if(now-lastShot>170){shoot();lastShot=now}
+parts.push({x:ship.x+(Math.random()-.5)*6,y:ship.y+14,vx:(Math.random()-.5),vy:2+Math.random()*2,c:Math.random()<.5?'#8fc23a':'#c4503c',l:.5});
+if(now-lastHit>4000&&ship.shield<100){ship.shield=Math.min(100,ship.shield+.15);hud()}
+if(ship.wt>0){ship.wt--;if(ship.wt===0){ship.wl=1;hud()}}
+stars.forEach(s=>{s.y+=s.v;if(s.y>H){s.y=0;s.x=Math.random()*W}});
+if(flash>0)flash-=.016;
+if(!tut){
+const rate=Math.max(35,75-sector*5);
+if(frame%rate===0)spawn();
+}
+for(let i=bullets.length-1;i>=0;i--){
+const b=bullets[i];b.x+=b.vx;b.y+=b.vy;
+if(b.y<-20||b.x<-20||b.x>W+20){bullets.splice(i,1);continue}
+for(let j=enemies.length-1;j>=0;j--){
+const en=enemies[j];
+if(b.x>=en.x&&b.x<=en.x+en.w&&b.y>=en.y&&b.y<=en.y+en.h){
+en.hp--;bullets.splice(i,1);burst(b.x,b.y,'#242a2a',3);tone(220,.06,'square',.05);
+if(en.hp<=0){
+tone(160,.1,'square',.06);burst(en.x+en.w/2,en.y+en.h/2,ecol(en.type,sector),16);buzz(12);
+score+=en.type==='heavy'?100:en.type==='interceptor'?50:25;kills++;
+if(!tut&&Math.random()<.22)caps.push({x:en.x+en.w/2,y:en.y+en.h/2,t:Math.random()<.6?'weapon':'shield',vy:1.6});
+enemies.splice(j,1);
+if(score>best){best=score;localStorage.setItem('neon-galaxy-best',best)}
+if(tut)tutKill();
+else if(kills%15===0){sector++;tone(440,.15,'triangle',.08);tone(660,.18,'triangle',.06);if(sector>=3&&!guideTouched&&guideOn)setGuide(false,false)}
+hud();
+}
+break;
+}}}
+for(let i=eb.length-1;i>=0;i--){
+const e=eb[i];e.x+=e.vx;e.y+=e.vy;
+if(e.y>H+20){eb.splice(i,1);continue}
+if(Math.hypot(e.x-ship.x,e.y-ship.y)<13){eb.splice(i,1);dmg(15);if(!running)return}
+}
+for(let i=enemies.length-1;i>=0;i--){
+const en=enemies[i];en.y+=en.vy;en.x+=en.vx;
+if(en.x<8||en.x>W-en.w-8)en.vx=-en.vx;
+if(en.type!=='scout'&&!tut){en.st--;if(en.st<=0){tone(340,.06,'triangle',.03);eb.push({x:en.x+en.w/2,y:en.y+en.h,vx:0,vy:3.6});en.st=70+Math.floor(Math.random()*60)}}
+if(Math.hypot(en.x+en.w/2-ship.x,en.y+en.h/2-ship.y)<22){dmg(30);burst(en.x+en.w/2,en.y+en.h/2,ecol(en.type,sector),14);enemies.splice(i,1);if(!running)return;continue}
+if(en.y>H+30){enemies.splice(i,1);if(tut&&tut.step===4)tutSpawnScout()}
+}
+for(let i=caps.length-1;i>=0;i--){
+const p=caps[i];p.y+=p.vy;
+if(p.y>H){caps.splice(i,1);if(tut&&tut.step===5)tutCap();continue}
+if(Math.hypot(p.x-ship.x,p.y-ship.y)<22){
+tone(660,.1,'sine',.07);tone(880,.12,'sine',.05);buzz(20);
+if(p.t==='weapon'){ship.wl=Math.min(4,ship.wl+1);ship.wt=700}else ship.shield=Math.min(100,ship.shield+40);
+caps.splice(i,1);hud();
+if(tut&&tut.step===5)tutNext();
+}}
+for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.l-=.025;if(p.l<=0)parts.splice(i,1)}
+if(tut){
+if(tut.step===0&&ship.x<45)tutNext();
+else if(tut.step===1&&ship.x>W-45)tutNext();
+else if(tut.step===2&&ship.y<110)tutNext();
+else if(tut.step===3&&ship.y>H-70)tutNext();
+}
+}
+function threat(){
+let best=null;
+for(const e of eb){if(e.y<ship.y&&e.y>ship.y-260&&Math.abs(e.x-ship.x)<30){if(!best||e.y>best.y)best=e}}
+return best;
+}
+function drawShip(x,y){
+ctx.fillStyle=flash>0?'#fff':'#242a2a';
+ctx.beginPath();ctx.moveTo(x,y-18);ctx.lineTo(x+15,y+14);ctx.lineTo(x,y+7);ctx.lineTo(x-15,y+14);ctx.closePath();ctx.fill();
+ctx.fillStyle='#8fc23a';ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+6,y+4);ctx.lineTo(x,y+1);ctx.lineTo(x-6,y+4);ctx.closePath();ctx.fill();
+}
+function ring(x,y,r){
+ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
+ctx.setLineDash([5,4]);ctx.strokeStyle='#c4503c';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();ctx.setLineDash([]);
+}
+function draw(){
+ctx.fillStyle='#eee8d9';ctx.fillRect(0,0,W,H);
+ctx.strokeStyle='#242a2a12';ctx.lineWidth=1;
+for(let x=0;x<=W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+for(let y=0;y<=H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ctx.fillStyle='#242a2a55';stars.forEach(s=>ctx.fillRect(s.x,s.y,s.s,s.s));
+caps.forEach(p=>{
+ctx.beginPath();ctx.arc(p.x,p.y,10,0,7);ctx.fillStyle=p.t==='weapon'?'#3b72d8':'#8fc23a';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#242a2a';ctx.stroke();
+ctx.fillStyle='#fff';ctx.font='900 11px ui-monospace,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.t==='weapon'?'G':'S',p.x,p.y+1);
+if(guideOn&&running)ring(p.x,p.y,17);
 });
-
-// --- ENGINE & STATE ---
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-
-let W = window.innerWidth;
-let H = window.innerHeight;
-
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-let running = false;
-let paused = false;
-let score = 0;
-let kills = 0;
-let sector = 1;
-let bestScore = +localStorage.getItem('neon-galaxy-best') || 0;
-
-// Player Ship
-const player = {
-  x: W / 2,
-  y: H - 100,
-  targetX: W / 2,
-  targetY: H - 100,
-  vx: 0,
-  vy: 0,
-  w: 32,
-  h: 36,
-  shield: 100,
-  maxShield: 100,
-  lastHitTime: 0,
-  weaponLevel: 1, // 1 = Single, 2 = Dual, 3 = Triple, 4 = Quad
-  weaponTimer: 0
-};
-
-let bullets = [];
-let enemyBullets = [];
-let enemies = [];
-let powerups = [];
-let particles = [];
-let stars = [];
-let keys = {};
-let lastShot = 0;
-
-// Init Stars
-for (let i = 0; i < 80; i++) {
-  stars.push({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    size: Math.random() < 0.2 ? 2 : 1,
-    speed: 0.5 + Math.random() * 2
-  });
-}
-
-function initGame() {
-  score = 0;
-  kills = 0;
-  sector = 1;
-  player.shield = 100;
-  player.weaponLevel = 1;
-  player.weaponTimer = 0;
-  player.x = player.targetX = W / 2;
-  player.y = player.targetY = H - 120;
-  bullets = [];
-  enemyBullets = [];
-  enemies = [];
-  powerups = [];
-  particles = [];
-  running = true;
-  paused = false;
-  updateHUD();
-}
-
-function updateHUD() {
-  document.getElementById('hud-score').textContent = score;
-  document.getElementById('hud-sector').textContent = sector;
-  document.getElementById('hud-shield-bar').style.width = Math.max(0, player.shield) + '%';
-  document.getElementById('hud-shield-txt').textContent = Math.max(0, Math.round(player.shield)) + '%';
-  
-  const weapons = ['PULSE', 'DUAL', 'TRIPLE', 'SPREAD'];
-  document.getElementById('hud-weapon').textContent = weapons[player.weaponLevel - 1] || 'SPREAD';
-}
-
-// Spawn Enemy
-function spawnEnemy() {
-  if (!running || paused) return;
-  const types = ['scout', 'interceptor', 'heavy'];
-  const type = types[Math.floor(Math.random() * (sector > 2 ? 3 : 2))];
-
-  const w = type === 'heavy' ? 44 : 28;
-  const h = type === 'heavy' ? 44 : 28;
-  enemies.push({
-    x: Math.random() * (W - w - 40) + 20,
-    y: -50,
-    w, h,
-    type,
-    hp: type === 'heavy' ? 6 : type === 'interceptor' ? 3 : 1,
-    maxHp: type === 'heavy' ? 6 : type === 'interceptor' ? 3 : 1,
-    vy: 1.5 + Math.random() * 1.5,
-    vx: (Math.random() - 0.5) * 1.5,
-    shootTimer: 60 + Math.floor(Math.random() * 90),
-    color: type === 'heavy' ? '#a855f7' : type === 'interceptor' ? '#f59e0b' : '#00f0ff'
-  });
-}
-
-// Shoot Player Laser
-function playerShoot() {
-  sfx.shoot();
-  if (player.weaponLevel === 1) {
-    bullets.push({ x: player.x, y: player.y - 18, vx: 0, vy: -14, color: '#00f0ff' });
-  } else if (player.weaponLevel === 2) {
-    bullets.push({ x: player.x - 10, y: player.y - 12, vx: 0, vy: -14, color: '#00f0ff' });
-    bullets.push({ x: player.x + 10, y: player.y - 12, vx: 0, vy: -14, color: '#00f0ff' });
-  } else if (player.weaponLevel === 3) {
-    bullets.push({ x: player.x, y: player.y - 18, vx: 0, vy: -14, color: '#00f0ff' });
-    bullets.push({ x: player.x - 12, y: player.y - 10, vx: -2.5, vy: -13.5, color: '#38bdf8' });
-    bullets.push({ x: player.x + 12, y: player.y - 10, vx: 2.5, vy: -13.5, color: '#38bdf8' });
-  } else {
-    // Quad Spread
-    bullets.push({ x: player.x - 6, y: player.y - 18, vx: -1, vy: -14, color: '#38bdf8' });
-    bullets.push({ x: player.x + 6, y: player.y - 18, vx: 1, vy: -14, color: '#38bdf8' });
-    bullets.push({ x: player.x - 16, y: player.y - 10, vx: -4, vy: -13, color: '#a855f7' });
-    bullets.push({ x: player.x + 16, y: player.y - 10, vx: 4, vy: -13, color: '#a855f7' });
-  }
-}
-
-// Spawns particle burst
-function spawnParticles(x, y, color, count = 14) {
-  for (let i = 0; i < count; i++) {
-    particles.push({
-      x, y,
-      vx: (Math.random() - 0.5) * 8,
-      vy: (Math.random() - 0.5) * 8,
-      color,
-      life: 1.0
-    });
-  }
-}
-
-// --- MAIN UPDATE LOOP ---
-let frameCount = 0;
-
-function update(now = 0) {
-  if (!running || paused) {
-    requestAnimationFrame(update);
-    return;
-  }
-  frameCount++;
-
-  // Keyboard Movement
-  const moveSpeed = 6.5;
-  if (keys['ArrowLeft'] || keys['a'] || keys['A']) player.targetX -= moveSpeed;
-  if (keys['ArrowRight'] || keys['d'] || keys['D']) player.targetX += moveSpeed;
-  if (keys['ArrowUp'] || keys['w'] || keys['W']) player.targetY -= moveSpeed;
-  if (keys['ArrowDown'] || keys['s'] || keys['S']) player.targetY += moveSpeed;
-
-  player.targetX = Math.max(20, Math.min(W - 20, player.targetX));
-  player.targetY = Math.max(60, Math.min(H - 40, player.targetY));
-
-  // Smooth interpolation
-  player.x += (player.targetX - player.x) * 0.2;
-  player.y += (player.targetY - player.y) * 0.2;
-
-  // Auto-fire
-  if (now - lastShot > 160) {
-    playerShoot();
-    lastShot = now;
-  }
-
-  // Engine exhaust particles
-  particles.push({
-    x: player.x + (Math.random() - 0.5) * 6,
-    y: player.y + 16,
-    vx: (Math.random() - 0.5) * 1.5,
-    vy: 3 + Math.random() * 3,
-    color: Math.random() < 0.5 ? '#00f0ff' : '#ffffff',
-    life: 0.6
-  });
-
-  // Shield Recharge (after 4s safe)
-  if (now - player.lastHitTime > 4000 && player.shield < player.maxShield) {
-    player.shield = Math.min(player.maxShield, player.shield + 0.15);
-    updateHUD();
-  }
-
-  // Weapon Upgrade Timer
-  if (player.weaponTimer > 0) {
-    player.weaponTimer--;
-    if (player.weaponTimer === 0) {
-      player.weaponLevel = 1;
-      updateHUD();
-    }
-  }
-
-  // Stars Scroll
-  stars.forEach(st => {
-    st.y += st.speed;
-    if (st.y > H) {
-      st.y = 0;
-      st.x = Math.random() * W;
-    }
-  });
-
-  // Spawn Enemies
-  const spawnRate = Math.max(35, 75 - sector * 5);
-  if (frameCount % spawnRate === 0) {
-    spawnEnemy();
-  }
-
-  // Bullets
-  for (let i = bullets.length - 1; i >= 0; i--) {
-    const b = bullets[i];
-    b.x += b.vx;
-    b.y += b.vy;
-    if (b.y < -20) {
-      bullets.splice(i, 1);
-      continue;
-    }
-
-    // Check hit against enemies
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const en = enemies[j];
-      if (b.x >= en.x && b.x <= en.x + en.w && b.y >= en.y && b.y <= en.y + en.h) {
-        en.hp--;
-        bullets.splice(i, 1);
-        spawnParticles(b.x, b.y, '#00f0ff', 4);
-        sfx.hit();
-
-        if (en.hp <= 0) {
-          sfx.explode();
-          spawnParticles(en.x + en.w / 2, en.y + en.h / 2, en.color, 18);
-          score += en.type === 'heavy' ? 100 : en.type === 'interceptor' ? 50 : 25;
-          kills++;
-
-          // Maybe drop powerup
-          if (Math.random() < 0.22) {
-            powerups.push({
-              x: en.x + en.w / 2,
-              y: en.y + en.h / 2,
-              type: Math.random() < 0.6 ? 'weapon' : 'shield',
-              vy: 2
-            });
-          }
-
-          enemies.splice(j, 1);
-          if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('neon-galaxy-best', bestScore);
-          }
-          if (kills % 15 === 0) {
-            sector++;
-            sfx.sectorWin();
-          }
-          updateHUD();
-        }
-        break;
-      }
-    }
-  }
-
-  // Enemy Bullets
-  for (let i = enemyBullets.length - 1; i >= 0; i--) {
-    const eb = enemyBullets[i];
-    eb.x += eb.vx;
-    eb.y += eb.vy;
-    if (eb.y > H + 20) {
-      enemyBullets.splice(i, 1);
-      continue;
-    }
-
-    // Hit player
-    if (Math.hypot(eb.x - player.x, eb.y - player.y) < 16) {
-      enemyBullets.splice(i, 1);
-      damagePlayer(15);
-    }
-  }
-
-  // Enemies
-  for (let i = enemies.length - 1; i >= 0; i--) {
-    const en = enemies[i];
-    en.y += en.vy;
-    en.x += en.vx;
-    if (en.x < 10 || en.x > W - en.w - 10) en.vx = -en.vx;
-
-    // Enemy Shooting
-    if (en.type !== 'scout') {
-      en.shootTimer--;
-      if (en.shootTimer <= 0) {
-        sfx.enemyShoot();
-        enemyBullets.push({ x: en.x + en.w / 2, y: en.y + en.h, vx: 0, vy: 5 });
-        en.shootTimer = 70 + Math.floor(Math.random() * 60);
-      }
-    }
-
-    // Collision with player
-    if (Math.hypot(en.x + en.w / 2 - player.x, en.y + en.h / 2 - player.y) < 26) {
-      damagePlayer(30);
-      spawnParticles(en.x + en.w / 2, en.y + en.h / 2, en.color, 16);
-      enemies.splice(i, 1);
-      continue;
-    }
-
-    if (en.y > H + 40) {
-      enemies.splice(i, 1);
-    }
-  }
-
-  // Powerups
-  for (let i = powerups.length - 1; i >= 0; i--) {
-    const p = powerups[i];
-    p.y += p.vy;
-    if (p.y > H) {
-      powerups.splice(i, 1);
-      continue;
-    }
-    if (Math.hypot(p.x - player.x, p.y - player.y) < 26) {
-      sfx.powerup();
-      if (p.type === 'weapon') {
-        player.weaponLevel = Math.min(4, player.weaponLevel + 1);
-        player.weaponTimer = 700;
-      } else {
-        player.shield = Math.min(player.maxShield, player.shield + 40);
-      }
-      powerups.splice(i, 1);
-      updateHUD();
-    }
-  }
-
-  // Particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i];
-    pt.x += pt.vx;
-    pt.y += pt.vy;
-    pt.life -= 0.025;
-    if (pt.life <= 0) particles.splice(i, 1);
-  }
-
-  draw();
-  requestAnimationFrame(update);
-}
-
-function damagePlayer(amt) {
-  player.shield -= amt;
-  player.lastHitTime = performance.now();
-  sfx.shieldDamage();
-  spawnParticles(player.x, player.y, '#00f0ff', 8);
-  updateHUD();
-  if (player.shield <= 0) {
-    gameOver();
-  }
-}
-
-// --- DRAWING ---
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-
-  // Stars
-  ctx.fillStyle = '#ffffff';
-  stars.forEach(st => {
-    ctx.globalAlpha = st.size === 1 ? 0.35 : 0.8;
-    ctx.fillRect(st.x, st.y, st.size, st.size);
-  });
-  ctx.globalAlpha = 1.0;
-
-  // Powerups
-  powerups.forEach(p => {
-    ctx.fillStyle = p.type === 'weapon' ? '#f59e0b' : '#10b981';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 9px JetBrains Mono';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(p.type === 'weapon' ? 'W' : 'S', p.x, p.y);
-  });
-
-  // Bullets
-  bullets.forEach(b => {
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x - 1.5, b.y - 8, 3, 14);
-  });
-
-  // Enemy Bullets
-  ctx.fillStyle = '#f43f5e';
-  enemyBullets.forEach(eb => {
-    ctx.beginPath();
-    ctx.arc(eb.x, eb.y, 4, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Enemies
-  enemies.forEach(en => {
-    ctx.fillStyle = en.color;
-    ctx.beginPath();
-    ctx.moveTo(en.x + en.w / 2, en.y + en.h);
-    ctx.lineTo(en.x, en.y);
-    ctx.lineTo(en.x + en.w, en.y);
-    ctx.closePath();
-    ctx.fill();
-
-    // HP Bar if damaged
-    if (en.hp < en.maxHp) {
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(en.x, en.y - 6, en.w, 3);
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(en.x, en.y - 6, en.w * (en.hp / en.maxHp), 3);
-    }
-  });
-
-  // Player Ship
-  ctx.save();
-  ctx.translate(player.x, player.y);
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(0, -18);
-  ctx.lineTo(14, 14);
-  ctx.lineTo(0, 8);
-  ctx.lineTo(-14, 14);
-  ctx.closePath();
-  ctx.fill();
-
-  // Cockpit
-  ctx.fillStyle = '#00f0ff';
-  ctx.beginPath();
-  ctx.moveTo(0, -10);
-  ctx.lineTo(4, 2);
-  ctx.lineTo(-4, 2);
-  ctx.closePath();
-  ctx.fill();
-
-  // Shield Aura
-  if (player.shield > 20) {
-    ctx.strokeStyle = `rgba(0, 240, 255, ${player.shield / 250})`;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, 22, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // Particles
-  particles.forEach(pt => {
-    ctx.fillStyle = pt.color;
-    ctx.globalAlpha = pt.life;
-    ctx.fillRect(pt.x, pt.y, 2, 2);
-  });
-  ctx.globalAlpha = 1.0;
-}
-
-function gameOver() {
-  running = false;
-  sfx.explode();
-  document.getElementById('go-score').textContent = score;
-  document.getElementById('go-kills').textContent = kills;
-  document.getElementById('go-sector').textContent = sector;
-  document.getElementById('go-best').textContent = bestScore;
-  document.getElementById('overlay-gameover').classList.remove('hidden');
-}
-
-// --- CONTROLS & LISTENERS ---
-window.addEventListener('mousemove', e => {
-  if (running && !paused) {
-    player.targetX = e.clientX;
-    player.targetY = e.clientY;
-  }
+enemies.forEach(en=>{
+const c=ecol(en.type,sector);ctx.fillStyle=c;ctx.strokeStyle='#242a2a';ctx.lineWidth=2.5;
+const x=en.x,y=en.y,w=en.w,h=en.h;
+ctx.beginPath();
+if(en.type==='scout'){ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w/2,y+h)}
+else if(en.type==='interceptor'){ctx.moveTo(x+w/2,y+h);ctx.lineTo(x,y+h*.3);ctx.lineTo(x+w*.25,y);ctx.lineTo(x+w*.75,y);ctx.lineTo(x+w,y+h*.3)}
+else{ctx.rect(x,y,w,h)}
+ctx.closePath();ctx.fill();ctx.stroke();
+if(en.hp>1&&en.type==='heavy'){ctx.fillStyle='#242a2a';ctx.fillRect(x+4,y+h/2-2,w-8,4)}
+if(tut&&tut.step===4&&guideOn){ring(x+w/2,y+h/2,w*.9)}
 });
-
-window.addEventListener('touchmove', e => {
-  if (running && !paused && e.touches.length > 0) {
-    player.targetX = e.touches[0].clientX;
-    player.targetY = e.touches[0].clientY;
-  }
-}, { passive: true });
-
-window.addEventListener('keydown', e => {
-  initAudio();
-  keys[e.key] = true;
-  if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') togglePause();
-});
-window.addEventListener('keyup', e => {
-  keys[e.key] = false;
-});
-
-function togglePause() {
-  if (!running) return;
-  paused = !paused;
-  document.getElementById('overlay-pause').classList.toggle('hidden', !paused);
+bullets.forEach(b=>{ctx.fillStyle='#242a2a';ctx.fillRect(b.x-1.5,b.y-6,3,10);ctx.fillStyle='#8fc23a';ctx.fillRect(b.x-1.5,b.y-6,3,3)});
+ctx.fillStyle='#c4503c';
+eb.forEach(e=>{ctx.beginPath();ctx.arc(e.x,e.y,4.5,0,7);ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle='#242a2a';ctx.stroke()});
+if(guideOn&&running){const t=threat();if(t)ring(t.x,t.y,13)}
+parts.forEach(p=>{ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,3,3);ctx.globalAlpha=1});
+drawShip(ship.x,ship.y);
+if(ship.wt>0){ctx.fillStyle='#3b72d8';ctx.fillRect(ship.x-14,ship.y+17,28*(ship.wt/700),3)}
+ctx.fillStyle='#242a2a22';ctx.fillRect(0,0,W,4);
+ctx.fillStyle='#8fc23a';ctx.fillRect(0,H-6,W*ship.shield/100,6);
+ctx.strokeStyle='#242a2a';ctx.lineWidth=1;ctx.strokeRect(0,H-6,W,6);
 }
-
-document.getElementById('btn-pause').addEventListener('click', togglePause);
-document.getElementById('btn-resume').addEventListener('click', togglePause);
-document.getElementById('btn-restart').addEventListener('click', () => {
-  document.getElementById('overlay-pause').classList.add('hidden');
-  initGame();
+function guideKeys(){
+if(!running||tut)return;
+const t=guideOn?threat():null;
+let side=0;if(t){side=ship.x<t.x?-1:1;if(t.x<40)side=1;if(t.x>W-40)side=-1}
+kL.classList.toggle('guide',side<0);kR.classList.toggle('guide',side>0);
+if(t)setHint('Dodge <em>'+(side<0?'LEFT':'RIGHT')+'</em>. Ring marks the shot.');
+else if(!tut)defHint();
+}
+function loop(now){
+raf=requestAnimationFrame(loop);
+if(running&&!paused)update(now);
+draw();guideKeys();
+}
+function clearGuides(){document.querySelectorAll('.k').forEach(k=>k.classList.remove('guide'))}
+function gameOver(){
+running=false;hold={L:0,R:0,U:0,D:0};
+overlayMode='over';head.textContent='Ship lost';msg.textContent='Shield depleted.';
+statsBox.hidden=false;statsBox.innerHTML='<div><span>Score</span><b>'+score+'</b></div><div><span>Kills</span><b>'+kills+'</b></div><div><span>Sector</span><b>'+sector+'</b></div><div><span>Best</span><b>'+best+'</b></div>';
+rules.hidden=true;start.textContent='Play again';tutBtn.hidden=false;overlay.hidden=false;clearGuides();
+tone(120,.4,'sawtooth',.09);buzz([100,50,150]);
+}
+const STEPS=[
+['Hold <em>LEFT</em> to fly to the left wall.','kL'],
+['Now hold <em>RIGHT</em> to cross over.','kR'],
+['Hold <em>UP</em> to fly toward the top.','kU'],
+['Hold <em>DOWN</em> to drop back to the bottom.','kD'],
+['Your gun fires on its own. Line up under the ringed <em>scouts</em> and shoot 3 down.','kL,kR'],
+['Fly into the <em>G capsule</em>. It upgrades your gun for a while.','kL,kR,kU,kD']
+];
+function startTutorial(){
+reset();tut={step:0,kills:0};running=true;paused=false;overlay.hidden=true;setGuide(true,false);stepInit();
+}
+function stepInit(){
+clearGuides();const s=STEPS[tut.step];setHint(s[0]);
+s[1].split(',').forEach(i=>$(i).classList.add('guide'));
+if(tut.step===4){tut.kills=0;tutSpawnScout()}
+if(tut.step===5){enemies=[];tutCap()}
+}
+function tutSpawnScout(){
+if(enemies.length>=2)return;
+spawn('scout',20+Math.random()*(W-80));
+}
+function tutKill(){
+if(tut.step!==4)return;
+tut.kills++;tone(700,.08,'sine',.06);
+if(tut.kills>=3)tutNext();else tutSpawnScout();
+}
+function tutCap(){
+caps=[{x:50+Math.random()*(W-100),y:40,t:'weapon',vy:1.4}];
+}
+function tutNext(){
+tut.step++;tone(740,.1,'sine',.06);
+if(tut.step>=STEPS.length){endTutorial();return}
+stepInit();
+}
+function endTutorial(){
+tut=null;running=false;hold={L:0,R:0,U:0,D:0};clearGuides();
+overlayMode='menu';head.textContent='Tutorial done';msg.textContent='That is every button. Keep moving and let the gun work.';
+statsBox.hidden=true;rules.hidden=false;start.textContent='Play';overlay.hidden=false;reset();
+}
+function startGame(){
+tut=null;clearGuides();reset();running=true;paused=false;if(!guideTouched)setGuide(true,false);
+overlay.hidden=true;statsBox.hidden=true;defHint();tone(660,.08,'triangle',.06);
+}
+function bindKey(el,d){
+const dn=e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}el.classList.add('is-down');tone(330,.04,'square',.03);buzz(8);if(running&&!paused)hold[d]=1};
+const up=()=>{el.classList.remove('is-down');hold[d]=0};
+el.addEventListener('pointerdown',dn);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
+}
+bindKey(kL,'L');bindKey(kR,'R');bindKey(kU,'U');bindKey(kD,'D');
+const KM={ArrowLeft:'L',a:'L',A:'L',ArrowRight:'R',d:'R',D:'R',ArrowUp:'U',w:'U',W:'U',ArrowDown:'D',s:'D',S:'D'};
+const KE={L:kL,R:kR,U:kU,D:kD};
+addEventListener('keydown',e=>{
+const d=KM[e.key];
+if(d){e.preventDefault();hold[d]=(running&&!paused)?1:0;KE[d].classList.add('is-down')}
+else if(e.key==='p'||e.key==='P')togglePause();
 });
-
-document.getElementById('btn-start').addEventListener('click', () => {
-  initAudio();
-  document.getElementById('overlay-start').classList.add('hidden');
-  initGame();
+addEventListener('keyup',e=>{const d=KM[e.key];if(d){hold[d]=0;KE[d].classList.remove('is-down')}});
+function dragTo(cx,cy){
+if(!running||paused)return;
+const r=cv.getBoundingClientRect(),s=W/r.width;
+ship.tx=Math.max(16,Math.min(W-16,(cx-r.left)*s));ship.ty=Math.max(24,Math.min(H-24,(cy-r.top)*s-30));
+}
+cv.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='mouse')dragTo(e.clientX,e.clientY)});
+cv.addEventListener('pointerdown',e=>dragTo(e.clientX,e.clientY));
+function togglePause(){
+if(!running)return;
+if(overlay.hidden){paused=true;hold={L:0,R:0,U:0,D:0};overlayMode='pause';head.textContent='Paused';msg.textContent='Take a breath.';statsBox.hidden=true;rules.hidden=false;start.textContent='Resume';tutBtn.hidden=true;overlay.hidden=false}
+else if(overlayMode==='pause'||overlayMode==='help')resume();
+}
+function resume(){paused=false;overlay.hidden=true;defHint()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused&&overlay.hidden)togglePause()});
+start.addEventListener('click',()=>{if(overlayMode==='pause'||overlayMode==='help'){resume();return}tutBtn.hidden=false;startGame()});
+tutBtn.addEventListener('click',()=>{tutBtn.hidden=false;startTutorial()});
+guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+soundBtn.addEventListener('click',()=>setSound(!sound));
+helpBtn.addEventListener('click',()=>{
+if(running&&!paused){paused=true;hold={L:0,R:0,U:0,D:0}}
+overlayMode=running?'help':'menu';head.textContent='How to play';msg.textContent='Fly, dodge, and let the auto-fire do the work.';
+statsBox.hidden=true;rules.hidden=false;start.textContent=running?'Resume':'Play';tutBtn.hidden=false;overlay.hidden=false;
 });
-
-document.getElementById('btn-playagain').addEventListener('click', () => {
-  initAudio();
-  document.getElementById('overlay-gameover').classList.add('hidden');
-  initGame();
-});
-
-requestAnimationFrame(update);
+window.__t={s:()=>({tut:tut?tut.step:null,x:ship.x,y:ship.y,shield:ship.shield,score:score,sector:sector,running:running,enemies:enemies.length,caps:caps.length,wl:ship.wl}),
+hold:(d,v)=>{hold[d]=v?1:0},setX:x=>{ship.tx=x;ship.x=x},
+chase:()=>{const t=enemies[0];if(t)ship.tx=t.x+t.w/2;else if(caps[0])ship.tx=caps[0].x;if(caps[0]){ship.ty=caps[0].y}},
+dodge:()=>{const t=threat();if(t)ship.tx=t.x<W/2?t.x+50:t.x-50;else{const e=enemies[0];if(e)ship.tx=e.x+e.w/2}}};
+reset();running=false;$('hud-best')&&0;
+layout();raf=requestAnimationFrame(loop);
+})();
 </script>
-  <script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>
