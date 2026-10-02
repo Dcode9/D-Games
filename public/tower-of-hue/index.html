@@ -1,34 +1,294 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
 <title>Tower of Hue — D'Games</title>
 <link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0e1517}body{touch-action:none;font-family:Inter,system-ui,sans-serif}canvas{width:100%;height:100%;display:block}
-.hud{position:fixed;left:50%;top:88px;transform:translateX(-50%);z-index:4;text-align:center;color:#f4efe2;padding:8px 13px;border:1px solid rgba(242,238,224,.2);border-radius:10px;background:rgba(13,21,23,.72);backdrop-filter:blur(8px)}.hud small{display:block;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em;color:#98a19d}.hud b{display:block;margin-top:4px;font:900 24px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;font:800 7px/1 JetBrains Mono,monospace;color:#a6afab}
-.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,8,9,.8);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,25,27,.96);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#83a36f;letter-spacing:.16em}.panel h1{margin:10px 0 8px;font:900 42px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#a85d49;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.ui{position:fixed;z-index:3;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.top{margin-top:max(86px,calc(env(safe-area-inset-top) + 78px));display:flex;gap:8px;padding:8px 11px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18}
+.stat{min-width:70px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 18px/1 ui-monospace,monospace}
+#streak{color:var(--brick)}
+.hint{margin-top:9px;padding:7px 12px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.05em;text-align:center;max-width:calc(100% - 26px);min-height:30px}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin-top:8px;display:flex;gap:8px;pointer-events:auto}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:9px 10px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+.padwrap{position:absolute;left:50%;transform:translateX(-50%);bottom:max(96px,calc(env(safe-area-inset-bottom) + 92px));width:min(420px,calc(100% - 24px));pointer-events:auto}
+.key{position:relative;display:block;width:100%;min-height:92px;padding:0;border:0;border-radius:20px;background:var(--limed);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none}
+.key .cap{position:absolute;inset:0 0 11px 0;border-radius:20px;background:linear-gradient(180deg,#ffffff50,#ffffff00 46%),var(--lime);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff80,inset 0 -7px 12px #00000020;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1d2a0c;transition:transform .07s ease-out}
+.key b{font:900 18px/1 ui-monospace,monospace;letter-spacing:.14em}
+.key span{font:800 9px/1 ui-monospace,monospace;letter-spacing:.1em;padding:3px 8px;border-radius:5px;background:#0000001c}
+.key.is-down .cap,.key:active .cap{transform:translateY(9px);box-shadow:inset 0 2px 0 #ffffff40,inset 0 -2px 4px #00000040;transition-duration:.03s}
+.key.now .cap{animation:glow .5s ease-in-out infinite alternate;outline:4px solid #fff;outline-offset:3px}
+.key.now::before{content:"NOW!";position:absolute;left:50%;top:-26px;transform:translateX(-50%);padding:4px 9px;border-radius:7px;background:var(--ink);color:#fff;font:900 10px/1 ui-monospace,monospace;letter-spacing:.14em}
+.key:focus-visible .cap{outline:3px solid var(--ink);outline-offset:3px}
+@keyframes glow{from{filter:brightness(1)}to{filter:brightness(1.18)}}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(34px,10vw,48px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .06s,box-shadow .06s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+.hide{display:none!important}
+@media(max-width:520px){.top{margin-top:max(82px,calc(env(safe-area-inset-top) + 72px))}.stat{min-width:60px}.stat b{font-size:16px}}
+@media(orientation:landscape) and (max-height:560px){.top{margin-top:66px}.hint{display:none}.padwrap{bottom:78px}.key{min-height:62px}.key span{display:none}}
+@media(prefers-reduced-motion:reduce){.key .cap,.key.now .cap{animation:none;transition:none}}
 </style>
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
 <body class="dg-retro-skin" data-game="tower">
-<canvas id="canvas" aria-label="Tower of Hue game"></canvas><div class="hud"><small>TOWER HEIGHT</small><b id="score">0</b><span>BEST <i id="best">0</i> · TAP TO PLACE</span></div>
-<div id="start" class="overlay"><div class="panel"><div class="code">DG-06 · Puzzle / Physics</div><h1>TOWER OF HUE</h1><p>Place the moving block over the previous layer. Every imperfect placement trims the tower. Build high before the overhang becomes impossible.</p><button id="startBtn">Start Stack</button></div></div>
-<div id="over" class="overlay hidden"><div class="panel"><div class="code">STRUCTURE LOST</div><h1>TOPPLE</h1><p id="result">Height 0</p><button id="againBtn">Build Again</button></div></div>
+<canvas id="canvas" aria-label="Tower of Hue game board"></canvas>
+<div class="ui">
+  <div class="top" aria-live="polite">
+    <div class="stat"><small>HEIGHT</small><b id="score">0</b></div>
+    <div class="stat"><small>BEST</small><b id="best">0</b></div>
+    <div class="stat"><small>PERFECT</small><b id="streak">×0</b></div>
+  </div>
+  <div id="hint" class="hint">Press Play to start</div>
+  <div class="tools">
+    <button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE: ON</button>
+    <button id="helpBtn" class="mini" type="button">HOW TO</button>
+  </div>
+  <div class="padwrap"><button id="key" class="key" type="button" aria-label="Place block, or press Space"><div class="cap"><b>PLACE</b><span>TAP / SPACE</span></div></button></div>
+</div>
+<div id="overlay" class="overlay">
+  <section class="panel" role="dialog" aria-labelledby="title">
+    <div class="eyebrow">D'GAMES · BUILD SITE</div>
+    <h1 id="title">Tower of Hue</h1>
+    <p id="message">A block slides across. Place it on the tower. Whatever hangs over gets cut off, so line it up. New here? Do the tutorial.</p>
+    <div class="btns">
+      <button id="start" class="big" type="button">Play</button>
+      <button id="tutBtn" class="big alt" type="button">Tutorial</button>
+    </div>
+    <ul id="rules" class="rules">
+      <li>Line the sliding block up with the dashed guide lines.</li>
+      <li>Within a few pixels is PERFECT: no cut, and the block snaps in.</li>
+      <li>3 perfects in a row make the block grow back wider.</li>
+      <li>Miss the tower completely and it topples. Speed rises as you climb.</li>
+    </ul>
+  </section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
 <script>
-const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,state='idle',score=0,best=+localStorage.getItem('tower-best')||0,blocks=[],debris=[],current=null,dir=1,last=performance.now(),raf=0,hue=92;
-function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(state==='idle')setup()}addEventListener('resize',resize);resize();
-function setup(){blocks=[];debris=[];score=0;hue=80+Math.random()*40;const baseW=Math.min(280,W*.42);blocks.push({x:(W-baseW)/2,y:H-90,w:baseW,h:34,color:color()});spawn();sync()}
-function color(){const out='hsl('+hue+' 34% 58%)';hue+=13;return out}
-function spawn(){const p=blocks.at(-1);dir=Math.random()<.5?-1:1;current={x:dir>0?-p.w:W,y:p.y-34,w:p.w,h:34,color:color()}}
-function sync(){document.getElementById('score').textContent=score;document.getElementById('best').textContent=best}
-function start(){state='play';document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');setup();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
-function place(){if(state!=='play'){if(state==='over')start();return}const p=blocks.at(-1),c=current,dist=c.x-p.x;if(Math.abs(dist)>=p.w){gameOver();return}const overlap=p.w-Math.abs(dist);const cut={x:dist>0?c.x+overlap:c.x-Math.abs(dist),y:c.y,w:Math.abs(dist),h:c.h,color:c.color,vy:-1-Math.random()*2};c.w=overlap;if(dist<0)c.x=p.x;debris.push(cut);blocks.push({x:c.x,y:c.y,w:c.w,h:c.h,color:c.color});score++;best=Math.max(best,score);localStorage.setItem('tower-best',best);sync();if(blocks.length>12){blocks.forEach(b=>b.y+=34);debris.forEach(d=>d.y+=34);blocks.shift()}spawn()}
-function gameOver(){state='over';if(current)debris.push({x:current.x,y:current.y,w:current.w,h:current.h,color:current.color,vy:0});current=null;document.getElementById('result').textContent='Height '+score+' · Best '+best;document.getElementById('over').classList.remove('hidden')}
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();place()});
-function frame(t){const dt=Math.min(.04,(t-last)/16.67);last=t;ctx.fillStyle='#0e1517';ctx.fillRect(0,0,W,H);const g=ctx.createRadialGradient(W/2,H*.32,20,W/2,H*.32,260);g.addColorStop(0,'rgba(127,169,110,.18)');g.addColorStop(1,'rgba(127,169,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);if(state==='play'&&current){current.x+=5*dir*dt;if(current.x+current.w>W+140)dir=-1;if(current.x<-140)dir=1;ctx.fillStyle=current.color;ctx.fillRect(current.x,current.y,current.w,current.h)}blocks.forEach(b=>{ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(b.x,b.y,b.w,4)});for(let i=debris.length-1;i>=0;i--){const d=debris[i];d.vy+=.22*dt;d.y+=d.vy*dt*60;ctx.fillStyle=d.color;ctx.fillRect(d.x,d.y,d.w,d.h);if(d.y>H+30)debris.splice(i,1)}raf=requestAnimationFrame(frame)}
-document.getElementById('startBtn').addEventListener('click',start);document.getElementById('againBtn').addEventListener('click',start);raf=requestAnimationFrame(frame);
+(() => {
+  const $=id=>document.getElementById(id);
+  const canvas=$('canvas'),ctx=canvas.getContext('2d');
+  const scoreEl=$('score'),bestEl=$('best'),streakEl=$('streak'),hintEl=$('hint');
+  const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),message=$('message'),keyBtn=$('key');
+  const guideBtn=$('guideBtn'),helpBtn=$('helpBtn');
+  const BH=34,PERFECT=7;
+  let W=0,H=0,dpr=1,raf=0,last=0,state='idle';
+  let score=0,best=+localStorage.getItem('tower-best')||0,streak=0,baseW=0;
+  let blocks=[],debris=[],floats=[],cur=null,dir=1,cam=0,camT=0,shake=0,guideOn=true,guideTouched=false;
+  let tut=null,aligned=false;
+
+  const TUT=[
+    'Tap PLACE when the sliding block sits right over the tower. Use the dashed lines as your guide.',
+    'Not lined up? The overhang is cut off and your tower gets slimmer. Try to place this one a bit off.',
+    'Now line up the dashed edges exactly. The key says NOW! when you are in the perfect zone.',
+    'PERFECT keeps the full width. Do it 3 times in a row and the block grows back. Keep going!',
+    'Last one. In the real game the block speeds up as you climb, and missing the tower topples it.'
+  ];
+
+  /* sound + haptics */
+  let ac=null;
+  function tone(f,d,type,g){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'square';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+  function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+
+  function blockColor(i){
+    // clean and vivid at the start, slowly drifting toward dusty tones
+    const h=(95+i*13)%360,s=Math.max(42,80-i*1.2),l=56+Math.min(8,i*.25);
+    return 'hsl('+h+' '+s+'% '+l+'%)';
+  }
+  function resize(){
+    dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+    canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(state==='idle'||state==='menu'){setup();draw()}
+  }
+  addEventListener('resize',resize);
+  function baseY(){const r=document.querySelector('.padwrap').getBoundingClientRect();return Math.min(H-150,r.top-60)}
+  function speed(){return tut?150:Math.min(560,190+score*9)}
+
+  function setup(){
+    blocks=[];debris=[];floats=[];score=0;streak=0;cam=0;camT=0;
+    baseW=Math.min(250,W*.5);
+    blocks.push({x:(W-baseW)/2,wy:baseY(),w:baseW,c:blockColor(0)});
+    spawn();sync();
+  }
+  function spawn(){
+    const p=blocks[blocks.length-1];
+    dir=Math.random()<.5?1:-1;
+    cur={x:dir>0?-p.w:W,wy:p.wy-BH,w:p.w,c:blockColor(blocks.length)};
+  }
+  function sync(){scoreEl.textContent=score;bestEl.textContent=best;streakEl.textContent='×'+streak;setHint()}
+  function setHint(html){
+    if(html!=null){hintEl.innerHTML=html;return}
+    if(tut)return;
+    hintEl.innerHTML=state==='play'?(guideOn?'Line up the <em>dashed edges</em>. Perfect zone = no cut.':'Guide off. Trust your eyes.'):'Press Play to start';
+  }
+  function setGuide(on,user){
+    guideOn=on;if(user)guideTouched=true;
+    guideBtn.textContent='GUIDE: '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));setHint();
+  }
+
+  function begin(){
+    overlay.style.display='none';state='play';
+    setup();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);
+  }
+  function startGame(){tut=null;if(!guideTouched)setGuide(true,false);begin();tone(660,.08,'triangle',.06)}
+  function startTutorial(){tut={i:0};begin();setGuide(true,false);setHint('<em>TUTORIAL 1/'+TUT.length+'</em><br>'+TUT[0])}
+
+  function floatText(t,x,y,c){floats.push({t,x,y,a:1,c:c||'#242a2a'})}
+  function burst(x,y,c){for(let i=0;i<10;i++)debris.push({x:x+Math.random()*30,wy:y,w:4+Math.random()*4,h:4+Math.random()*4,c,vy:-2-Math.random()*3,vx:(Math.random()-.5)*4,spark:true,a:1})}
+
+  function place(){
+    if(state==='over'||state==='idle'||state==='menu')return;
+    if(state!=='play'||!cur)return;
+    const p=blocks[blocks.length-1],c=cur,dist=c.x-p.x;
+    keyBtn.classList.add('is-down');setTimeout(()=>keyBtn.classList.remove('is-down'),110);
+    if(Math.abs(dist)>=p.w){
+      if(tut){shake=8;buzz(40);tone(150,.15,'sawtooth',.05);setHint('<em>Missed the tower.</em> Try again, line it up over the dashed lines.');return}
+      gameOver();return;
+    }
+    let overlap=p.w-Math.abs(dist),perfect=Math.abs(dist)<=PERFECT;
+    if(perfect){
+      c.x=p.x;overlap=p.w;streak++;
+      if(streak>=3)overlap=Math.min(baseW,p.w+10);
+      tone(740+Math.min(streak,8)*60,.12,'triangle',.07);buzz([8,25,8]);
+      floatText(streak>=3?'PERFECT ×'+streak+' · GROW':'PERFECT',W/2,c.wy,'#5e8a1f');
+      burst(c.x+p.w/2,c.wy,'#8fc23a');
+    }else{
+      streak=0;
+      const cutx=dist>0?c.x+overlap:c.x,cutw=Math.abs(dist);
+      debris.push({x:cutx,wy:c.wy,w:cutw,h:BH,c:c.c,vy:-1-Math.random()*2,vx:dist>0?1.2:-1.2});
+      tone(300,.08,'square',.05);buzz(18);
+      if(dist<0)c.x=p.x;
+    }
+    if(perfect&&overlap>p.w)c.x=p.x-(overlap-p.w)/2;
+    blocks.push({x:c.x,wy:c.wy,w:overlap,c:c.c});
+    score++;best=Math.max(best,score);localStorage.setItem('tower-best',best);
+    if(!tut&&score===10&&!guideTouched){setGuide(false,false);floatText('GUIDE OFF',W/2,H*.3)}
+    if(tut){
+      tut.i++;
+      if(tut.i>=TUT.length){finishTutorial();return}
+      setHint('<em>TUTORIAL '+(tut.i+1)+'/'+TUT.length+'</em><br>'+TUT[tut.i]);
+    }
+    spawn();sync();
+  }
+  function finishTutorial(){
+    tut=null;state='menu';
+    message.textContent='Tutorial done. You know the lines, the perfect zone and the grow bonus. Ready for a real run?';
+    start.textContent='Play';overlay.style.display='grid';
+  }
+  function gameOver(){
+    state='over';
+    if(cur)debris.push({x:cur.x,wy:cur.wy,w:cur.w,h:BH,c:cur.c,vy:0,vx:0});
+    cur=null;shake=12;tone(140,.3,'sawtooth',.06);buzz(80);
+    message.textContent='Toppled at height '+score+'. Best: '+best+'.';
+    start.textContent='Build again';overlay.style.display='grid';sync();
+  }
+
+  function frame(t){
+    const dt=Math.min(.04,(t-last)/1000);last=t;
+    if(state==='play'&&cur){
+      cur.x+=speed()*dir*dt;
+      if(cur.x+cur.w>W+120)dir=-1;if(cur.x<-120)dir=1;
+      const p=blocks[blocks.length-1];
+      aligned=Math.abs(cur.x-p.x)<=PERFECT;
+      keyBtn.classList.toggle('now',aligned&&(tut||guideOn));
+    }else{aligned=false;keyBtn.classList.remove('now')}
+    camT=Math.max(0,H*.4-(blocks[blocks.length-1].wy-BH));
+    cam+=(camT-cam)*Math.min(1,dt*6);
+    draw();
+    raf=requestAnimationFrame(frame);
+  }
+
+  function draw(){
+    ctx.fillStyle='#d9d1be';ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=.12;ctx.strokeStyle='#242a2a';ctx.lineWidth=1;
+    const off=cam%32;
+    for(let x=0;x<W;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+    for(let y=off-32;y<H;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+    ctx.globalAlpha=1;
+    ctx.save();
+    if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-.6)}
+    ctx.translate(0,cam);
+    // ground
+    const by=blocks.length?blocks[0].wy+BH:H;
+    ctx.fillStyle='#9f9685';ctx.fillRect(0,by,W,Math.max(H,2000));
+    ctx.fillStyle='#242a2a';ctx.fillRect(0,by,W,3);
+    // guide lines
+    const p=blocks[blocks.length-1];
+    if(p&&(state==='play')&&(guideOn||tut)){
+      ctx.save();ctx.setLineDash([7,6]);ctx.lineWidth=2;
+      ctx.strokeStyle=aligned?'#5e8a1f':'#242a2a99';
+      [p.x,p.x+p.w].forEach(x=>{ctx.beginPath();ctx.moveTo(x,p.wy);ctx.lineTo(x,-cam-20);ctx.stroke()});
+      if(aligned){ctx.fillStyle='#8fc23a22';ctx.fillRect(p.x-PERFECT,-cam,p.w+PERFECT*2,p.wy+cam)}
+      ctx.restore();
+    }
+    blocks.forEach(b=>blockDraw(b.x,b.wy,b.w,b.c));
+    if(cur&&state==='play')blockDraw(cur.x,cur.wy,cur.w,cur.c);
+    for(let i=debris.length-1;i>=0;i--){
+      const d=debris[i];d.vy+=.35;d.wy+=d.vy;d.x+=d.vx||0;
+      if(d.spark){d.a-=.04;ctx.globalAlpha=Math.max(0,d.a);ctx.fillStyle=d.c;ctx.fillRect(d.x,d.wy,d.w,d.h);ctx.globalAlpha=1;if(d.a<=0)debris.splice(i,1)}
+      else{blockDraw(d.x,d.wy,d.w,d.c,.85);if(d.wy>by+H+200)debris.splice(i,1)}
+    }
+    for(let i=floats.length-1;i>=0;i--){
+      const f=floats[i];f.y-=.8;f.a-=.016;
+      ctx.globalAlpha=Math.max(0,f.a);ctx.fillStyle=f.c;ctx.font='900 13px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(f.t,f.x,f.y-14);ctx.globalAlpha=1;
+      if(f.a<=0)floats.splice(i,1);
+    }
+    ctx.restore();
+  }
+  function blockDraw(x,y,w,c,a){
+    if(a)ctx.globalAlpha=a;
+    ctx.fillStyle=c;ctx.fillRect(x,y,w,BH);
+    ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(x,y,w,5);
+    ctx.fillStyle='rgba(0,0,0,.14)';ctx.fillRect(x,y+BH-5,w,5);
+    ctx.strokeStyle='#242a2a';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,w-2,BH-2);
+    ctx.globalAlpha=1;
+  }
+
+  /* input */
+  keyBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();keyBtn.classList.add('is-down');tone(420,.04,'square',.03);place()});
+  const up=()=>keyBtn.classList.remove('is-down');
+  keyBtn.addEventListener('pointerup',up);keyBtn.addEventListener('pointercancel',up);keyBtn.addEventListener('lostpointercapture',up);
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();place()});
+  addEventListener('keydown',e=>{
+    if(e.key===' '||e.key==='Enter'){
+      if(overlay.style.display!=='none'&&document.activeElement&&document.activeElement.tagName==='BUTTON')return;
+      e.preventDefault();if(e.repeat)return;
+      if(state==='play')place();else startGame();
+    }
+  },{passive:false});
+  start.addEventListener('click',startGame);
+  tutBtn.addEventListener('click',startTutorial);
+  guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+  helpBtn.addEventListener('click',()=>{
+    if(state==='play'){cancelAnimationFrame(raf);state='menu'}
+    message.textContent='Line it up, hit PERFECT, keep climbing.';
+    start.textContent='Play';overlay.style.display='grid';
+  });
+
+  window.__tw={s:()=>({state,score,streak,aligned,tut:tut&&tut.i,w:blocks.length&&blocks[blocks.length-1].w}),
+    placeAligned:()=>{const p=blocks[blocks.length-1];cur.x=p.x+2;place()},
+    placeOff:d=>{const p=blocks[blocks.length-1];cur.x=p.x+d;place()}};
+  resize();setHint();
+})();
 </script>
-<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>
