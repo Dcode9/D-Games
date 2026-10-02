@@ -43,8 +43,9 @@ body{touch-action:none;user-select:none}
     <div class="stat"><small>SCORE</small><b id="score">00000</b></div>
     <div class="stat"><small>ROUND</small><b id="round">01</b></div>
     <div class="stat"><small>COMBO</small><b id="combo">×1</b></div>
+    <div class="stat"><small>BEST</small><b id="best">00000</b></div>
   </div>
-  <div class="hint">SORT EACH PARCEL BEFORE IT REACHES THE END</div>
+  <div class="hint">SORT EACH PARCEL BEFORE IT REACHES THE END · 3 MISSES CLOSE THE DESK</div>
   <div class="bins" aria-label="Sorting bins">
     <button class="bin" data-lane="0" type="button"><b>GREEN</b><span>A / 1</span></button>
     <button class="bin" data-lane="1" type="button"><b>BLUE</b><span>S / 2</span></button>
@@ -67,26 +68,38 @@ body{touch-action:none;user-select:none}
   const overlay=document.getElementById('overlay'),start=document.getElementById('start'),message=document.getElementById('message');
   const bins=[...document.querySelectorAll('.bin')];
   const colors=['#718466','#55758a','#a85d49'],labels=['GREEN','BLUE','RED'];
-  let W=0,H=0,dpr=1,raf=0,last=0,running=false,score=0,round=1,combo=1,lives=3,spawn=0,speed=78,parcel=null,particles=[],shake=0,best=Number(localStorage.getItem('parcel-sort-best')||0);
+  let W=0,H=0,dpr=1,raf=0,last=0,running=false,score=0,round=1,stage=1,combo=1,lives=3,speed=78,parcel=null,particles=[],shake=0,best=Number(localStorage.getItem('parcel-sort-best')||0),lastStage=1;
   function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
   addEventListener('resize',resize,{passive:true});resize();
   function laneY(){return H*.51}
   function laneX(i){return W*(i+.5)/3}
   function fmt(n){return String(Math.max(0,n)).padStart(5,'0')}
-  function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');comboEl.textContent='×'+combo}
-  function newParcel(){const lane=Math.floor(Math.random()*3);parcel={lane,x:laneX(lane),y:laneY()-H*.29,size:Math.max(24,Math.min(38,W*.075)),stamp:Math.floor(Math.random()*3),rot:(Math.random()-.5)*.15};}
-  function reset(){score=0;round=1;combo=1;lives=3;spawn=.15;speed=78;particles=[];shake=0;newParcel();setHud()}
+  function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');comboEl.textContent='×'+combo;document.getElementById('best').textContent=fmt(Math.max(best,score))}
+  function newParcel(){const lane=Math.floor(Math.random()*3);const rush=stage>=2&&round%5===0;const bonus=round%9===0;parcel={lane,x:laneX(lane),y:laneY()-(rush?H*.16:H*.29),size:Math.max(24,Math.min(38,W*.075)),stamp:Math.floor(Math.random()*3),rot:(Math.random()-.5)*.15,bonus,rush};}
+  function reset(){score=0;round=1;stage=1;lastStage=1;combo=1;lives=3;speed=78;particles=[];shake=0;newParcel();setHud()}
   function startGame(){overlay.style.display='none';running=true;reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
   function endGame(){running=false;best=Math.max(best,score);localStorage.setItem('parcel-sort-best',best);message.textContent='Desk closed. You scored '+score+' points. Best: '+best+'.';start.textContent='Sort another run';overlay.style.display='grid'}
   function burst(x,y,color,good){for(let i=0;i<12;i++)particles.push({x,y,vx:(Math.random()-.5)*110,vy:(Math.random()-.7)*110,a:1,c:color,s:2+Math.random()*3,good})}
+  function difficulty(){
+    stage=1+Math.floor((round-1)/5);
+    const stagePressure=(stage-1)*18;
+    speed=Math.min(245,78+round*3.6+stagePressure);
+    if(stage>lastStage){combo=Math.max(combo,2);burst(W/2,H*.42,'#242a2a',true);lastStage=stage;}
+  }
+  function loseLife(){
+    lives--;combo=1;shake=12;burst(parcel.x,parcel.y,'#6f746e',false);
+    if(lives<=0){endGame();return true}
+    return false;
+  }
   function choose(lane){
     if(!running||!parcel)return;
     bins[lane].classList.add('is-active');setTimeout(()=>bins[lane].classList.remove('is-active'),90);
     const correct=lane===parcel.stamp;
     if(correct){
-      score+=10*combo;combo=Math.min(9,combo+1);burst(parcel.x,parcel.y,colors[parcel.stamp],true);round++;speed=Math.min(185,78+round*4);newParcel();
+      const points=(10*combo)+(parcel.bonus?25:0);
+      score+=points;combo=Math.min(9,combo+1);burst(parcel.x,parcel.y,parcel.bonus?'#c9a94b':colors[parcel.stamp],true);round++;difficulty();newParcel();
     }else{
-      score=Math.max(0,score-5);combo=1;shake=8;burst(parcel.x,parcel.y,colors[parcel.stamp],false);newParcel();
+      score=Math.max(0,score-5);if(!loseLife())newParcel();
     }
     setHud();
   }
@@ -130,7 +143,8 @@ body{touch-action:none;user-select:none}
     ctx.shadowColor='#242a2a25';ctx.shadowBlur=8;ctx.shadowOffsetY=5;
     ctx.fillStyle='#eee8d9';ctx.strokeStyle='#242a2a';ctx.lineWidth=2;
     ctx.beginPath();ctx.roundRect(-p.size/2,-p.size/2,p.size,p.size,6);ctx.fill();ctx.stroke();ctx.shadowColor='transparent';
-    ctx.fillStyle=colors[p.stamp];ctx.fillRect(-p.size*.5,-3,p.size,6);
+    ctx.fillStyle=p.bonus?'#c9a94b':colors[p.stamp];ctx.fillRect(-p.size*.5,-3,p.size,6);
+    if(p.bonus){ctx.fillStyle='#242a2a';ctx.font='900 '+Math.max(7,p.size*.17)+'px ui-monospace,monospace';ctx.fillText('★',0,-p.size*.28)}
     ctx.strokeStyle='#242a2a45';ctx.lineWidth=1;ctx.strokeRect(-p.size*.28,-p.size*.28,p.size*.56,p.size*.56);
     ctx.fillStyle='#242a2a';ctx.font='900 '+Math.max(8,p.size*.23)+'px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(String(p.stamp+1),0,4);
     ctx.restore();
@@ -142,7 +156,7 @@ body{touch-action:none;user-select:none}
   function loop(now){
     if(!running)return;
     const dt=Math.min(.032,(now-last)/1000);last=now;
-    if(parcel){parcel.y+=speed*dt; if(parcel.y>H*.79-25){score=Math.max(0,score-8);combo=1;shake=10;burst(parcel.x,parcel.y,'#6f746e',false);newParcel();setHud()}}
+    if(parcel){parcel.y+=speed*dt; if(parcel.y>H*.79-25){score=Math.max(0,score-8);if(!loseLife()){newParcel();setHud()}}}
     drawBackground(now);
     ctx.save();if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt*28)}
     drawParcel();drawParticles(dt);ctx.restore();
