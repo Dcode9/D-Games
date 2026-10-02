@@ -259,3 +259,8 @@
   .dg-btn, .dg-meter-fill { transition: none !important; }
   .dg-meter-fill::after { animation: none !important; }
 }
+
+/* The portal already supplies player navigation. Keep the game HUD clear. */
+body.dg-embedded .dg-chrome{display:none!important}
+.dg-btn:focus-visible{outline:3px solid #c1ee81;outline-offset:4px}
+@media(prefers-reduced-motion:reduce){.dg-chrome *{animation:none!important;transition:none!important}}

@@ -3,5 +3,13 @@
   "version": "1.0.0",
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0"
+  },
+  "scripts": {
+    "build:styles": "tailwindcss -i ./scripts/game-utilities.css -o ./public/assets/game-utilities.css --minify",
+    "test": "node tests/smoke.cjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19",
+    "playwright": "1.58.2"
   }
 }

@@ -1,5 +1,5 @@
-const CACHE = 'echo-drift-v10';
-const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg'];
+const CACHE = 'echo-drift-v11';
+const APP_SHELL = ['/echo-drift/', '/echo-drift/index.html', '/echo-drift/manifest.webmanifest', '/echo-drift/icon.svg', '/assets/dgames-ui.css', '/assets/dgames-ui.js', '/assets/dgames-game-skin.css', '/assets/dgames-mobile.css'];
 const SAME_ORIGIN = self.location.origin;
 const OWN_CACHE_PREFIX = 'echo-drift-';
 
@@ -64,6 +64,6 @@ self.addEventListener('fetch', event => {
     }
 
     const fresh = await refresh(request);
-    return fresh || (await caches.match('/echo-drift/')) || new Response('Offline', { status: 503, statusText: 'Offline' });
+    return fresh || new Response('Offline', { status: 503, statusText: 'Offline' });
   })());
 });

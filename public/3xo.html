@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>3XO — D'Games</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Space+Grotesk:wght@700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
 :root{--paper:#e9e3d2;--paper2:#f4efe2;--ink:#202729;--muted:#707874;--line:rgba(32,39,41,.22);--olive:#7d916c;--blue:#476e86;--brick:#a45946}
@@ -55,7 +52,7 @@ function build(){board=Array.from({length:N*N},()=>null);turn=0;active=true;winn
 function render(){const p=players[turn];statusEl.textContent=active?p.name+' · '+p.s+"'s turn":statusEl.textContent;turnEl.textContent=p.s+' / '+p.tone;[...boardEl.children].forEach((b,i)=>{const v=board[i],q=v===null?null:players[v];b.textContent=q?q.s:'';b.className='cell'+(q?' '+q.cls:'')+(winning.includes(i)?' win':'');b.disabled=!active||v!==null;b.setAttribute('aria-label','Row '+(Math.floor(i/N)+1)+', column '+(i%N+1)+', '+(q?q.name:'empty'))})}
 function linesFrom(i){const r=Math.floor(i/N),c=i%N;return [[0,1],[1,0],[1,1],[1,-1]].map(([dr,dc])=>{const line=[];for(let k=-3;k<=3;k++){const rr=r+k*dr,cc=c+k*dc;if(rr>=0&&rr<N&&cc>=0&&cc<N)line.push(rr*N+cc)}return line})}
 function checkWin(i){const v=board[i];for(const line of linesFrom(i)){let streak=[];for(const idx of line){if(board[idx]===v){streak.push(idx);if(streak.length>=WIN)return streak.slice(-WIN)}else streak=[]}}return null}
-function move(i){if(!active||board[i]!==null)return;board[i]=turn;winning=checkWin(i)||[];if(winning.length){active=false;statusEl.textContent=players[turn].name+' '+players[turn].s+' wins';render();return}if(board.every(Boolean)){active=false;statusEl.textContent='Match drawn · board full';render();return}turn=(turn+1)%players.length;statusEl.textContent=players[turn].name+' · '+players[turn].s+"'s turn";render()}
+function move(i){if(!active||board[i]!==null)return;board[i]=turn;winning=checkWin(i)||[];if(winning.length){active=false;statusEl.textContent=players[turn].name+' '+players[turn].s+' wins';render();return}if(board.every(value=>value!==null)){active=false;statusEl.textContent='Match drawn · board full';render();return}turn=(turn+1)%players.length;statusEl.textContent=players[turn].name+' · '+players[turn].s+"'s turn";render()}
 document.getElementById('restartButton').addEventListener('click',build);document.getElementById('newButton').addEventListener('click',build);build();
 </script>
 <script src="/assets/dgames-ui.js" defer></script>
