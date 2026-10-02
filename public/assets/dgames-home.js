@@ -1,5 +1,6 @@
 (() => {
   const GAMES = [
+    {id:'parcel-sort',title:'Parcel Sort',category:'arcade',genre:'Sorting',tag:'Streak',desc:'Read each parcel and route it to the matching bay before the belt carries it away.',img:'/assets/covers/parcel-sort.svg',url:'/parcel-sort/',time:'2–6 min'},
     {id:'echo-drift',title:'Echo Drift',category:'arcade',genre:'Arcade',tag:'Fast',desc:'Chain echoes, dodge pulse hazards, and keep the signal alive.',img:'/assets/covers/echo-drift.svg',url:'/echo-drift/',time:'2–5 min'},
     {id:'neon-tetris',title:'Neon Tetris',category:'puzzle',genre:'Puzzle',tag:'Classic',desc:'Drop, rotate, clear. Clean rules and endless score chasing.',img:'/assets/covers/neon-tetris.svg',url:'/neon-tetris/',time:'3–10 min'},
     {id:'neon-breakout',title:'Neon Breakout',category:'arcade',genre:'Arcade',tag:'Classic',desc:'Read the bounce, break the wall, build the combo.',img:'/assets/covers/neon-breakout.svg',url:'/neon-breakout/',time:'2–6 min'},
