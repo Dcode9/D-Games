@@ -1,14 +1,407 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07101c"><title>Echo Drift — D'Games</title><style>:root{--bg:#07101c;--line:#ffffff1c;--text:#f5f8ff;--muted:#8c9ab0;--cyan:#62e7ff;--violet:#a78bfa;--pink:#ff70b8}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text)}body{touch-action:none;user-select:none}.app{width:100%;height:100%;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 15% 10%,#62e7ff20,transparent 30%),radial-gradient(circle at 85% 90%,#a78bfa22,transparent 35%),#07101c}.shell{position:relative;width:min(1120px,100%);height:min(760px,100%);overflow:hidden;border:1px solid var(--line);border-radius:30px;background:#050c17c2;box-shadow:0 30px 90px #00000070;backdrop-filter:blur(28px);display:grid;grid-template-rows:auto 1fr}.top{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),var(--violet));color:#07101c;font-weight:900}.title{font-weight:800}.subtitle{font-size:11px;color:var(--muted);margin-top:2px}.stats{display:flex;gap:10px}.pill{padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:#ffffff09;font-size:12px;color:#dce5f4}.pill b{color:var(--text)}.stage{position:relative;min-height:0}.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.hud{position:absolute;inset:0;padding:20px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}.help{max-width:300px;padding:12px 14px;border:1px solid var(--line);border-radius:15px;background:#040a1390;color:var(--muted);font-size:12px;line-height:1.5;backdrop-filter:blur(14px)}.help strong{color:#fff}.energy{display:flex;flex-direction:column;align-items:flex-end;gap:7px}.energy-label{font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}.bar{width:150px;height:7px;border-radius:10px;background:#fff1;overflow:hidden}.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink))}.overlay{position:absolute;inset:0;display:grid;place-items:center;background:#02070e90;backdrop-filter:blur(7px);z-index:5}.overlay.hidden{display:none}.card{width:min(430px,calc(100% - 34px));padding:28px;border:1px solid var(--line);border-radius:24px;background:#0a142ed1;box-shadow:0 20px 60px #00000066;text-align:center}.eyebrow{font-size:10px;letter-spacing:.18em;color:var(--cyan);font-weight:800}.card h1{margin:9px 0 8px;font-size:34px}.card p{margin:0 auto 20px;max-width:340px;color:var(--muted);line-height:1.55;font-size:13px}.button{border:0;border-radius:14px;padding:13px 22px;color:#07101c;font-weight:800;background:linear-gradient(100deg,var(--cyan),#b6a0ff);cursor:pointer}.mobile{display:none;position:absolute;z-index:4;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));padding:0 16px;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:5px;pointer-events:auto}.pad button,.boost{border:1px solid #fff2;background:#0f172aa8;color:#fff;border-radius:14px;backdrop-filter:blur(12px);font-size:17px}.pad .up{grid-column:2}.boost{width:62px;height:62px;border-radius:50%;font-size:10px;font-weight:800;pointer-events:auto}@media(max-width:650px){.app{padding:0}.shell{height:100%;border:0;border-radius:0}.top{padding:12px 14px}.mark{width:34px;height:34px}.subtitle{display:none}.stats{gap:5px}.stats .pill:nth-child(2){display:none}.pill{padding:7px 9px;font-size:11px}.hud{padding:11px}.help{font-size:10px;max-width:205px;padding:9px 11px}.bar{width:105px}.mobile{display:flex}}@media(prefers-reduced-motion:reduce){.button{transition:none}}</style>  <link rel="stylesheet" href="/assets/dgames-ui.css">
-<link rel="stylesheet" href="/assets/dgames-game-skin.css">
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
-</head><body class="dg-retro-skin" data-game="echo"><div class="app"><div class="shell"><header class="top"><div class="brand"><div class="mark">✦</div><div><div class="title">ECHO DRIFT</div><div class="subtitle">A tiny universe that moves with you</div></div></div><div class="stats"><div class="pill">SCORE <b id="score">000000</b></div><div class="pill">WAVE <b id="wave">01</b></div><div class="pill">BEST <b id="best">000000</b></div></div></header><main class="stage"><canvas id="game"></canvas><div class="hud"><div class="help"><strong>DRIFT</strong> with <b>WASD</b> / <b>ARROWS</b><br>Collect bright echoes. Avoid dark rings.</div><div class="energy"><div class="energy-label">Echo field</div><div class="bar"><i id="energy"></i></div></div></div><div class="mobile"><div class="pad"><button class="up" data-k="arrowup">▲</button><button data-k="arrowleft">◀</button><button data-k="arrowdown">▼</button><button data-k="arrowright">▶</button></div><button class="boost" data-k=" ">BOOST</button></div><div id="overlay" class="overlay"><div class="card"><div class="eyebrow">D'GAMES · INSTANT PLAY</div><h1 id="headline">Echo Drift</h1><p id="message">Collect luminous echoes to build a chain. Every pickup makes the arena bloom. How long can you keep the signal alive?</p><button id="start" class="button">Enter the Drift</button></div></div></main></div></div><script>
-const c=document.getElementById('game'),x=c.getContext('2d'),o=document.getElementById('overlay'),btn=document.getElementById('start'),head=document.getElementById('headline'),msg=document.getElementById('message'),sc=document.getElementById('score'),wv=document.getElementById('wave'),be=document.getElementById('best'),en=document.getElementById('energy');let W,H,dpr=1,running=0,paused=0,last=0,score=0,wave=1,energy=1,chain=0,best=+localStorage.getItem('echo-drift-best')||0,keys=new Set,es=[],hs=[],ps=[],stars=[],p={};be.textContent=String(best).padStart(6,'0');
-function size(){dpr=Math.min(devicePixelRatio||1,2);W=c.clientWidth;H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);if(!p.x)p={x:W/2,y:H/2,r:10,vx:0,vy:0};stars=Array.from({length:Math.min(110,Math.floor(W*H/6500))},()=>({x:Math.random()*W,y:Math.random()*H,s:.3+Math.random()*1.5,a:.15+Math.random()*.55}))}addEventListener('resize',size);size();
-addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].includes(k))e.preventDefault();keys.add(k);if(!running&&k==='enter')newGame();if(running&&k==='escape')paused=!paused});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));document.querySelectorAll('[data-k]').forEach(b=>{let k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(k)});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys.delete(k)))});
-function hud(){sc.textContent=String(score).padStart(6,'0');wv.textContent=String(wave).padStart(2,'0');en.style.width=Math.max(0,energy)*100+'%'}function echo(){let a=Math.random()*6.28,d=Math.min(W,H)*(.25+Math.random()*.3),xx=p.x+Math.cos(a)*d,yy=p.y+Math.sin(a)*d;if(xx<35||xx>W-35||yy<35||yy>H-35){xx=35+Math.random()*(W-70);yy=35+Math.random()*(H-70)}es.push({x:xx,y:yy,r:7+Math.random()*3,l:7,q:Math.random()*6.28})}function hazard(){let a=Math.random()*6.28,d=Math.min(W,H)*(.3+.15*Math.random());hs.push({x:W/2+Math.cos(a)*d,y:H/2+Math.sin(a)*d,r:24+Math.random()*16,q:Math.random()*6.28})}function burst(xx,yy,n=16){for(let i=0;i<n;i++){let a=Math.random()*6.28,s=30+Math.random()*120;ps.push({x:xx,y:yy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.5+Math.random()*.6})}}
-function newGame(){running=1;paused=0;score=0;wave=1;energy=1;chain=0;p={x:W/2,y:H/2,r:10,vx:0,vy:0};es=[];hs=[];ps=[];for(let i=0;i<5;i++)echo();for(let i=0;i<2;i++)hazard();head.textContent='Echo Drift';msg.textContent='Collect luminous echoes to build a chain. Every pickup makes the arena bloom. How long can you keep the signal alive?';btn.textContent='Enter the Drift';o.classList.add('hidden');hud();last=performance.now();requestAnimationFrame(loop)}function gameOver(){running=0;best=Math.max(best,score);localStorage.setItem('echo-drift-best',best);be.textContent=String(best).padStart(6,'0');head.textContent='Signal Lost';msg.textContent=`Score ${score.toLocaleString()} · Wave ${wave}. Ready for another drift?`;btn.textContent='Drift Again';o.classList.remove('hidden')};btn.onclick=newGame;
-function update(dt){if(paused)return;let ax=(keys.has('d')||keys.has('arrowright'))-(keys.has('a')||keys.has('arrowleft')),ay=(keys.has('s')||keys.has('arrowdown'))-(keys.has('w')||keys.has('arrowup')),l=Math.hypot(ax,ay)||1;ax/=l;ay/=l;let boost=keys.has(' ')||keys.has('shift'),acc=boost?900:720,max=boost?360:270;p.vx+=(ax*acc-p.vx)*Math.min(1,dt*7);p.vy+=(ay*acc-p.vy)*Math.min(1,dt*7);p.x=Math.max(18,Math.min(W-18,p.x+p.vx*dt));p.y=Math.max(18,Math.min(H-18,p.y+p.vy*dt));for(let i=es.length-1;i>=0;i--){let e=es[i];e.l-=dt;e.q+=dt*3;if(e.l<=0){es.splice(i,1);chain=0;continue}if(Math.hypot(p.x-e.x,p.y-e.y)<p.r+e.r+8){es.splice(i,1);chain++;score+=100+Math.min(chain,12)*25;energy=Math.min(1,energy+.13);burst(e.x,e.y,18);if(chain%5===0){wave++;score+=500;hazard()}echo();echo()}}for(let i=hs.length-1;i>=0;i--){let h=hs[i];h.q+=dt*2;if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+h.r)energy-=dt*.45;if(h.q>80)hs.splice(i,1)}energy=Math.min(1,energy+dt*.009);if(es.length<4)echo();if(Math.random()<dt*(.004+wave*.0004))hazard();if(energy<=0){energy=0;hud();gameOver();return}for(let i=ps.length-1;i>=0;i--){let q=ps[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=Math.pow(.04,dt);q.vy*=Math.pow(.04,dt);q.l-=dt;if(q.l<=0)ps.splice(i,1)}hud()}
-function draw(t){x.fillStyle='#07101c';x.fillRect(0,0,W,H);let g=x.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.7);g.addColorStop(0,'#2344692e');g.addColorStop(1,'#03091100');x.fillStyle=g;x.fillRect(0,0,W,H);for(let s of stars){x.fillStyle=`rgba(200,225,255,${s.a})`;x.fillRect(s.x,s.y,s.s,s.s)}x.strokeStyle='#91bee60e';for(let xx=0;xx<W;xx+=48){x.beginPath();x.moveTo(xx,0);x.lineTo(xx,H);x.stroke()}for(let yy=0;yy<H;yy+=48){x.beginPath();x.moveTo(0,yy);x.lineTo(W,yy);x.stroke()}for(let h of hs){let r=h.r*(1+Math.sin(h.q)*.08);x.beginPath();x.arc(h.x,h.y,r,0,7);x.strokeStyle='#ff529188';x.lineWidth=2;x.stroke();x.beginPath();x.arc(h.x,h.y,r*.35,0,7);x.fillStyle='#ff529155';x.fill()}for(let e of es){let r=e.r*(1+Math.sin(e.q)*.16),a=Math.min(1,e.l/.8);x.shadowBlur=22;x.shadowColor='#62e7ff';x.beginPath();x.arc(e.x,e.y,r,0,7);x.fillStyle=`rgba(98,231,255,${a})`;x.fill();x.shadowBlur=0}for(let q of ps){x.globalAlpha=Math.max(0,q.l);x.fillStyle='#62e7ff';x.fillRect(q.x-2,q.y-2,4,4)}x.globalAlpha=1;x.shadowBlur=28;x.shadowColor='#62e7ff';x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle='#f7fbff';x.fill();x.shadowBlur=0;x.beginPath();x.arc(p.x,p.y,p.r*2.1+Math.sin(t*7)*2,0,7);x.strokeStyle='#62e7ff66';x.stroke()}
-function loop(t){if(!running)return;let dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw(t/1000);requestAnimationFrame(loop)}document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)paused=1});
-</script>  <script src="/assets/dgames-ui.js" defer></script>
-</body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
+<title>Echo Drift — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#c4503c;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.ui{position:fixed;z-index:3;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.top{margin-top:max(86px,calc(env(safe-area-inset-top) + 78px));display:flex;gap:8px;padding:8px 11px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18}
+.stat{min-width:58px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 17px/1 ui-monospace,monospace}
+#chain{color:var(--brick)}
+.energy{width:min(330px,calc(100% - 30px));margin-top:8px;padding:6px 9px;border:1px solid #242a2a30;border-radius:9px;background:#eee8d9ee;font:800 8px/1 ui-monospace,monospace;letter-spacing:.12em;color:var(--muted)}
+.bar{height:10px;margin-top:5px;border:2px solid #242a2a80;border-radius:6px;background:#d9d1be;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--lime);transition:width .1s,background .2s}
+.bar.low i{background:var(--brick)}
+.hint{margin-top:8px;padding:7px 12px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.05em;text-align:center;max-width:calc(100% - 26px);min-height:28px}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin-top:8px;display:flex;gap:8px;pointer-events:auto}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:9px 10px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+/* controls */
+.stickwrap{position:absolute;left:max(16px,env(safe-area-inset-left));bottom:max(100px,calc(env(safe-area-inset-bottom) + 96px));width:132px;height:132px;pointer-events:auto;touch-action:none}
+.stick{position:absolute;inset:0;border-radius:50%;background:#eee8d9e6;border:3px solid #242a2a70;box-shadow:0 7px 0 #242a2a38,inset 0 0 0 10px #d9d1be99}
+.stick::before,.stick::after{content:"";position:absolute;background:#242a2a30}
+.stick::before{left:50%;top:14px;bottom:14px;width:2px;transform:translateX(-50%)}
+.stick::after{top:50%;left:14px;right:14px;height:2px;transform:translateY(-50%)}
+.knob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:linear-gradient(180deg,#ffffff50,#ffffff00 50%),var(--limed);border:2px solid #00000040;box-shadow:0 6px 0 #3b5a10,inset 0 2px 0 #ffffff70;transition:transform .12s ease-out,box-shadow .07s;will-change:transform}
+.stickwrap.drag .knob{transition:none;box-shadow:0 2px 0 #3b5a10,inset 0 2px 0 #ffffff50}
+.stickwrap.guide .stick{animation:ring .9s ease-in-out infinite}
+.boostwrap{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(110px,calc(env(safe-area-inset-bottom) + 106px));width:104px;pointer-events:auto}
+.key{position:relative;display:block;width:100%;height:104px;padding:0;border:0;border-radius:50%;background:#8a3a2a;cursor:pointer;-webkit-appearance:none;appearance:none;outline:none}
+.key .cap{position:absolute;inset:0 0 10px 0;border-radius:50%;background:linear-gradient(180deg,#ffffff40,#ffffff00 46%),var(--brick);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff70,inset 0 -6px 10px #00000026;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#fff;transition:transform .07s}
+.key b{font:900 12px/1 ui-monospace,monospace;letter-spacing:.1em;text-shadow:0 1px 0 #0006}
+.key span{font:800 8px/1 ui-monospace,monospace;opacity:.9}
+.key.is-down .cap,.key:active .cap{transform:translateY(8px);box-shadow:inset 0 2px 0 #ffffff30,inset 0 -2px 4px #00000040;transition-duration:.03s}
+.key.guide .cap{animation:ring .9s ease-in-out infinite;outline:4px solid #fff;outline-offset:3px}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 #ffffffcc,inset 0 2px 0 #ffffff70}50%{box-shadow:0 0 0 12px #ffffff00,inset 0 2px 0 #ffffff70}}
+.stickwrap.guide .stick{outline:4px solid #fff;outline-offset:3px}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(34px,10vw,48px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .06s,box-shadow .06s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+@media(max-width:520px){.top{margin-top:max(82px,calc(env(safe-area-inset-top) + 72px))}.stat{min-width:52px}.stat b{font-size:15px}}
+@media(orientation:landscape) and (max-height:560px){.top{margin-top:66px}.hint,.energy{display:none}.stickwrap{bottom:76px;width:104px;height:104px}.boostwrap{bottom:80px;width:84px}.key{height:84px}}
+@media(prefers-reduced-motion:reduce){.knob,.key .cap{transition:none}.stickwrap.guide .stick,.key.guide .cap{animation:none}}
+</style>
+</head>
+<body class="dg-retro-skin" data-game="echo">
+<canvas id="game" aria-label="Echo Drift arena"></canvas>
+<div class="ui">
+  <div class="top" aria-live="polite">
+    <div class="stat"><small>SCORE</small><b id="score">000000</b></div>
+    <div class="stat"><small>WAVE</small><b id="wave">01</b></div>
+    <div class="stat"><small>CHAIN</small><b id="chain">×0</b></div>
+    <div class="stat"><small>BEST</small><b id="best">000000</b></div>
+  </div>
+  <div class="energy">ECHO FIELD<div class="bar" id="bar"><i id="energy"></i></div></div>
+  <div id="hint" class="hint">Press Play to start</div>
+  <div class="tools">
+    <button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE: ON</button>
+    <button id="helpBtn" class="mini" type="button">HOW TO</button>
+  </div>
+  <div class="stickwrap" id="stickwrap" aria-label="Move stick"><div class="stick"></div><div class="knob" id="knob"></div></div>
+  <div class="boostwrap"><button id="boost" class="key" type="button" aria-label="Boost, or press Space"><div class="cap"><b>BOOST</b><span>HOLD</span></div></button></div>
+</div>
+<div id="overlay" class="overlay">
+  <section class="panel" role="dialog" aria-labelledby="headline">
+    <div class="eyebrow">D'GAMES · INSTANT PLAY</div>
+    <h1 id="headline">Echo Drift</h1>
+    <p id="message">Drift around, grab the glowing echoes before they fade, and steer clear of the red rings. New here? Do the tutorial.</p>
+    <div class="btns">
+      <button id="start" class="big" type="button">Play</button>
+      <button id="tutBtn" class="big alt" type="button">Tutorial</button>
+    </div>
+    <ul class="rules">
+      <li>Drag the stick (or WASD / arrows) to move. Hold BOOST (Space) to dash.</li>
+      <li>Green echoes fade fast. Grab them to build a CHAIN and refill the field.</li>
+      <li>Red rings drain the field. A dashed ring is a warning: it turns live in a moment.</li>
+      <li>Every 5 chain starts a new wave. Echoes fade faster and rings drift. Field empty = signal lost.</li>
+    </ul>
+  </section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(() => {
+  const $=id=>document.getElementById(id);
+  const c=$('game'),x=c.getContext('2d');
+  const scoreEl=$('score'),waveEl=$('wave'),chainEl=$('chain'),bestEl=$('best'),enEl=$('energy'),barEl=$('bar'),hintEl=$('hint');
+  const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message');
+  const guideBtn=$('guideBtn'),helpBtn=$('helpBtn'),stickW=$('stickwrap'),knob=$('knob'),boostBtn=$('boost');
+
+  let W=0,H=0,dpr=1,raf=0,last=0,state='idle';
+  let score=0,wave=1,energy=1,chain=0,best=+localStorage.getItem('echo-drift-best')||0;
+  let es=[],hs=[],ps=[],floats=[],stars=[],p={x:0,y:0,r:11,vx:0,vy:0};
+  let guideOn=true,guideTouched=false,tut=null,shake=0,flash=0;
+  const keys=new Set();
+  let stick={x:0,y:0,id:null};
+  let boostHeld=false;
+
+  /* sound + haptics */
+  let ac=null;
+  function tone(f,d,type,g){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'triangle';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+  function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+
+  function field(){
+    const t=document.querySelector('.tools').getBoundingClientRect().bottom+10;
+    return {l:16,r:W-16,t:Math.max(t,120),b:H-86};
+  }
+  function resize(){
+    dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+    c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+    stars=Array.from({length:Math.min(60,Math.floor(W*H/9000))},()=>({x:Math.random()*W,y:Math.random()*H,s:.5+Math.random()*1.5,a:.06+Math.random()*.1}));
+    if(state==='idle'||state==='menu'){resetWorld();draw(0)}
+  }
+  addEventListener('resize',resize);
+
+  /* difficulty: echo life shrinks, hazards get bigger and start to drift */
+  const echoLife=()=>Math.max(4.2,7.5-(wave-1)*.35);
+  function rnd(a,b){return a+Math.random()*(b-a)}
+  function newEcho(near){
+    const f=field();let xx,yy,tries=0;
+    do{
+      const a=Math.random()*6.28,d=Math.min(W,f.b-f.t)*(.22+Math.random()*.28);
+      xx=p.x+Math.cos(a)*d;yy=p.y+Math.sin(a)*d;tries++;
+    }while((xx<f.l+20||xx>f.r-20||yy<f.t+20||yy>f.b-20)&&tries<12);
+    if(tries>=12){xx=rnd(f.l+25,f.r-25);yy=rnd(f.t+25,f.b-25)}
+    es.push({x:xx,y:yy,r:rnd(9,12),l:echoLife(),max:echoLife(),q:Math.random()*6.28});
+  }
+  function newHazard(pos){
+    const f=field();let xx,yy,tries=0;
+    do{xx=rnd(f.l+30,f.r-30);yy=rnd(f.t+30,f.b-30);tries++}while(Math.hypot(xx-p.x,yy-p.y)<130&&tries<20);
+    if(pos){xx=pos.x;yy=pos.y}
+    const dr=wave>=3?rnd(10,30)*(Math.random()<.5?-1:1):0,dq=Math.random()*6.28;
+    hs.push({x:xx,y:yy,r:rnd(26,38)+Math.min(14,wave*1.2),q:Math.random()*6.28,warm:1.3,vx:wave>=3?Math.cos(dq)*Math.abs(dr):0,vy:wave>=3?Math.sin(dq)*Math.abs(dr):0,age:0});
+  }
+  function burst(xx,yy,n,col){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=40+Math.random()*130;ps.push({x:xx,y:yy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.5+Math.random()*.5,c:col||'#8fc23a'})}}
+  function floatText(t,xx,yy,col){floats.push({t,x:xx,y:yy,a:1,c:col||'#242a2a'})}
+
+  function resetWorld(){
+    const f=field();
+    p={x:W/2,y:(f.t+f.b)/2,r:11,vx:0,vy:0};
+    es=[];hs=[];ps=[];floats=[];score=0;wave=1;energy=1;chain=0;
+    hud();
+  }
+
+  function hud(){
+    scoreEl.textContent=String(score).padStart(6,'0');
+    waveEl.textContent=String(wave).padStart(2,'0');
+    chainEl.textContent='×'+chain;
+    bestEl.textContent=String(best).padStart(6,'0');
+    enEl.style.width=Math.max(0,energy)*100+'%';
+    barEl.classList.toggle('low',energy<.3);
+  }
+  function setHint(html){hintEl.innerHTML=html}
+  function defaultHint(){
+    if(tut)return;
+    setHint(state==='play'?(guideOn?'Follow the <em>arrow</em> to the nearest echo. Dodge the red rings.':'Guide off. Trust your eyes.'):'Press Play to start');
+  }
+  function setGuide(on,user){
+    guideOn=on;if(user)guideTouched=true;
+    guideBtn.textContent='GUIDE: '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));defaultHint();
+  }
+
+  /* tutorial */
+  const TUT=[
+    {say:'Drag the green stick to move your orb. Wander around a bit.',hl:'stick',init(){tut.moved=0}},
+    {say:'Grab the glowing echo. The arrow points to it.',hl:null,init(){es=[];newEchoAt(.5,.3)}},
+    {say:'Red rings drain your field. A dashed ring is a warning. Reach the echo without touching the ring.',hl:null,init(){es=[];hs=[];es.push(mkEcho(W*.8,field().t+(field().b-field().t)*.65,99));hs.push(mkHaz(W*.5,field().t+(field().b-field().t)*.55))}},
+    {say:'Hold BOOST (or Space) to dash for about half a second.',hl:'boost',init(){tut.boost=0;es=[];hs=[]}},
+    {say:'Chain time! Grab 3 echoes in a row before they fade. Every 5 chain starts a new wave.',hl:null,init(){es=[];hs=[];tut.got=0;newEchoAt(.2,.3,12);newEchoAt(.8,.5,12);newEchoAt(.4,.8,12)}}
+  ];
+  function mkEcho(xx,yy,life){return {x:xx,y:yy,r:11,l:life||echoLife(),max:life||echoLife(),q:0}}
+  function mkHaz(xx,yy){return {x:xx,y:yy,r:34,q:0,warm:1.2,vx:0,vy:0,age:0}}
+  function newEchoAt(fx,fy,life){const f=field();es.push(mkEcho(f.l+(f.r-f.l)*fx,f.t+(f.b-f.t)*fy,life||99))}
+  function showStep(){
+    const s=TUT[tut.i];
+    setHint('<em>TUTORIAL '+(tut.i+1)+'/'+TUT.length+'</em><br>'+s.say);
+    stickW.classList.toggle('guide',s.hl==='stick');boostBtn.classList.toggle('guide',s.hl==='boost');
+    s.init();
+  }
+  function nextStep(){
+    tone(880,.12,'triangle',.07);buzz([10,30,10]);
+    tut.i++;
+    if(tut.i>=TUT.length){endTutorial();return}
+    showStep();
+  }
+  function endTutorial(){
+    tut=null;state='menu';stickW.classList.remove('guide');boostBtn.classList.remove('guide');
+    head.textContent='Tutorial done';
+    msg.textContent='You can move, collect, dodge and boost. Ready for a real run?';
+    start.textContent='Play';overlay.style.display='grid';
+  }
+
+  /* flow */
+  function begin(){
+    overlay.style.display='none';
+    resetWorld();state='play';last=performance.now();
+    cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+  }
+  function startGame(){
+    tut=null;stickW.classList.remove('guide');boostBtn.classList.remove('guide');
+    if(!guideTouched)setGuide(true,false);
+    begin();
+    for(let i=0;i<4;i++)newEcho();
+    for(let i=0;i<2;i++)newHazard();
+    defaultHint();tone(660,.08,'triangle',.06);
+  }
+  function startTutorial(){
+    tut={i:0,moved:0,boost:0,got:0};begin();setGuide(true,false);showStep();
+  }
+  function gameOver(){
+    state='over';best=Math.max(best,score);localStorage.setItem('echo-drift-best',best);
+    head.textContent='Signal Lost';
+    msg.textContent='Score '+score.toLocaleString()+' · Wave '+wave+'. Best '+best.toLocaleString()+'.';
+    start.textContent='Drift again';overlay.style.display='grid';hud();
+    tone(140,.35,'sawtooth',.06);buzz(80);
+  }
+
+  /* input: stick */
+  const R=46;
+  function stickMove(e){
+    const r=stickW.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);
+    if(d>R){dx=dx/d*R;dy=dy/d*R}
+    stick.x=dx/R;stick.y=dy/R;
+    knob.style.transform='translate('+dx+'px,'+dy+'px)';
+  }
+  stickW.addEventListener('pointerdown',e=>{e.preventDefault();stick.id=e.pointerId;stickW.setPointerCapture(e.pointerId);stickW.classList.add('drag');stickMove(e);buzz(8)});
+  stickW.addEventListener('pointermove',e=>{if(stick.id===e.pointerId)stickMove(e)});
+  const stickEnd=e=>{if(stick.id!==null&&(e.pointerId===undefined||stick.id===e.pointerId)){stick.id=null;stick.x=stick.y=0;knob.style.transform='';stickW.classList.remove('drag')}};
+  stickW.addEventListener('pointerup',stickEnd);stickW.addEventListener('pointercancel',stickEnd);stickW.addEventListener('lostpointercapture',stickEnd);
+  boostBtn.addEventListener('pointerdown',e=>{e.preventDefault();boostBtn.setPointerCapture(e.pointerId);boostHeld=true;boostBtn.classList.add('is-down');buzz(12);tone(300,.06,'square',.04)});
+  const bEnd=()=>{boostHeld=false;boostBtn.classList.remove('is-down')};
+  boostBtn.addEventListener('pointerup',bEnd);boostBtn.addEventListener('pointercancel',bEnd);boostBtn.addEventListener('lostpointercapture',bEnd);
+  addEventListener('keydown',e=>{
+    const k=e.key.toLowerCase();
+    if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].includes(k))e.preventDefault();
+    if(k==='enter'&&state!=='play'){if(!(document.activeElement&&document.activeElement.tagName==='BUTTON'))startGame()}
+    keys.add(k);
+  },{passive:false});
+  addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+  start.addEventListener('click',startGame);tutBtn.addEventListener('click',startTutorial);
+  guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+  helpBtn.addEventListener('click',()=>{
+    if(state==='play'){state='menu';cancelAnimationFrame(raf)}
+    head.textContent='Echo Drift';msg.textContent='Collect echoes, dodge rings, chain it up.';start.textContent='Play';overlay.style.display='grid';
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play'){state='menu';cancelAnimationFrame(raf);head.textContent='Paused';msg.textContent='Tap Play to start a fresh run.';overlay.style.display='grid'}});
+
+  /* sim */
+  function update(dt){
+    let ax=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+stick.x;
+    let ay=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0)+stick.y;
+    const mag=Math.min(1,Math.hypot(ax,ay));
+    const l=Math.hypot(ax,ay)||1;ax=ax/l*mag;ay=ay/l*mag;
+    const boost=boostHeld||keys.has(' ')||keys.has('shift');
+    const acc=boost?900:720,max=boost?1:.75;
+    p.vx+=(ax*acc*max/.75*.75-p.vx)*Math.min(1,dt*7)*1;
+    p.vy+=(ay*acc*max/.75*.75-p.vy)*Math.min(1,dt*7)*1;
+    const f=field();
+    const ox=p.x,oy=p.y;
+    p.x=Math.max(f.l+p.r,Math.min(f.r-p.r,p.x+p.vx*dt));
+    p.y=Math.max(f.t+p.r,Math.min(f.b-p.r,p.y+p.vy*dt));
+    if(tut){tut.moved+=Math.hypot(p.x-ox,p.y-oy);if(boost&&mag>.2)tut.boost+=dt}
+    let hit=false;
+    for(let i=es.length-1;i>=0;i--){
+      const e=es[i];e.q+=dt*3;
+      if(!tut||e.l<90)e.l-=dt;
+      if(e.l<=0){es.splice(i,1);if(!tut||tut.i===4){chain=0}if(!tut)newEcho();else if(tut.i===4)newEchoAt(Math.random()*.8+.1,Math.random()*.7+.15,12);continue}
+      if(Math.hypot(p.x-e.x,p.y-e.y)<p.r+e.r+6){
+        es.splice(i,1);chain++;
+        score+=100+Math.min(chain,12)*25;
+        energy=Math.min(1,energy+.13);
+        burst(e.x,e.y,18);tone(600+Math.min(chain,10)*50,.1,'triangle',.07);buzz(15);
+        floatText('+'+(100+Math.min(chain,12)*25),e.x,e.y);
+        if(tut){
+          if(tut.i===1||tut.i===2){nextStep();break}
+          if(tut.i===4){tut.got++;if(tut.got>=3){nextStep();break}}
+        }else{
+          if(chain%5===0){
+            wave++;score+=500;newHazard();shake=6;flash=1;
+            floatText('WAVE '+wave,W/2,field().t+40,'#a8432f');
+            if(wave===4&&guideOn&&!guideTouched){setGuide(false,false);floatText('GUIDE OFF',W/2,field().t+70)}
+          }
+          newEcho();if(chain%2===0&&es.length<7)newEcho();
+        }
+      }
+    }
+    for(let i=hs.length-1;i>=0;i--){
+      const h=hs[i];h.q+=dt*2;h.age+=dt;
+      if(h.warm>0)h.warm-=dt;
+      else{
+        h.x+=h.vx*dt;h.y+=h.vy*dt;
+        if(h.x<f.l+h.r||h.x>f.r-h.r)h.vx*=-1;
+        if(h.y<f.t+h.r||h.y>f.b-h.r)h.vy*=-1;
+        if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+h.r*.9){hit=true}
+      }
+      if(!tut&&h.age>45+wave*2)hs.splice(i,1);
+    }
+    if(hit){
+      energy-=dt*.45;shake=Math.max(shake,3);
+      if(Math.random()<dt*10){buzz(10)}
+      if(tut)energy=Math.max(.35,energy);
+      if(tut&&tut.i===2)setHint('<em>Ouch.</em> Stay out of the red. Steer around the ring to the echo.');
+    }
+    energy=Math.min(1,energy+dt*.009);
+    if(tut&&tut.i===0&&tut.moved>120)nextStep();
+    if(tut&&tut.i===3&&tut.boost>.5)nextStep();
+    if(!tut){
+      if(es.length<4)newEcho();
+      if(Math.random()<dt*(.004+wave*.0004))newHazard();
+    }
+    if(energy<=0&&!tut){energy=0;hud();gameOver();return}
+    for(let i=ps.length-1;i>=0;i--){const q=ps[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.vx*=Math.pow(.04,dt);q.vy*=Math.pow(.04,dt);q.l-=dt;if(q.l<=0)ps.splice(i,1)}
+    for(let i=floats.length-1;i>=0;i--){const t=floats[i];t.y-=30*dt;t.a-=dt*.9;if(t.a<=0)floats.splice(i,1)}
+    flash=Math.max(0,flash-dt*2);
+    hud();
+  }
+
+  function draw(t){
+    // paper arena. Tint shifts slightly with wave, clean at wave 1
+    const tint=Math.min(1,(wave-1)/8);
+    x.fillStyle='#d9d1be';x.fillRect(0,0,W,H);
+    if(tint>0){x.fillStyle='rgba(196,80,60,'+(tint*.1)+')';x.fillRect(0,0,W,H)}
+    x.save();
+    if(shake>0){x.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-.35)}
+    x.globalAlpha=.12;x.strokeStyle='#242a2a';x.lineWidth=1;
+    for(let xx=0;xx<W;xx+=32){x.beginPath();x.moveTo(xx,0);x.lineTo(xx,H);x.stroke()}
+    for(let yy=0;yy<H;yy+=32){x.beginPath();x.moveTo(0,yy);x.lineTo(W,yy);x.stroke()}
+    x.globalAlpha=1;
+    for(const s of stars){x.fillStyle='rgba(36,42,42,'+s.a+')';x.fillRect(s.x,s.y,s.s,s.s)}
+    const f=field();
+    x.strokeStyle='#242a2a66';x.lineWidth=2;x.setLineDash([2,6]);x.strokeRect(f.l,f.t,f.r-f.l,f.b-f.t);x.setLineDash([]);
+    // hazards
+    for(const h of hs){
+      const r=h.r*(1+Math.sin(h.q)*.06);
+      if(h.warm>0){
+        x.save();x.setLineDash([6,6]);x.lineDashOffset=-t*20;x.strokeStyle='#c4503c';x.lineWidth=2.5;x.globalAlpha=.55+.45*Math.sin(t*14);
+        x.beginPath();x.arc(h.x,h.y,r,0,7);x.stroke();x.restore();
+      }else{
+        x.beginPath();x.arc(h.x,h.y,r,0,7);x.fillStyle='rgba(196,80,60,.22)';x.fill();
+        x.strokeStyle='#c4503c';x.lineWidth=4;x.stroke();
+        x.beginPath();x.arc(h.x,h.y,r*.4,0,7);x.fillStyle='#c4503c';x.fill();
+        x.strokeStyle='#242a2a';x.lineWidth=1.5;x.beginPath();x.arc(h.x,h.y,r+3,0,7);x.stroke();
+      }
+    }
+    // echoes
+    for(const e of es){
+      const r=e.r*(1+Math.sin(e.q)*.14),frac=e.l>90?1:Math.max(0,e.l/e.max);
+      x.beginPath();x.arc(e.x,e.y,r+9,0,7);x.fillStyle='rgba(143,194,58,'+(.18*frac+.06)+')';x.fill();
+      x.beginPath();x.arc(e.x,e.y,r,0,7);x.fillStyle=frac<.3&&Math.sin(t*20)>0?'#d6e8a8':'#8fc23a';x.fill();
+      x.strokeStyle='#242a2a';x.lineWidth=2;x.stroke();
+      // life ring
+      x.beginPath();x.arc(e.x,e.y,r+6,-Math.PI/2,-Math.PI/2+Math.PI*2*frac);x.strokeStyle=frac<.3?'#c4503c':'#5e8a1f';x.lineWidth=3;x.stroke();
+    }
+    // guide arrow
+    if((guideOn||tut)&&state==='play'&&es.length){
+      let n=null,nd=1e9;for(const e of es){const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<nd){nd=d;n=e}}
+      if(n&&nd>70){
+        const a=Math.atan2(n.y-p.y,n.x-p.x);
+        x.save();x.translate(p.x+Math.cos(a)*38,p.y+Math.sin(a)*38);x.rotate(a);
+        x.fillStyle='#242a2a';x.beginPath();x.moveTo(12,0);x.lineTo(-6,-8);x.lineTo(-2,0);x.lineTo(-6,8);x.closePath();x.fill();
+        x.restore();
+      }
+    }
+    for(const q of ps){x.globalAlpha=Math.max(0,q.l*1.6);x.fillStyle=q.c;x.fillRect(q.x-2,q.y-2,4,4)}
+    x.globalAlpha=1;
+    // player orb
+    const boost=boostHeld||keys.has(' ')||keys.has('shift');
+    x.beginPath();x.arc(p.x,p.y,p.r*2+Math.sin(t*7)*1.5,0,7);x.strokeStyle=boost?'#c4503c':'#5e8a1f';x.lineWidth=2;x.stroke();
+    x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle='#242a2a';x.fill();
+    x.beginPath();x.arc(p.x-3,p.y-3,3,0,7);x.fillStyle='#eee8d9';x.fill();
+    for(const t2 of floats){x.globalAlpha=Math.max(0,t2.a);x.fillStyle=t2.c;x.font='900 12px ui-monospace,monospace';x.textAlign='center';x.fillText(t2.t,t2.x,t2.y);x.globalAlpha=1}
+    x.restore();
+    if(flash>0){x.fillStyle='rgba(143,194,58,'+(flash*.25)+')';x.fillRect(0,0,W,H)}
+  }
+  function loop(t){
+    if(state!=='play')return;
+    const dt=Math.min(.033,(t-last)/1000||0);last=t;
+    update(dt);draw(t/1000);
+    if(state==='play')raf=requestAnimationFrame(loop);
+  }
+
+  window.__ed={s:()=>({state,score,wave,chain,energy,tut:tut&&tut.i,es:es.length,hs:hs.length}),
+    moveTo:(tx,ty)=>{p.x=tx;p.y=ty},nearest:()=>{let n=null,d=1e9;es.forEach(e=>{const k=Math.hypot(e.x-p.x,e.y-p.y);if(k<d){d=k;n=e}});return n&&{x:n.x,y:n.y}},
+    drag:(dx,dy)=>{stick.x=dx;stick.y=dy},setBoost:v=>{boostHeld=v}};
+  resize();setHint('Press Play to start');hud();
+})();
+</script>
+</body>
+</html>
