@@ -1,38 +1,336 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Cyber Road — D'Games</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
+<title>Cyber Road - D'Games</title>
 <link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
-:root{--paper:#e9e3d2;--paper2:#f4efe2;--ink:#202729;--muted:#707874}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d12}body{font-family:JetBrains Mono,monospace;touch-action:none}canvas{display:block;width:100%;height:100%}
-.hud{position:fixed;right:max(18px,env(safe-area-inset-right));top:88px;z-index:4;padding:10px 12px;border:1px solid rgba(242,238,224,.25);border-radius:10px;background:rgba(10,16,20,.7);backdrop-filter:blur(10px);color:#f4efe2;min-width:130px}.hud small{display:block;color:#aeb5b1;font-size:7px;letter-spacing:.15em}.hud strong{display:block;margin-top:4px;font:900 22px/1 JetBrains Mono,monospace}.hud .best{margin-top:8px;color:#aeb5b1;font-size:7px}.hud .hint{margin-top:7px;color:#8e9793;font-size:6px;letter-spacing:.07em}
-.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:rgba(3,8,11,.78);backdrop-filter:blur(8px)}.panel{width:min(420px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(21,28,32,.94);box-shadow:0 10px 0 rgba(0,0,0,.16),0 24px 50px rgba(0,0,0,.35);color:#f4efe2}.panel .code{color:#91a97f;font-size:8px;letter-spacing:.16em;text-transform:uppercase}.panel h1{margin:10px 0 8px;font:900 42px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#aeb5b1;font:700 10px/1.6 Inter,sans-serif}.panel button{margin-top:18px;width:100%;min-height:46px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.panel .stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:16px}.panel .stats div{padding:9px;border:1px solid rgba(242,238,224,.16);border-radius:8px}.panel .stats span{display:block;color:#8e9793;font-size:7px}.panel .stats b{display:block;margin-top:5px;font-size:14px}.hidden{display:none!important}
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#c4503c;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+canvas#cv{position:fixed;inset:0;width:100%;height:100%;z-index:1;touch-action:none}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background-image:linear-gradient(#242a2a1f 1px,transparent 1px),linear-gradient(90deg,#242a2a1f 1px,transparent 1px);background-size:32px 32px}
+.ui{position:fixed;z-index:3;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:max(86px,calc(env(safe-area-inset-top) + 78px));padding-bottom:max(94px,calc(env(safe-area-inset-bottom) + 90px));pointer-events:none}
+.top{display:flex;gap:6px;padding:7px 10px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:none}
+.stat{min-width:54px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 16px/1 ui-monospace,monospace}
+.hint{margin-top:6px;padding:6px 11px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.04em;text-align:center;max-width:calc(100% - 20px);min-height:26px;flex:none}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin-top:6px;display:flex;gap:8px;pointer-events:auto;flex:none}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:8px 9px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+.stage{flex:1}
+.boardwrap{border:3px solid #242a2a;border-radius:6px;background:#eee8d9;box-shadow:0 6px 0 #242a2a30;pointer-events:auto;line-height:0}
+#cv{display:block;touch-action:none}
+.pad{width:min(440px,calc(100% - 16px));display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;pointer-events:auto;flex:none}
+.k{position:relative;height:54px;padding:0;border:0;border-radius:14px;background:var(--base);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none;color:#fff;touch-action:none}
+.k .cap{position:absolute;inset:0 0 7px 0;border-radius:14px;background:linear-gradient(180deg,#ffffff40,#ffffff00 46%),var(--cap);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff70,inset 0 -5px 8px #00000022;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:transform .05s}
+.k b{font:900 20px/1 ui-monospace,monospace;text-shadow:0 1px 0 #0006}
+.k span{font:800 7px/1 ui-monospace,monospace;letter-spacing:.1em;opacity:.9}
+.k.is-down .cap{transform:translateY(6px);box-shadow:inset 0 2px 0 #ffffff30,inset 0 -2px 4px #00000040;transition-duration:.02s}
+.k.red{--cap:var(--brick);--base:#8a3a2a}.k.blue{--cap:#3b72d8;--base:#27489a}.k.lime{--cap:var(--lime);--base:var(--limed);color:#1d2a0c}.k.lime b{text-shadow:none}
+.k.guide .cap{animation:ring .9s ease-in-out infinite;outline:4px solid #fff;outline-offset:2px}
+.k.guide::before{content:"PRESS";position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:var(--ink);color:#fff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.12em;z-index:2}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 #ffffffcc,inset 0 2px 0 #ffffff70}50%{box-shadow:0 0 0 10px #ffffff00,inset 0 2px 0 #ffffff70}}
+.k:focus-visible .cap{outline:3px solid var(--ink)}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.overlay[hidden]{display:none}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(32px,9vw,46px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .05s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+.keys{margin-top:10px;font:800 9px/1.5 ui-monospace,monospace;color:#6a706b}
+.stats{margin:12px auto 0;display:grid;gap:5px;font:800 11px/1.3 ui-monospace,monospace;max-width:260px}
+.stats div{display:flex;justify-content:space-between;padding:6px 9px;border-radius:8px;background:#d9d1be88}
+@media(orientation:landscape) and (max-height:560px){.hint{display:none}.ui{padding-top:66px;padding-bottom:76px}.k{height:44px}}
+@media(prefers-reduced-motion:reduce){.k .cap,.k.guide .cap{transition:none;animation:none}}
 </style>
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
 <body class="dg-retro-skin" data-game="cyber">
-<div class="hud"><small>ROAD SCORE</small><strong id="score">0000</strong><div class="best">BEST <span id="best">0000</span></div><div class="hint">TOUCH / MOVE TO STEER</div></div>
-<canvas id="c" aria-label="Cyber Road game canvas"></canvas>
-<div id="start" class="overlay"><div class="panel"><div class="code">DG-04 · Racing / Retro</div><h1>CYBER ROAD</h1><p>Hold the line through a procedural neon highway. Touch or move your pointer left and right to steer. The opening stretch is deliberately clear so every run begins with a readable rhythm.</p><div class="stats"><div><span>CONTROL</span><b>TOUCH / MOUSE</b></div><div><span>OBJECTIVE</span><b>SURVIVE</b></div></div><button id="startBtn" type="button">Enter the Run</button></div></div>
-<div id="over" class="overlay hidden"><div class="panel"><div class="code">RUN TERMINATED</div><h1>CRASHED</h1><p id="final">Score 0</p><div class="stats"><div><span>SCORE</span><b id="finalScore">0000</b></div><div><span>BEST</span><b id="finalBest">0000</b></div></div><button id="againBtn" type="button">Run Again</button></div></div>
+<canvas id="cv" aria-label="Cyber Road game canvas"></canvas>
+<div class="ui" id="ui">
+<div class="top" aria-live="polite">
+<div class="stat"><small>DISTANCE</small><b id="hud-score">0000</b></div>
+<div class="stat"><small>SPEED</small><b id="hud-speed">0</b></div>
+<div class="stat"><small>BEST</small><b id="hud-best">0000</b></div>
+</div>
+<div id="hint" class="hint">Press Play to start</div>
+<div class="tools" id="tools">
+<button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE: ON</button>
+<button id="soundBtn" class="mini" type="button" aria-pressed="true">SOUND: ON</button>
+<button id="helpBtn" class="mini" type="button">HOW TO</button>
+</div>
+<div class="stage" id="stage"></div>
+<div class="pad" id="pad">
+<button class="k blue" id="kL" type="button" aria-label="Steer left"><div class="cap"><b>&#9664;</b><span>LEFT</span></div></button>
+<button class="k red" id="kB" type="button" aria-label="Brake"><div class="cap"><b>&#9632;</b><span>BRAKE</span></div></button>
+<button class="k blue" id="kR" type="button" aria-label="Steer right"><div class="cap"><b>&#9654;</b><span>RIGHT</span></div></button>
+</div>
+</div>
+<div id="overlay" class="overlay">
+<section class="panel" role="dialog" aria-labelledby="headline">
+<div class="eyebrow">D'GAMES &#183; ROAD DESK</div>
+<h1 id="headline">Cyber Road</h1>
+<p id="message">Hold the line down a procedural highway and weave around the blocks. New here? The tutorial walks through each button.</p>
+<div id="statsBox" class="stats" hidden></div>
+<div class="btns">
+<button id="start" class="big" type="button">Play</button>
+<button id="tutBtn" class="big alt" type="button">Tutorial</button>
+</div>
+<ul class="rules" id="rules">
+<li>Hold &#9664; or &#9654; to steer. You can also drag anywhere on the road.</li>
+<li>Hold BRAKE to slow down and buy time. Brakes cost distance, not lives.</li>
+<li>The opening stretch is clear. Blocks get denser the further you go.</li>
+<li>Colors start vivid and get dustier as you go. The guide ring marks the block to avoid.</li>
+</ul>
+<div class="keys">Keys: arrows or A/D steer, S or Down brake, P pause.</div>
+</section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
 <script>
-const c=document.getElementById('c'),ctx=c.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,running=false,score=0,best=+localStorage.getItem('cyber-road-best')||0,playerX=0,speed=18,segments=[],last=performance.now(),raf=0;const ROAD=2000;
-function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!segments.length)seed()}addEventListener('resize',resize);resize();
-function nextSegment(index,z){return{z:z,obstacle:index<18?null:(Math.random()<.24?Math.random()*2-1:null),tint:index%2?'#170e22':'#110c1c'}}
-function seed(){segments=[];for(let i=0;i<65;i++)segments.push(nextSegment(i,i*100))}
-function reset(){running=true;score=0;speed=18;playerX=0;seed();document.getElementById('score').textContent='0000';document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
-function project(x,y,z){const scale=300/Math.max(100,z-200);return{x:x*ROAD*scale+W/2,y:(y+400)*scale+H/2,scale:scale}}
-function pointer(x){playerX=Math.max(-1,Math.min(1,(x/W)*2-1))}c.addEventListener('pointermove',e=>{if(running)pointer(e.clientX)});c.addEventListener('pointerdown',e=>{if(running)pointer(e.clientX)});
-function collide(){return score>900&&segments.some(s=>s.obstacle!==null&&s.z<570&&s.z>470&&Math.abs(playerX-s.obstacle)<.28)}
-function end(){running=false;cancelAnimationFrame(raf);best=Math.max(best,Math.floor(score/10));localStorage.setItem('cyber-road-best',best);document.getElementById('finalScore').textContent=String(Math.floor(score/10)).padStart(4,'0');document.getElementById('finalBest').textContent=String(best).padStart(4,'0');document.getElementById('final').textContent='Road contact detected · run logged';document.getElementById('over').classList.remove('hidden')}
-function frame(t){const dt=Math.min(.04,(t-last)/1000);last=t;if(running){score+=dt*72;speed=Math.min(34,18+score/55);segments.forEach(s=>s.z-=speed*dt*60);if(segments[0].z<250){segments.shift();const z=segments.at(-1).z+100;segments.push(nextSegment(segments.length,z))}draw();if(collide()){end();return}document.getElementById('score').textContent=String(Math.floor(score/10)).padStart(4,'0')}else drawIdle();raf=requestAnimationFrame(frame)}
-function drawBase(){ctx.fillStyle='#05080c';ctx.fillRect(0,0,W,H);const sunY=H*.38;const g=ctx.createRadialGradient(W/2,sunY,20,W/2,sunY,220);g.addColorStop(0,'#ffd47a');g.addColorStop(.5,'#e25561');g.addColorStop(1,'rgba(226,85,97,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(W/2,sunY,220,0,Math.PI*2);ctx.fill();ctx.fillStyle='#061018';for(let i=0;i<9;i++)ctx.fillRect(W/2-170,sunY+18+i*18,340,5)}
-function draw(){drawBase();for(let i=segments.length-1;i>=0;i--){const s=segments[i];if(s.z<300)continue;const a=project(-1,0,s.z),b=project(1,0,s.z),d=project(1,0,s.z+100),e=project(-1,0,s.z+100);ctx.fillStyle=s.tint;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(d.x,d.y);ctx.lineTo(e.x,e.y);ctx.fill();ctx.strokeStyle='rgba(238,75,194,.26)';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(e.x,e.y);ctx.moveTo(b.x,b.y);ctx.lineTo(d.x,d.y);ctx.stroke();if(s.obstacle!==null){const p=project(s.obstacle,0,s.z),sz=15000/Math.max(100,s.z-200);ctx.fillStyle='#6de9ff';ctx.shadowBlur=12;ctx.shadowColor='#6de9ff';ctx.fillRect(p.x-sz/2,p.y-sz,sz,sz);ctx.shadowBlur=0}}const p=project(playerX,0,550),sz=15000/(550-200);ctx.fillStyle='#ff4dc4';ctx.shadowBlur=18;ctx.shadowColor='#ff4dc4';ctx.beginPath();ctx.arc(p.x,p.y-sz/2,sz/2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0}
-function drawIdle(){drawBase();const p=project(playerX,0,550);ctx.fillStyle='#ff4dc4';ctx.beginPath();ctx.arc(p.x,p.y-12,12,0,Math.PI*2);ctx.fill()}
-document.getElementById('best').textContent=String(best).padStart(4,'0');document.getElementById('startBtn').addEventListener('click',reset);document.getElementById('againBtn').addEventListener('click',reset);raf=requestAnimationFrame(frame);
+(() => {
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message'),hintEl=$('hint'),statsBox=$('statsBox'),rules=$('rules');
+const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),helpBtn=$('helpBtn');
+const kL=$('kL'),kR=$('kR'),kB=$('kB');
+let W=innerWidth,H=innerHeight,dpr=1,K=.8,CY=300,HALF=300;
+let running=false,paused=false,score=0,speed=18,px=0,segs=[],last=performance.now(),raf=0;
+let best=+localStorage.getItem('cyber-road-best')||0;
+let holdL=false,holdR=false,holdB=false,guideOn=true,guideTouched=false,sound=true,tut=null,overlayMode='menu',flash=0,shake=0;
+let ac=null;
+function tone(f,d,type,g){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'triangle';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function resize(){
+dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+CY=H*.36;
+const sc=300/350;
+K=Math.max(.35,(H-215-CY)/(400*sc));
+HALF=W*.36/sc;
+}
+addEventListener('resize',resize);
+function dist(){return Math.floor(score/10)}
+function stage(){return Math.floor(dist()/150)}
+function seg(i,z){
+let o=null;
+if(!tut&&i>=18&&Math.random()<Math.min(.5,.2+dist()/1500))o=Math.random()*1.7-.85;
+return {z:z,o:o,i:i,passed:false};
+}
+function seed(){segs=[];for(let i=0;i<65;i++)segs.push(seg(i,i*100))}
+let counter=65;
+function project(x,y,z){const s=300/Math.max(100,z-200);return {x:x*HALF*s+W/2,y:(y+400)*s*K+CY,s:s}}
+function hud(){$('hud-score').textContent=String(dist()).padStart(4,'0');$('hud-speed').textContent=Math.round(speed*3);$('hud-best').textContent=String(best).padStart(4,'0')}
+function setHint(h){hintEl.innerHTML=h}
+function defHint(){if(tut)return;if(!running){setHint('Press Play to start');return}
+setHint(guideOn?'The <em>ring</em> marks the block to dodge.':'Guide off. Read the road yourself.')}
+function setGuide(on,user){guideOn=on;if(user)guideTouched=true;guideBtn.textContent='GUIDE: '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));defHint()}
+function setSound(on){sound=on;soundBtn.textContent='SOUND: '+(on?'ON':'OFF');soundBtn.setAttribute('aria-pressed',String(on))}
+function reset(){
+score=0;speed=tut?14:18;px=0;counter=65;seed();flash=0;hud();
+}
+function pal(){
+const s=Math.min(8,stage());
+return {
+sun:'hsl('+((72+s*22)%360)+' '+Math.max(40,80-s*5)+'% 55%)',
+blk:'hsl('+((10+s*30)%360)+' '+Math.max(40,86-s*7)+'% '+(52+s)+'%)',
+sky:'hsl('+(44+s*4)+' '+Math.max(18,34-s*2)+'% 82%)'
+};
+}
+function nearest(){
+let n=null;
+for(const s of segs){if(s.o!==null&&s.z>480&&s.z<2600&&Math.abs(px-s.o)<.5){if(!n||s.z<n.z)n=s}}
+return n;
+}
+function collide(){return segs.some(s=>s.o!==null&&s.z<570&&s.z>470&&Math.abs(px-s.o)<.28)}
+function frame(t){
+raf=requestAnimationFrame(frame);
+const dt=Math.min(.04,(t-last)/1000);last=t;
+if(running&&!paused)step(dt);
+draw();
+}
+function step(dt){
+const steer=1.9*dt;
+if(holdL)px-=steer;if(holdR)px+=steer;
+px=Math.max(-1,Math.min(1,px));
+const target=tut?14:Math.min(34,18+score/55);
+const sp=holdB?target*.55:target;
+speed+=(sp-speed)*Math.min(1,dt*8);
+score+=dt*72*(holdB?.55:1);
+segs.forEach(s=>{s.z-=speed*dt*60;if(!s.passed&&s.o!==null&&s.z<470){s.passed=true;if(tut)tutPass()}});
+while(segs[0].z<250){segs.shift();const z=segs[segs.length-1].z+100;segs.push(seg(counter++,z))}
+if(flash>0)flash-=dt;
+if(shake>0)shake-=dt;
+if(tut){
+if(tut.step===0&&px<-.85)tutNext();
+else if(tut.step===1&&px>.85)tutNext();
+else if(tut.step===3&&holdB){tut.b=(tut.b||0)+dt;if(tut.b>1.4)tutNext()}
+}
+if(collide()){
+if(tut){flash=.4;shake=.3;tone(160,.2,'sawtooth',.07);buzz([40,40,80]);tut.passes=0;segs.forEach(s=>{if(s.o!==null&&s.z<570&&s.z>470)s.o=null});if(tut.step===2){tutRespawn()}}
+else{crash();return}
+}
+if(!tut&&dist()>=300&&!guideTouched&&guideOn)setGuide(false,false);
+if(!tut&&speed>0){}
+hud();
+}
+function crash(){
+running=false;holdL=holdR=holdB=false;
+const d=dist();if(d>best){best=d;localStorage.setItem('cyber-road-best',best)}
+overlayMode='over';head.textContent='Crashed';msg.textContent='Road contact detected. Run logged.';
+statsBox.hidden=false;statsBox.innerHTML='<div><span>Distance</span><b>'+d+'</b></div><div><span>Best</span><b>'+best+'</b></div>';
+rules.hidden=true;start.textContent='Run again';tutBtn.hidden=false;overlay.hidden=false;clearGuides();
+tone(120,.4,'sawtooth',.09);buzz([100,50,150]);hud();
+}
+function guideKeys(){
+if(!running||tut)return;
+const n=guideOn?nearest():null;
+let side=0;
+if(n){side=(px<n.o)?-1:1;if(n.o>.7)side=-1;if(n.o<-.7)side=1}
+kL.classList.toggle('guide',side<0);kR.classList.toggle('guide',side>0);
+if(n&&!tut)setHint('Steer <em>'+(side<0?'LEFT':'RIGHT')+'</em> around the ring.');
+else if(running&&!tut)defHint();
+}
+function drawBlock(x,z,c,ring){
+const p=project(x,0,z),sz=15000/Math.max(100,z-200);
+ctx.fillStyle=c;ctx.fillRect(p.x-sz/2,p.y-sz,sz,sz);
+ctx.fillStyle='#ffffff55';ctx.fillRect(p.x-sz/2,p.y-sz,sz,Math.max(2,sz*.18));
+ctx.lineWidth=Math.max(1.5,sz*.06);ctx.strokeStyle='#242a2a';ctx.strokeRect(p.x-sz/2,p.y-sz,sz,sz);
+if(ring){
+ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(p.x,p.y-sz/2,sz*.9+6,0,7);ctx.stroke();
+ctx.setLineDash([6,5]);ctx.strokeStyle='#c4503c';ctx.beginPath();ctx.arc(p.x,p.y-sz/2,sz*.9+6,0,7);ctx.stroke();ctx.setLineDash([]);
+}
+}
+function draw(){
+const P=pal();
+ctx.save();
+if(shake>0)ctx.translate((Math.random()-.5)*8,(Math.random()-.5)*8);
+ctx.fillStyle=P.sky;ctx.fillRect(0,0,W,H);
+ctx.strokeStyle='#242a2a14';ctx.lineWidth=1;
+for(let x=0;x<W;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CY);ctx.stroke()}
+for(let y=0;y<CY;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ctx.beginPath();ctx.arc(W/2,CY-10,Math.min(90,W*.22),Math.PI,0);ctx.fillStyle=P.sun;ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#242a2a';ctx.stroke();
+ctx.fillStyle='#e6dfca';ctx.fillRect(0,CY-10,W,H);
+ctx.fillStyle='#242a2a';ctx.fillRect(0,CY-12,W,3);
+const n=guideOn&&running?nearest():null;
+for(let i=segs.length-1;i>=0;i--){
+const s=segs[i];if(s.z<300)continue;
+const a=project(-1,0,s.z),b=project(1,0,s.z),d=project(1,0,s.z+100),e=project(-1,0,s.z+100);
+ctx.fillStyle=(s.i%2)?'#3a4140':'#2f3635';
+ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(d.x,d.y);ctx.lineTo(e.x,e.y);ctx.fill();
+ctx.fillStyle=(s.i%2)?'#8fc23a':'#eee8d9';
+const w=.07;const a2=project(-1-w,0,s.z),a3=project(-1,0,s.z),e3=project(-1,0,s.z+100),e2=project(-1-w,0,s.z+100);
+ctx.beginPath();ctx.moveTo(a2.x,a2.y);ctx.lineTo(a3.x,a3.y);ctx.lineTo(e3.x,e3.y);ctx.lineTo(e2.x,e2.y);ctx.fill();
+const b2=project(1+w,0,s.z),e4=project(1+w,0,s.z+100);
+ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b2.x,b2.y);ctx.lineTo(e4.x,e4.y);ctx.lineTo(d.x,d.y);ctx.fill();
+if(s.i%4<2){const c1=project(-.02,0,s.z),c2=project(.02,0,s.z),c3=project(.02,0,s.z+100),c4=project(-.02,0,s.z+100);ctx.fillStyle='#eee8d9aa';ctx.beginPath();ctx.moveTo(c1.x,c1.y);ctx.lineTo(c2.x,c2.y);ctx.lineTo(c3.x,c3.y);ctx.lineTo(c4.x,c4.y);ctx.fill()}
+}
+for(let i=segs.length-1;i>=0;i--){const s=segs[i];if(s.z<300||s.o===null)continue;drawBlock(s.o,s.z,P.blk,s===n)}
+const p=project(px,0,550),sz=15000/350;
+ctx.fillStyle='#00000030';ctx.beginPath();ctx.ellipse(p.x,p.y+3,sz*.7,sz*.18,0,0,7);ctx.fill();
+ctx.fillStyle=flash>0?'#fff':'#c4503c';
+ctx.fillRect(p.x-sz*.5,p.y-sz*.7,sz,sz*.7);
+ctx.fillStyle='#eee8d9';ctx.fillRect(p.x-sz*.34,p.y-sz*1.05,sz*.68,sz*.4);
+ctx.fillStyle='#242a2a';ctx.fillRect(p.x-sz*.26,p.y-sz*.98,sz*.52,sz*.24);
+ctx.lineWidth=3;ctx.strokeStyle='#242a2a';ctx.strokeRect(p.x-sz*.5,p.y-sz*.7,sz,sz*.7);
+ctx.fillStyle='#242a2a';ctx.fillRect(p.x-sz*.58,p.y-sz*.2,sz*.14,sz*.22);ctx.fillRect(p.x+sz*.44,p.y-sz*.2,sz*.14,sz*.22);
+if(holdB){ctx.fillStyle='#ff3b2f';ctx.fillRect(p.x-sz*.42,p.y-sz*.25,sz*.2,sz*.08);ctx.fillRect(p.x+sz*.22,p.y-sz*.25,sz*.2,sz*.08)}
+ctx.restore();
+guideKeys();
+}
+function clearGuides(){document.querySelectorAll('.k').forEach(k=>k.classList.remove('guide'))}
+const STEPS=[
+['Hold <em>LEFT</em> until the car reaches the left edge.','kL'],
+['Now hold <em>RIGHT</em> to cross to the other edge.','kR'],
+['Blocks ahead. Steer around <em>3</em> of them. A ring marks the block.',''],
+['Hold <em>BRAKE</em> for a moment. It slows the road so you have more time.','kB']
+];
+function startTutorial(){
+tut={step:0,passes:0};reset();running=true;paused=false;overlay.hidden=true;setGuide(true,false);stepInit();
+}
+function stepInit(){
+clearGuides();const s=STEPS[tut.step];setHint(s[0]);
+if(s[1])$(s[1]).classList.add('guide');
+if(tut.step===2){tut.passes=0;tutRespawn()}
+}
+function tutRespawn(){
+segs.forEach(s=>{if(s.z>700)s.o=null});
+const far=segs.filter(s=>s.z>1500);
+for(let k=0;k<3&&k*3<far.length;k++)far[k*3].o=(k%2?.5:-.5);
+}
+function tutPass(){
+if(tut.step!==2)return;
+tut.passes++;tone(700,.08,'sine',.06);
+if(tut.passes>=3)tutNext();
+}
+function tutNext(){
+tut.step++;tone(740,.1,'sine',.06);
+if(tut.step>=STEPS.length){endTutorial();return}
+stepInit();
+}
+function endTutorial(){
+tut=null;running=false;holdL=holdR=holdB=false;clearGuides();
+overlayMode='menu';head.textContent='Tutorial done';msg.textContent='That is every button. Brake early, steer late.';
+statsBox.hidden=true;rules.hidden=false;start.textContent='Play';overlay.hidden=false;reset();
+}
+function startGame(){
+tut=null;clearGuides();reset();running=true;paused=false;if(!guideTouched)setGuide(true,false);
+overlay.hidden=true;statsBox.hidden=true;defHint();tone(660,.08,'triangle',.06);
+}
+function bindKey(el,down,up){
+const dn=e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}el.classList.add('is-down');tone(330,.04,'square',.03);buzz(8);down()};
+const upf=()=>{el.classList.remove('is-down');up&&up()};
+el.addEventListener('pointerdown',dn);el.addEventListener('pointerup',upf);el.addEventListener('pointercancel',upf);el.addEventListener('lostpointercapture',upf);
+}
+function canAct(){return running&&!paused}
+bindKey(kL,()=>{holdL=canAct()},()=>{holdL=false});
+bindKey(kR,()=>{holdR=canAct()},()=>{holdR=false});
+bindKey(kB,()=>{holdB=canAct()},()=>{holdB=false});
+addEventListener('keydown',e=>{
+const k=e.key;
+if(k==='ArrowLeft'||k==='a'||k==='A'){holdL=canAct();kL.classList.add('is-down');e.preventDefault()}
+else if(k==='ArrowRight'||k==='d'||k==='D'){holdR=canAct();kR.classList.add('is-down');e.preventDefault()}
+else if(k==='ArrowDown'||k==='s'||k==='S'||k===' '){holdB=canAct();kB.classList.add('is-down');e.preventDefault()}
+else if(k==='p'||k==='P')togglePause();
+});
+addEventListener('keyup',e=>{
+const k=e.key;
+if(k==='ArrowLeft'||k==='a'||k==='A'){holdL=false;kL.classList.remove('is-down')}
+else if(k==='ArrowRight'||k==='d'||k==='D'){holdR=false;kR.classList.remove('is-down')}
+else if(k==='ArrowDown'||k==='s'||k==='S'||k===' '){holdB=false;kB.classList.remove('is-down')}
+});
+function dragTo(x){if(canAct())px=Math.max(-1,Math.min(1,(x/W)*2-1))}
+cv.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='mouse')dragTo(e.clientX)});
+cv.addEventListener('pointerdown',e=>dragTo(e.clientX));
+function togglePause(){
+if(!running)return;
+if(overlay.hidden){paused=true;holdL=holdR=holdB=false;overlayMode='pause';head.textContent='Paused';msg.textContent='Take a breath.';statsBox.hidden=true;rules.hidden=false;start.textContent='Resume';tutBtn.hidden=true;overlay.hidden=false}
+else if(overlayMode==='pause'||overlayMode==='help')resume();
+}
+function resume(){paused=false;overlay.hidden=true;last=performance.now();defHint()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused&&overlay.hidden)togglePause()});
+start.addEventListener('click',()=>{if(overlayMode==='pause'||overlayMode==='help'){resume();return}tutBtn.hidden=false;startGame()});
+tutBtn.addEventListener('click',()=>{tutBtn.hidden=false;startTutorial()});
+guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+soundBtn.addEventListener('click',()=>setSound(!sound));
+helpBtn.addEventListener('click',()=>{
+if(running&&!paused){paused=true;holdL=holdR=holdB=false}
+overlayMode=running?'help':'menu';head.textContent='How to play';msg.textContent='Steer around the blocks. Brake to buy time.';
+statsBox.hidden=true;rules.hidden=false;start.textContent=running?'Resume':'Play';tutBtn.hidden=false;overlay.hidden=false;
+});
+window.__t={s:()=>({tut:tut?tut.step:null,px:px,speed:speed,score:dist(),running:running,passes:tut?tut.passes:0}),hold:(d,v)=>{if(d==='L')holdL=v;else if(d==='R')holdR=v;else holdB=v},setX:x=>{px=x},
+steerAuto:()=>{const os=segs.filter(s=>s.o!==null&&s.z>480&&s.z<1000);if(!os.length)return;let bx=px,bd=-1;for(let x=-1;x<=1.001;x+=.1){const d=Math.min(...os.map(s=>Math.abs(x-s.o)))-Math.abs(x-px)*.05;if(d>bd){bd=d;bx=x}}px=bx}};
+resize();reset();hud();raf=requestAnimationFrame(frame);
+})();
 </script>
-<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>
