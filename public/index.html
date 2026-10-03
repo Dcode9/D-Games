@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#08111b">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#f6f3ec">
+<meta name="color-scheme" content="light">
 <meta name="description" content="D'Games — instant-play browser games from D'Verse.">
 <title>D'Games</title>
 <link rel="stylesheet" href="/assets/dgames-home.css">
 </head>
 <body>
+<a class="dg-skip" href="#content-scroll">Skip to games</a>
 <div class="dg-app">
   <aside class="dg-sidebar" aria-label="Primary navigation">
     <a class="dg-brand" href="/" aria-label="D'Games home">
@@ -18,7 +19,7 @@
     </a>
     <nav class="dg-sidebar-nav">
       <button type="button" class="dg-nav-item is-active" data-view="home"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></span><span>Home</span></button>
-      <button type="button" class="dg-nav-item" data-view="plays"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span><span>Games</span><span class="dg-count" id="plays-count">10</span></button>
+      <button type="button" class="dg-nav-item" data-view="plays"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span><span>Games</span><span class="dg-count" id="plays-count">11</span></button>
       <button type="button" class="dg-nav-item" data-view="upcoming"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span>Upcoming</span></button>
       <button type="button" class="dg-nav-item" data-view="favorites"><span class="dg-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 4Z"/></svg></span><span>Saved</span><span class="dg-count" id="saved-count">0</span></button>
     </nav>
@@ -53,33 +54,33 @@
       </div>
     </header>
 
-    <div id="content-scroll" class="dg-content">
-      <section id="view-home" class="dg-view is-active" aria-labelledby="home-featured-title">
+    <div id="content-scroll" class="dg-content" tabindex="-1">
+      <section id="view-home" class="dg-view is-active" aria-labelledby="featured-title">
         <article class="dg-featured">
           <div class="dg-featured-art">
-            <img id="featured-image" src="/assets/covers/neon-galaxy.svg" alt="" fetchpriority="high">
+            <img id="featured-image" src="/assets/covers/parcel-sort.svg" width="640" height="420" alt="" fetchpriority="high">
             <span id="featured-tag" class="dg-featured-tag">Featured</span>
           </div>
           <div class="dg-featured-copy">
-            <div class="dg-eyebrow">Featured today</div>
-            <h1 id="featured-title">Neon Galaxy</h1>
+            <div class="dg-eyebrow">Your next little obsession</div>
+            <h1 id="featured-title">Parcel Sort</h1>
             <p id="featured-desc"></p>
             <div class="dg-featured-meta">
               <span id="featured-genre">Arcade</span><span aria-hidden="true">•</span><span id="featured-time">3–8 min</span>
             </div>
             <div class="dg-featured-actions">
-              <button id="featured-play" class="dg-primary-btn" type="button">Play now <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
-            </div>
+              <button id="featured-play" class="dg-primary-btn" type="button">Let's play <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button>
+            <button id="surprise-play" class="dg-shuffle" type="button">Surprise me ↗</button></div>
           </div>
         </article>
 
         <section class="dg-section">
-          <div class="dg-section-header"><h2>Games</h2><button type="button" class="dg-text-btn" data-view-action="plays">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
+          <div class="dg-section-header"><h2>Pick up &amp; play</h2><button type="button" class="dg-text-btn" data-view-action="plays">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
           <div id="home-games-grid" class="dg-game-grid"></div>
         </section>
 
         <section class="dg-section">
-          <div class="dg-section-header"><h2>Collections</h2></div>
+          <div class="dg-section-header"><h2>What's your mood?</h2></div>
           <div id="albums-grid" class="dg-albums"></div>
         </section>
 
@@ -92,7 +93,7 @@
       <section id="view-plays" class="dg-view" aria-labelledby="games-heading">
         <div class="dg-page-heading">
           <div><span class="dg-eyebrow">Library</span><h1 id="games-heading">All games</h1></div>
-          <span id="result-count" class="dg-result-count">10 games</span>
+          <span id="result-count" class="dg-result-count">11 games</span>
         </div>
         <div class="dg-mobile-filters" aria-label="Game genres">
           <button type="button" class="dg-filter-chip is-active" data-category="all">All</button>
@@ -116,7 +117,7 @@
         <div class="dg-page-heading"><div><span class="dg-eyebrow">Next</span><h1 id="upcoming-heading">Coming soon</h1></div></div>
         <div id="upcoming-grid" class="dg-upcoming-grid"></div>
       </section>
-    </div>
+    <footer class="dg-footer"><span>D'Games · Made for your five-minute break.</span><span>No downloads. Just play.</span></footer></div>
   </main>
 
   <nav class="dg-mobile-nav" aria-label="Mobile navigation">
@@ -138,7 +139,7 @@
       <button id="modal-fullscreen" class="dg-modal-icon" type="button" aria-label="Enter fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4"/></svg></button>
     </div>
   </div>
-  <div class="dg-modal-stage"><iframe id="game-iframe" title="D'Games player" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe></div>
+  <div class="dg-modal-stage"><div id="player-status" class="dg-player-status" role="status" hidden>Loading your game...</div><iframe id="game-iframe" title="D'Games player" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe></div>
 </div>
 <div id="toast" class="dg-toast" role="status" aria-live="polite"></div>
 <script src="/assets/dgames-home.js" defer></script>

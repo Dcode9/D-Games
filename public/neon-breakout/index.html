@@ -1,768 +1,460 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Neon Breakout — D'Games</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
+<title>Neon Breakout - D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
-:root {
-  --bg: #07080d;
-  --surface: rgba(18, 20, 28, 0.85);
-  --border: rgba(255, 255, 255, 0.08);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  width: 100%; height: 100%;
-  background: var(--bg);
-  color: #f4f4f5;
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
-  touch-action: none;
-  user-select: none;
-}
-.font-display { font-family: 'Space Grotesk', sans-serif; }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
-
-.glass-panel {
-  background: var(--surface);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
-}
-
-.action-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.15s ease;
-}
-.action-btn:active {
-  background: rgba(255, 255, 255, 0.18);
-  transform: scale(0.95);
-}
-
-canvas { display: block; cursor: none; }
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#c4503c;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background-image:linear-gradient(#242a2a1f 1px,transparent 1px),linear-gradient(90deg,#242a2a1f 1px,transparent 1px);background-size:32px 32px}
+.ui{position:fixed;z-index:3;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:max(60px,calc(env(safe-area-inset-top) + 56px));padding-bottom:max(60px,calc(env(safe-area-inset-bottom) + 56px));pointer-events:none}
+.top{display:flex;gap:4px;padding:4px 8px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:none}
+.stat{min-width:54px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:3px;font:900 14px/1 ui-monospace,monospace}
+.row{display:flex;gap:6px;align-items:center;width:calc(100% - 16px);max-width:460px;margin-top:5px;flex:none}.hint{flex:1;margin:0;padding:4px 8px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.02em;text-align:center;min-height:0}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin:0;display:flex;gap:5px;pointer-events:auto;flex:none}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:7px 6px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+.stage{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center;margin:6px 0;pointer-events:none}
+.boardwrap{border:3px solid #242a2a;border-radius:6px;background:#eee8d9;box-shadow:0 6px 0 #242a2a30;pointer-events:auto;line-height:0}
+#cv{display:block;touch-action:none}
+.pad{width:min(440px,calc(100% - 16px));display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:9px;pointer-events:auto;flex:none}
+.k{position:relative;height:46px;padding:0;border:0;border-radius:14px;background:var(--base);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none;color:#fff;touch-action:none}
+.k .cap{position:absolute;inset:0 0 7px 0;border-radius:14px;background:linear-gradient(180deg,#ffffff40,#ffffff00 46%),var(--cap);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff70,inset 0 -5px 8px #00000022;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:transform .05s}
+.k b{font:900 20px/1 ui-monospace,monospace;text-shadow:0 1px 0 #0006}
+.k span{font:800 7px/1 ui-monospace,monospace;letter-spacing:.1em;opacity:.9}
+.k.is-down .cap{transform:translateY(6px);box-shadow:inset 0 2px 0 #ffffff30,inset 0 -2px 4px #00000040;transition-duration:.02s}
+.k.blue{--cap:#3b72d8;--base:#27489a}.k.lime{--cap:var(--lime);--base:var(--limed);color:#1d2a0c}.k.lime b{text-shadow:none}
+.k.guide .cap{animation:ring .9s ease-in-out infinite;outline:4px solid #fff;outline-offset:2px}
+.k.guide::before{content:"PRESS";position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:var(--ink);color:#fff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.12em;z-index:2}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 #ffffffcc,inset 0 2px 0 #ffffff70}50%{box-shadow:0 0 0 10px #ffffff00,inset 0 2px 0 #ffffff70}}
+.k:focus-visible .cap{outline:3px solid var(--ink)}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.overlay[hidden]{display:none}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(32px,9vw,46px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .05s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+.keys{margin-top:10px;font:800 9px/1.5 ui-monospace,monospace;color:#6a706b}
+.stats{margin:12px auto 0;display:grid;gap:5px;font:800 11px/1.3 ui-monospace,monospace;max-width:260px}
+.stats div{display:flex;justify-content:space-between;padding:6px 9px;border-radius:8px;background:#d9d1be88}
+@media(orientation:landscape) and (max-height:560px){.hint{display:none}.ui{padding-top:66px;padding-bottom:76px}.k{height:44px}}
+@media(max-height:700px){.ui{padding-bottom:max(86px,calc(env(safe-area-inset-bottom) + 82px))}}
+@media(prefers-reduced-motion:reduce){.k .cap,.k.guide .cap{transition:none;animation:none}}
 </style>
-  <link rel="stylesheet" href="/assets/dgames-ui.css">
-<link rel="stylesheet" href="/assets/dgames-game-skin.css">
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
-<body class="flex flex-col items-center justify-between p-2 sm:p-4 dg-retro-skin" data-game="breakout">
-
-  <!-- TOP HEADER HUD -->
-  <header class="w-full max-w-lg flex items-center justify-between px-3 py-2 rounded-2xl glass-panel flex-shrink-0 z-20">
-    <div class="flex items-center gap-2">
-      <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-      <h1 class="font-display text-sm sm:text-base font-bold text-white tracking-tight">NEON BREAKOUT</h1>
-    </div>
-
-    <div class="flex items-center gap-4 text-xs font-mono">
-      <div class="text-right">
-        <span class="text-[10px] text-zinc-500 uppercase">Score</span>
-        <div id="hud-score" class="font-bold text-white tabular-nums text-sm sm:text-base">0</div>
-      </div>
-      <div class="text-right">
-        <span class="text-[10px] text-zinc-500 uppercase">Lives</span>
-        <div id="hud-lives" class="font-bold text-rose-400 tabular-nums text-sm sm:text-base">❤❤❤</div>
-      </div>
-      <div class="text-right">
-        <span class="text-[10px] text-zinc-500 uppercase">Level</span>
-        <div id="hud-level" class="font-bold text-cyan-400 tabular-nums text-sm sm:text-base">1</div>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-1.5">
-      <button id="btn-sound" class="action-btn w-8 h-8 rounded-xl flex items-center justify-center text-xs text-zinc-300" title="Toggle Sound">
-        🔊
-      </button>
-      <button id="btn-pause" class="action-btn w-8 h-8 rounded-xl flex items-center justify-center text-xs text-zinc-300" title="Pause Game">
-        ⏸
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN CANVAS CONTAINER -->
-  <main class="relative flex items-center justify-center my-auto z-10 w-full max-w-lg">
-    <div class="glass-panel p-1.5 rounded-2xl shadow-2xl relative overflow-hidden">
-      <canvas id="game-canvas" width="400" height="560" class="rounded-xl"></canvas>
-    </div>
-  </main>
-
-  <!-- DESKTOP / TOUCH HINT -->
-  <footer class="text-[11px] font-mono text-zinc-500 z-20 pb-1 flex items-center gap-3">
-    <span class="hidden sm:inline">Move: Mouse / Touch / <kbd class="px-1 py-0.5 rounded bg-white/10 text-zinc-300">←→</kbd></span>
-    <span>Fire / Launch: <kbd class="px-1 py-0.5 rounded bg-white/10 text-zinc-300">Space</kbd> or Tap</span>
-    <span>Pause: <kbd class="px-1 py-0.5 rounded bg-white/10 text-zinc-300">P</kbd></span>
-  </footer>
-
-  <!-- START OVERLAY -->
-  <div id="overlay-start" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-4">
-      <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center text-xl font-bold mx-auto">
-        B
-      </div>
-      <div>
-        <h2 class="font-display text-2xl font-bold text-white">NEON BREAKOUT</h2>
-        <p class="text-xs text-zinc-400 mt-1">Multi-stage levels, power-up capsules (Multiball, Lasers, Shields), and dynamic acoustic feedback.</p>
-      </div>
-      <button id="btn-start" class="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-zinc-200 transition-colors cursor-pointer">
-        Launch Game
-      </button>
-    </div>
-  </div>
-
-  <!-- PAUSE OVERLAY -->
-  <div id="overlay-pause" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 rounded-3xl max-w-xs w-full text-center space-y-4">
-      <h3 class="font-display text-xl font-bold text-white">Paused</h3>
-      <div class="space-y-2">
-        <button id="btn-resume" class="w-full py-2.5 rounded-xl bg-white text-black font-medium text-xs">Resume</button>
-        <button id="btn-restart" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs">Restart</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- GAME OVER / VICTORY OVERLAY -->
-  <div id="overlay-gameover" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-    <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-4">
-      <span id="go-tag" class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Match Result</span>
-      <h2 id="go-title" class="font-display text-2xl font-bold text-white">GAME OVER</h2>
-      <div class="py-2 border-y border-white/10 space-y-1">
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Score</span>
-          <span id="go-score" class="text-white font-mono font-bold">0</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Bricks Broken</span>
-          <span id="go-broken" class="text-cyan-400 font-mono font-bold">0</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Max Combo</span>
-          <span id="go-combo" class="text-amber-400 font-mono font-bold">x0</span>
-        </div>
-        <div class="flex justify-between text-xs text-zinc-400">
-          <span>Best Score</span>
-          <span id="go-best" class="text-rose-400 font-mono font-bold">0</span>
-        </div>
-      </div>
-      <button id="btn-playagain" class="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-zinc-200 transition-colors cursor-pointer">
-        Play Again
-      </button>
-    </div>
-  </div>
-
+<body class="dg-retro-skin" data-game="breakout">
+<div class="ui" id="ui">
+<div class="top" aria-live="polite">
+<div class="stat"><small>SCORE</small><b id="hud-score">0</b></div>
+<div class="stat"><small>LIVES</small><b id="hud-lives">3</b></div>
+<div class="stat"><small>LEVEL</small><b id="hud-level">1</b></div>
+<div class="stat"><small>BEST</small><b id="hud-best">0</b></div>
+</div>
+<div class="row"><div id="hint" class="hint">Press Play to start</div>
+<div class="tools" id="tools">
+<button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE ON</button>
+<button id="soundBtn" class="mini" type="button" aria-pressed="true">SND ON</button>
+<button id="helpBtn" class="mini" type="button">HOW TO</button>
+</div></div>
+<div class="stage" id="stage"><div class="boardwrap"><canvas id="cv" aria-label="Breakout playfield"></canvas></div></div>
+<div class="pad" id="pad">
+<button class="k blue" id="kL" type="button" aria-label="Move paddle left"><div class="cap"><b>&#9664;</b><span>LEFT</span></div></button>
+<button class="k lime" id="kF" type="button" aria-label="Launch ball or fire lasers (Space)"><div class="cap"><b id="kFb">&#9650;</b><span id="kFs">LAUNCH</span></div></button>
+<button class="k blue" id="kR" type="button" aria-label="Move paddle right"><div class="cap"><b>&#9654;</b><span>RIGHT</span></div></button>
+</div>
+</div>
+<div id="overlay" class="overlay">
+<section class="panel" role="dialog" aria-labelledby="headline">
+<div class="eyebrow">D'GAMES &#183; BRICK DESK</div>
+<h1 id="headline">Neon Breakout</h1>
+<p id="message">Bounce the ball off your paddle and clear every brick. New here? The tutorial walks through each button.</p>
+<div id="statsBox" class="stats" hidden></div>
+<div class="btns">
+<button id="start" class="big" type="button">Play</button>
+<button id="tutBtn" class="big alt" type="button">Tutorial</button>
+</div>
+<ul class="rules" id="rules">
+<li>&#9664; &#9654; slide the paddle. You can also drag on the board.</li>
+<li>LAUNCH sends the ball up. Hit it with the paddle edge to steer.</li>
+<li>Capsules: M multiball, W wide paddle, Z lasers (LAUNCH fires), S shield.</li>
+<li>Colors start vivid and get dustier every level. Tough bricks take two hits.</li>
+</ul>
+<div class="keys">Keys: arrows or A/D move, Space launch or fire, P pause.</div>
+</section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
 <script>
-// --- PROCEDURAL WEB AUDIO SYNTHESIZER ---
-let audioCtx = null;
-let soundEnabled = true;
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+(() => {
+const $=id=>document.getElementById(id);
+const W=400,H=500;
+const cv=$('cv'),ctx=cv.getContext('2d');
+cv.width=W;cv.height=H;
+const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message'),hintEl=$('hint'),statsBox=$('statsBox'),rules=$('rules');
+const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),helpBtn=$('helpBtn');
+const kL=$('kL'),kR=$('kR'),kF=$('kF');
+const CAPS={multi:['M','#3b72d8'],wide:['W','#8fc23a'],laser:['Z','#c4503c'],shield:['S','#e0a526']};
+function bcol(r,lv){
+const L=Math.min(8,lv-1);
+return 'hsl('+((r*52+L*16)%360)+' '+Math.max(36,86-L*7)+'% '+(52+L)+'%)';
 }
-
-function playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.1) {
-  if (!soundEnabled || !audioCtx) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {}
+let paddle,balls,bricks,caps,lasers,parts;
+let score=0,lives=3,level=1,broken=0,combo=0,maxCombo=0;
+let best=+localStorage.getItem('neon-breakout-best')||0;
+let running=false,paused=false,stuck=true,shield=false,laserT=0,wideT=0,holdL=false,holdR=false,lastShot=0,hits=0;
+let guideOn=true,guideTouched=false,sound=true,tut=null,raf=0,overlayMode='menu';
+let ac=null;
+function tone(f,d,type,g){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'triangle';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function layout(){
+const st=$('stage');
+const ah=st.clientHeight-12,aw=st.clientWidth-16;
+const s=Math.max(.3,Math.min(ah/(H+6),aw/(W+6),1.4));
+cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px';
 }
-
-const sfx = {
-  paddleHit: (offsetNorm) => {
-    // Pitch varies between 280Hz and 520Hz depending on hit location
-    const freq = 280 + Math.abs(offsetNorm) * 240;
-    playTone(freq, 'triangle', 0.06, 0.12);
-  },
-  brickHit: (combo) => {
-    const freq = Math.min(880, 440 + combo * 30);
-    playTone(freq, 'sine', 0.08, 0.14);
-  },
-  powerup: () => {
-    if (!soundEnabled || !audioCtx) return;
-    [523, 659, 784].forEach((f, idx) => setTimeout(() => playTone(f, 'sine', 0.1, 0.1), idx * 50));
-  },
-  laser: () => playTone(880, 'sawtooth', 0.05, 0.08),
-  lostLife: () => playTone(160, 'sawtooth', 0.25, 0.15),
-  levelWin: () => {
-    if (!soundEnabled || !audioCtx) return;
-    [440, 554, 659, 880, 1108].forEach((f, idx) => setTimeout(() => playTone(f, 'sine', 0.15, 0.12), idx * 80));
-  }
-};
-
-document.getElementById('btn-sound').addEventListener('click', () => {
-  soundEnabled = !soundEnabled;
-  document.getElementById('btn-sound').textContent = soundEnabled ? '🔊' : '🔇';
+window.addEventListener('resize',layout);
+const PAT=[
+(r,c)=>({hp:1}),
+(r,c)=>(r+c)%2===0?{hp:r===0?2:1}:null,
+(r,c)=>{const d=Math.abs(c-3.5)+Math.abs(r-2.5);return d<=3.5?{hp:d<=1.5?2:1}:null},
+(r,c)=>(c<=1||c>=6||r>=4)?{hp:1}:null,
+(r,c)=>({hp:(r===0||r===5)?2:1})];
+function build(lv,tutMode){
+bricks=[];
+const rows=tutMode?2:6,cols=8,bw=42,bh=16,pad=5,sx=(W-(cols*bw+(cols-1)*pad))/2,sy=44;
+const fn=PAT[(lv-1)%PAT.length];
+for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+const d=tutMode?{hp:1}:fn(r,c);
+if(d)bricks.push({x:sx+c*(bw+pad),y:sy+r*(bh+pad),w:bw,h:bh,hp:d.hp,max:d.hp,row:r,alive:true});
+}
+}
+function newPaddle(){const w=wideT>0?110:80;paddle={x:W/2-w/2,y:H-30,w:w,h:12,base:80}}
+function roundReset(){
+newPaddle();
+balls=[{x:W/2,y:paddle.y-7,r:6,dx:0,dy:0,sp:5+Math.min(2,(level-1)*.3)}];
+stuck=true;lasers=[];combo=0;
+}
+function reset(tutMode){
+score=0;lives=3;level=1;broken=0;combo=0;maxCombo=0;wideT=0;laserT=0;shield=false;caps=[];parts=[];hits=0;
+build(1,tutMode);roundReset();hud();
+}
+function hud(){
+$('hud-score').textContent=score;$('hud-lives').textContent=lives;$('hud-level').textContent=level;$('hud-best').textContent=best;
+}
+function setHint(h){hintEl.innerHTML=h}
+function defHint(){
+if(tut)return;
+if(!running){setHint('Press Play to start');return}
+if(stuck){setHint('Press <em>LAUNCH</em> to serve the ball.');return}
+setHint(guideOn?'The <em>marker</em> shows where the ball lands.':'Guide off. Track the ball yourself.');
+}
+function setGuide(on,user){guideOn=on;if(user)guideTouched=true;guideBtn.textContent='GUIDE '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));defHint()}
+function setSound(on){sound=on;soundBtn.textContent='SND '+(on?'ON':'OFF');soundBtn.setAttribute('aria-pressed',String(on))}
+function launch(){
+if(!stuck||!balls.length)return false;
+stuck=false;
+const a=(Math.random()*.4-.2)*Math.PI;
+balls[0].dx=Math.sin(a)*balls[0].sp;balls[0].dy=-Math.cos(a)*balls[0].sp;
+tone(520,.08,'triangle',.07);
+if(tut&&tut.step===2)tutNext();
+defHint();
+return true;
+}
+function fire(){
+const now=performance.now();
+if(laserT<=0||now-lastShot<160)return;
+lastShot=now;
+lasers.push({x:paddle.x+4,y:paddle.y,vy:-9},{x:paddle.x+paddle.w-4,y:paddle.y,vy:-9});
+tone(880,.05,'sawtooth',.04);
+}
+function spawnCap(x,y,type,vy){
+caps.push({x:x,y:y,w:22,h:22,type:type,vy:vy||2.2});
+}
+function applyCap(t){
+tone(660,.1,'sine',.07);tone(880,.12,'sine',.05);buzz(20);
+if(t==='multi'){
+const nb=[];
+balls.forEach(b=>{
+[.4,-.4].forEach(a=>nb.push({x:b.x,y:b.y,r:b.r,sp:b.sp,dx:b.dx*Math.cos(a)-b.dy*Math.sin(a),dy:b.dx*Math.sin(a)+b.dy*Math.cos(a)}));
 });
-
-// --- GAME LOGIC ---
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-
-const W = 400;
-const H = 560;
-canvas.width = W;
-canvas.height = H;
-
-let paddle = null;
-let balls = [];
-let bricks = [];
-let powerups = [];
-let lasers = [];
-let particles = [];
-let score = 0;
-let lives = 3;
-let currentLevel = 1;
-let totalBricksBroken = 0;
-let combo = 0;
-let maxCombo = 0;
-let bestScore = +localStorage.getItem('neon-breakout-best') || 0;
-let running = false;
-let paused = false;
-let ballStuck = true; // Ball rests on paddle until launched
-let hasShield = false;
-let laserTimer = 0;
-let wideTimer = 0;
-
-const COLORS = ['#f43f5e', '#fb923c', '#f59e0b', '#10b981', '#00f0ff', '#a855f7'];
-
-// LEVELS PATTERNS
-const LEVEL_PATTERNS = [
-  // Level 1: Classic Rows
-  (r, c) => ({ color: COLORS[r % COLORS.length], hp: 1 }),
-  // Level 2: Checkerboard Fortress
-  (r, c) => (r + c) % 2 === 0 ? { color: COLORS[(r * 2) % COLORS.length], hp: r === 0 ? 2 : 1 } : null,
-  // Level 3: Diamond Gateway
-  (r, c) => {
-    const dist = Math.abs(c - 3.5) + Math.abs(r - 2.5);
-    return dist <= 3.5 ? { color: COLORS[Math.floor(dist) % COLORS.length], hp: dist <= 1.5 ? 2 : 1 } : null;
-  },
-  // Level 4: Space Pillars
-  (r, c) => (c <= 1 || c >= 6 || r >= 4) ? { color: COLORS[c % COLORS.length], hp: 1 } : null,
-  // Level 5: Stargate Citadel
-  (r, c) => ({ color: COLORS[(r + c) % COLORS.length], hp: (r === 0 || r === 5) ? 2 : 1 })
+if(!stuck)balls.push(...nb);
+}else if(t==='wide'){wideT=600;paddle.x-=15;paddle.w=110;paddle.x=Math.max(0,Math.min(W-paddle.w,paddle.x))}
+else if(t==='laser'){laserT=600}
+else if(t==='shield'){shield=true}
+if(tut&&tut.step===4)tutNext();
+}
+function burst(x,y,c){for(let i=0;i<12;i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,c:c,l:1})}
+function killBrick(bk){
+bk.alive=false;broken++;
+burst(bk.x+bk.w/2,bk.y+bk.h/2,bcol(bk.row,level));
+if(!tut&&Math.random()<.26){const t=Object.keys(CAPS);spawnCap(bk.x+bk.w/2-11,bk.y,t[Math.floor(Math.random()*t.length)])}
+}
+function scoreUp(n){score+=n;if(score>best){best=score;localStorage.setItem('neon-breakout-best',best)}hud()}
+function predict(){
+const b=balls[0];
+if(!b||stuck)return null;
+if(b.dy<=0)return null;
+let x=b.x,y=b.y,dx=b.dx,dy=b.dy,n=0;
+while(y<paddle.y&&n<600){x+=dx;y+=dy;if(x<b.r){x=b.r;dx=Math.abs(dx)}if(x>W-b.r){x=W-b.r;dx=-Math.abs(dx)}n++}
+return x;
+}
+function lostLife(){
+lives--;tone(160,.25,'sawtooth',.08);buzz([40,40,80]);hud();
+if(tut){roundReset();setTimeout(defHint,0);return}
+if(lives<=0)gameOver(false);else{roundReset();defHint()}
+}
+function update(){
+if(wideT>0){wideT--;if(wideT===0){paddle.x+=15;paddle.w=paddle.base;paddle.x=Math.max(0,Math.min(W-paddle.w,paddle.x))}}
+if(laserT>0)laserT--;
+const sp=7;
+if(holdL)paddle.x=Math.max(0,paddle.x-sp);
+if(holdR)paddle.x=Math.min(W-paddle.w,paddle.x+sp);
+if(tut){
+if(tut.step===0&&paddle.x<50)tutNext();
+else if(tut.step===1&&paddle.x+paddle.w>W-50)tutNext();
+}
+if(stuck&&balls.length){balls[0].x=paddle.x+paddle.w/2;balls[0].y=paddle.y-balls[0].r-1}
+for(let i=lasers.length-1;i>=0;i--){
+const l=lasers[i];l.y+=l.vy;
+if(l.y<0){lasers.splice(i,1);continue}
+for(const bk of bricks){
+if(bk.alive&&l.x>=bk.x&&l.x<=bk.x+bk.w&&l.y>=bk.y&&l.y<=bk.y+bk.h){
+bk.hp--;lasers.splice(i,1);
+if(bk.hp<=0){killBrick(bk);scoreUp(20)}
+break;
+}}}
+for(let i=caps.length-1;i>=0;i--){
+const p=caps[i];p.y+=p.vy;
+if(p.y>H){caps.splice(i,1);if(tut&&tut.step===4)tutSpawnCap();continue}
+if(p.y+p.h>=paddle.y&&p.y<=paddle.y+paddle.h&&p.x+p.w>=paddle.x&&p.x<=paddle.x+paddle.w){const t=p.type;caps.splice(i,1);applyCap(t)}
+}
+if(!stuck){
+for(let i=balls.length-1;i>=0;i--){
+const b=balls[i];
+b.x+=b.dx;b.y+=b.dy;
+if(b.x-b.r<0){b.x=b.r;b.dx=Math.abs(b.dx)}
+if(b.x+b.r>W){b.x=W-b.r;b.dx=-Math.abs(b.dx)}
+if(b.y-b.r<0){b.y=b.r;b.dy=Math.abs(b.dy)}
+if(b.y+b.r>=paddle.y&&b.y-b.r<=paddle.y+paddle.h&&b.x>=paddle.x-3&&b.x<=paddle.x+paddle.w+3&&b.dy>0){
+const off=(b.x-(paddle.x+paddle.w/2))/(paddle.w/2);
+const a=Math.max(-1,Math.min(1,off))*.42*Math.PI;
+b.sp=Math.min(8.5,b.sp+.08);
+b.dx=Math.sin(a)*b.sp;b.dy=-Math.cos(a)*b.sp;
+tone(280+Math.abs(off)*240,.06,'triangle',.08);buzz(8);combo=0;hits++;
+if(tut&&tut.step===3&&hits>=1)tutNext();
+}
+for(const bk of bricks){
+if(!bk.alive)continue;
+if(b.x+b.r>=bk.x&&b.x-b.r<=bk.x+bk.w&&b.y+b.r>=bk.y&&b.y-b.r<=bk.y+bk.h){
+const px=b.x-b.dx,py=b.y-b.dy;
+if(px<bk.x||px>bk.x+bk.w)b.dx=-b.dx;else b.dy=-b.dy;
+bk.hp--;combo++;maxCombo=Math.max(maxCombo,combo);
+tone(Math.min(880,440+combo*30),.08,'sine',.08);
+scoreUp(15*combo);
+if(bk.hp<=0)killBrick(bk);
+break;
+}}
+if(b.y-b.r>H){
+if(shield){shield=false;b.y=H-b.r-8;b.dy=-Math.abs(b.dy);tone(400,.1,'triangle',.07)}
+else balls.splice(i,1);
+}}
+if(!balls.length)lostLife();
+}
+if(bricks.length&&bricks.every(b=>!b.alive)){
+if(tut){build(1,true);roundReset();defHint();}
+else{
+tone(440,.15,'sine',.08);tone(660,.2,'sine',.06);buzz([30,30,60]);
+level++;
+if(level>5){level=5;gameOver(true)}
+else{build(level,false);roundReset();hud();
+if(level>=3&&!guideTouched&&guideOn)setGuide(false,false);
+defHint();}
+}}
+}
+function brickDraw(b){
+const c=bcol(b.row,level);
+ctx.globalAlpha=b.hp===b.max?1:.62;
+ctx.fillStyle=c;ctx.fillRect(b.x,b.y,b.w,b.h);
+ctx.fillStyle='#ffffff55';ctx.fillRect(b.x,b.y,b.w,3);
+ctx.fillStyle='#00000030';ctx.fillRect(b.x,b.y+b.h-3,b.w,3);
+ctx.globalAlpha=1;
+ctx.strokeStyle='#242a2a';ctx.lineWidth=1.5;ctx.strokeRect(b.x+.75,b.y+.75,b.w-1.5,b.h-1.5);
+if(b.max>1&&b.hp===b.max){ctx.fillStyle='#242a2a';ctx.fillRect(b.x+b.w/2-3,b.y+b.h/2-1,6,2)}
+}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle='#eee8d9';ctx.fillRect(0,0,W,H);
+ctx.strokeStyle='#242a2a14';ctx.lineWidth=1;
+for(let x=0;x<=W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+for(let y=0;y<=H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+if(shield){ctx.fillStyle='#e0a526';ctx.fillRect(0,H-5,W,5)}
+bricks.forEach(b=>{if(b.alive)brickDraw(b)});
+caps.forEach(p=>{
+const d=CAPS[p.type];
+ctx.beginPath();ctx.arc(p.x+11,p.y+11,11,0,7);ctx.fillStyle=d[1];ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#242a2a';ctx.stroke();
+ctx.fillStyle='#fff';ctx.font='900 12px ui-monospace,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d[0],p.x+11,p.y+12);
+});
+ctx.fillStyle='#c4503c';
+lasers.forEach(l=>ctx.fillRect(l.x-1.5,l.y,3,10));
+if(guideOn&&running){
+if(stuck){
+ctx.strokeStyle='#242a2a99';ctx.setLineDash([4,5]);ctx.lineWidth=2;
+ctx.beginPath();ctx.moveTo(paddle.x+paddle.w/2,paddle.y-16);ctx.lineTo(paddle.x+paddle.w/2,paddle.y-90);ctx.stroke();ctx.setLineDash([]);
+}else{
+const px=predict();
+if(px!==null){
+ctx.strokeStyle='#c4503c';ctx.lineWidth=2.5;
+ctx.beginPath();ctx.arc(px,paddle.y+paddle.h/2,11,0,7);ctx.stroke();
+ctx.beginPath();ctx.moveTo(px,paddle.y-12);ctx.lineTo(px,paddle.y-3);ctx.stroke();
+}}}
+ctx.fillStyle=laserT>0?'#c4503c':'#242a2a';
+ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+ctx.fillStyle='#ffffff55';ctx.fillRect(paddle.x,paddle.y,paddle.w,3);
+if(wideT>0){ctx.fillStyle='#8fc23a';ctx.fillRect(paddle.x,paddle.y+paddle.h-3,paddle.w,3)}
+balls.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fillStyle='#f4f0e4';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#242a2a';ctx.stroke()});
+for(let i=parts.length-1;i>=0;i--){
+const q=parts[i];q.x+=q.vx;q.y+=q.vy;q.l-=.03;
+if(q.l<=0)parts.splice(i,1);else{ctx.fillStyle=q.c;ctx.globalAlpha=q.l;ctx.fillRect(q.x,q.y,3,3);ctx.globalAlpha=1}
+}
+}
+function updFire(){
+const lz=laserT>0&&!stuck;
+$('kFb').innerHTML=lz?'&#10022;':'&#9650;';$('kFs').textContent=lz?'FIRE':'LAUNCH';
+if(!tut){
+const need=running&&guideOn&&(stuck||lz);
+kF.classList.toggle('guide',!!need);
+}
+}
+function loop(){
+raf=requestAnimationFrame(loop);
+if(running&&!paused)update();
+draw();updFire();
+}
+function clearGuides(){document.querySelectorAll('.k').forEach(k=>k.classList.remove('guide'))}
+function gameOver(win){
+running=false;holdL=holdR=false;
+overlayMode='over';
+head.textContent=win?'Victory':'Game over';
+msg.textContent=win?'All five sectors cleared.':'Out of lives.';
+statsBox.hidden=false;
+statsBox.innerHTML='<div><span>Score</span><b>'+score+'</b></div><div><span>Bricks</span><b>'+broken+'</b></div><div><span>Best combo</span><b>x'+maxCombo+'</b></div><div><span>Best</span><b>'+best+'</b></div>';
+rules.hidden=true;start.textContent='Play again';tutBtn.hidden=false;
+overlay.hidden=false;clearGuides();
+tone(win?880:140,.3,'sawtooth',.08);buzz(win?[30,30,60]:[100,50,100]);
+}
+/* tutorial */
+const STEPS=[
+['Hold <em>LEFT</em> to slide the paddle to the left wall.','kL'],
+['Now hold <em>RIGHT</em> to slide it across.','kR'],
+['Press <em>LAUNCH</em> to serve the ball.','kF'],
+['Bounce the ball off the paddle. Hit with the <em>edge</em> to steer it sideways.',''],
+['Catch the falling <em>capsule</em>. M multiball, W wide, Z lasers (LAUNCH fires), S shield.','kL,kR']
 ];
-
-function buildBricks(lvl) {
-  bricks = [];
-  const rows = 6;
-  const cols = 8;
-  const bW = 42;
-  const bH = 16;
-  const padX = 5;
-  const padY = 5;
-  const startX = (W - (cols * bW + (cols - 1) * padX)) / 2;
-  const startY = 45;
-
-  const patternFn = LEVEL_PATTERNS[(lvl - 1) % LEVEL_PATTERNS.length];
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const data = patternFn(r, c);
-      if (data) {
-        bricks.push({
-          x: startX + c * (bW + padX),
-          y: startY + r * (bH + padY),
-          w: bW,
-          h: bH,
-          hp: data.hp,
-          maxHp: data.hp,
-          color: data.color,
-          alive: true
-        });
-      }
-    }
-  }
+function startTutorial(){
+reset(true);tut={step:0};running=true;paused=false;overlay.hidden=true;setGuide(true,false);stepInit();
 }
-
-function initGame() {
-  score = 0;
-  lives = 3;
-  currentLevel = 1;
-  totalBricksBroken = 0;
-  combo = 0;
-  maxCombo = 0;
-  resetRound();
-  buildBricks(currentLevel);
-  running = true;
-  paused = false;
-  updateHUD();
+function stepInit(){
+clearGuides();
+const s=STEPS[tut.step];
+setHint(s[0]);
+if(s[1])s[1].split(',').forEach(i=>$(i).classList.add('guide'));
+if(tut.step===3){if(!stuck&&hits>=1)tutNext()}
+if(tut.step===4)tutSpawnCap();
 }
-
-function resetRound() {
-  const baseW = wideTimer > 0 ? 110 : 80;
-  paddle = {
-    x: W / 2 - baseW / 2,
-    y: H - 32,
-    w: baseW,
-    h: 12,
-    baseW: 80
-  };
-  balls = [{
-    x: W / 2,
-    y: paddle.y - 8,
-    r: 6,
-    dx: 0,
-    dy: 0,
-    speed: 5.2
-  }];
-  ballStuck = true;
-  lasers = [];
-  combo = 0;
+function tutSpawnCap(){
+caps=[];
+const t=['wide','multi','laser','shield'][Math.floor(Math.random()*4)];
+spawnCap(60+Math.random()*(W-120),60,t,1.9);
 }
-
-function launchStuckBall() {
-  if (ballStuck && balls.length > 0) {
-    ballStuck = false;
-    const angle = (Math.random() * 0.4 - 0.2) * Math.PI; // near vertical
-    balls[0].dx = Math.sin(angle) * balls[0].speed;
-    balls[0].dy = -Math.cos(angle) * balls[0].speed;
-  }
+function tutNext(){
+tut.step++;tone(740,.1,'sine',.06);
+if(tut.step>=STEPS.length){endTutorial();return}
+stepInit();
 }
-
-function updateHUD() {
-  document.getElementById('hud-score').textContent = score;
-  document.getElementById('hud-level').textContent = currentLevel;
-  document.getElementById('hud-lives').textContent = '❤'.repeat(Math.max(0, lives));
+function endTutorial(){
+tut=null;running=false;holdL=holdR=false;clearGuides();
+overlayMode='menu';head.textContent='Tutorial done';
+msg.textContent='That is every button. Tip: aim with the paddle edge.';
+statsBox.hidden=true;rules.hidden=false;start.textContent='Play';overlay.hidden=false;
+reset(false);running=false;
 }
-
-// Spawn Powerups
-function maybeSpawnPowerup(x, y) {
-  if (Math.random() < 0.28) {
-    const types = ['multi', 'wide', 'laser', 'shield', 'slow'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    powerups.push({
-      x, y,
-      w: 22, h: 22,
-      type,
-      vy: 2.2
-    });
-  }
+function startGame(){
+tut=null;clearGuides();reset(false);running=true;paused=false;if(!guideTouched)setGuide(true,false);
+overlay.hidden=true;statsBox.hidden=true;defHint();tone(660,.08,'triangle',.06);
 }
-
-function applyPowerup(type) {
-  sfx.powerup();
-  if (type === 'multi') {
-    const newBalls = [];
-    balls.forEach(b => {
-      newBalls.push({
-        ...b,
-        dx: b.dx * Math.cos(0.4) - b.dy * Math.sin(0.4),
-        dy: b.dx * Math.sin(0.4) + b.dy * Math.cos(0.4)
-      });
-      newBalls.push({
-        ...b,
-        dx: b.dx * Math.cos(-0.4) - b.dy * Math.sin(-0.4),
-        dy: b.dx * Math.sin(-0.4) + b.dy * Math.cos(-0.4)
-      });
-    });
-    balls.push(...newBalls);
-  } else if (type === 'wide') {
-    wideTimer = 600; // 10 seconds at 60fps
-    paddle.w = 110;
-  } else if (type === 'laser') {
-    laserTimer = 500; // ~8 seconds
-  } else if (type === 'shield') {
-    hasShield = true;
-  } else if (type === 'slow') {
-    balls.forEach(b => {
-      b.speed = Math.max(3.8, b.speed * 0.75);
-      const mag = Math.hypot(b.dx, b.dy);
-      b.dx = (b.dx / mag) * b.speed;
-      b.dy = (b.dy / mag) * b.speed;
-    });
-  }
+function bindKey(el,down,up){
+const dn=e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}
+el.classList.add('is-down');tone(330,.04,'square',.03);buzz(8);down()};
+const upf=e=>{el.classList.remove('is-down');up&&up()};
+el.addEventListener('pointerdown',dn);
+el.addEventListener('pointerup',upf);el.addEventListener('pointercancel',upf);el.addEventListener('lostpointercapture',upf);
 }
-
-function fireLasers() {
-  if (laserTimer <= 0) return;
-  sfx.laser();
-  lasers.push({ x: paddle.x + 4, y: paddle.y, vy: -9 });
-  lasers.push({ x: paddle.x + paddle.w - 4, y: paddle.y, vy: -9 });
-}
-
-// Particle Bursts
-function spawnBrickParticles(x, y, color) {
-  for (let i = 0; i < 12; i++) {
-    particles.push({
-      x: x + 20,
-      y: y + 8,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
-      color,
-      life: 1.0
-    });
-  }
-}
-
-// --- UPDATE LOOP ---
-function update() {
-  if (!running || paused) {
-    requestAnimationFrame(update);
-    return;
-  }
-
-  // Timers
-  if (wideTimer > 0) {
-    wideTimer--;
-    if (wideTimer === 0) paddle.w = paddle.baseW;
-  }
-  if (laserTimer > 0) {
-    laserTimer--;
-    if (laserTimer % 20 === 0) fireLasers();
-  }
-
-  // Stuck Ball Follows Paddle
-  if (ballStuck && balls.length > 0) {
-    balls[0].x = paddle.x + paddle.w / 2;
-    balls[0].y = paddle.y - balls[0].r - 1;
-  }
-
-  // Lasers
-  for (let i = lasers.length - 1; i >= 0; i--) {
-    const l = lasers[i];
-    l.y += l.vy;
-    if (l.y < 0) {
-      lasers.splice(i, 1);
-      continue;
-    }
-    // Check collision with bricks
-    for (let j = 0; j < bricks.length; j++) {
-      const b = bricks[j];
-      if (b.alive && l.x >= b.x && l.x <= b.x + b.w && l.y >= b.y && l.y <= b.y + b.h) {
-        b.hp--;
-        lasers.splice(i, 1);
-        if (b.hp <= 0) {
-          b.alive = false;
-          totalBricksBroken++;
-          score += 20;
-          spawnBrickParticles(b.x, b.y, b.color);
-        }
-        break;
-      }
-    }
-  }
-
-  // Powerups Falling
-  for (let i = powerups.length - 1; i >= 0; i--) {
-    const p = powerups[i];
-    p.y += p.vy;
-    if (p.y > H) {
-      powerups.splice(i, 1);
-      continue;
-    }
-    // Collision with paddle
-    if (p.y + p.h >= paddle.y && p.y <= paddle.y + paddle.h &&
-        p.x + p.w >= paddle.x && p.x <= paddle.x + paddle.w) {
-      applyPowerup(p.type);
-      powerups.splice(i, 1);
-    }
-  }
-
-  // Balls Physics
-  if (!ballStuck) {
-    for (let i = balls.length - 1; i >= 0; i--) {
-      const b = balls[i];
-      b.x += b.dx;
-      b.y += b.dy;
-
-      // Walls
-      if (b.x - b.r < 0) { b.x = b.r; b.dx = Math.abs(b.dx); }
-      if (b.x + b.r > W) { b.x = W - b.r; b.dx = -Math.abs(b.dx); }
-      if (b.y - b.r < 0) { b.y = b.r; b.dy = Math.abs(b.dy); }
-
-      // Paddle Collision
-      if (b.y + b.r >= paddle.y && b.y - b.r <= paddle.y + paddle.h &&
-          b.x >= paddle.x && b.x <= paddle.x + paddle.w && b.dy > 0) {
-        const offset = (b.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2); // -1 to 1
-        const maxAngle = 0.42 * Math.PI; // ~75 degrees
-        const angle = offset * maxAngle;
-        b.speed = Math.min(8.5, b.speed + 0.08);
-        b.dx = Math.sin(angle) * b.speed;
-        b.dy = -Math.cos(angle) * b.speed;
-        sfx.paddleHit(offset);
-        combo = 0; // reset combo on paddle touch
-      }
-
-      // Bricks Collision
-      for (let j = 0; j < bricks.length; j++) {
-        const bk = bricks[j];
-        if (!bk.alive) continue;
-
-        if (b.x + b.r >= bk.x && b.x - b.r <= bk.x + bk.w &&
-            b.y + b.r >= bk.y && b.y - b.r <= bk.y + bk.h) {
-          
-          // Determine collision side
-          const prevX = b.x - b.dx;
-          const prevY = b.y - b.dy;
-          if (prevX < bk.x || prevX > bk.x + bk.w) b.dx = -b.dx;
-          else b.dy = -b.dy;
-
-          bk.hp--;
-          combo++;
-          maxCombo = Math.max(maxCombo, combo);
-          score += 15 * combo;
-          sfx.brickHit(combo);
-
-          if (bk.hp <= 0) {
-            bk.alive = false;
-            totalBricksBroken++;
-            spawnBrickParticles(bk.x, bk.y, bk.color);
-            maybeSpawnPowerup(bk.x + bk.w / 2 - 11, bk.y);
-          }
-
-          if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('neon-breakout-best', bestScore);
-          }
-          updateHUD();
-          break;
-        }
-      }
-
-      // Ball Out of Bounds Bottom
-      if (b.y - b.r > H) {
-        if (hasShield) {
-          hasShield = false;
-          b.y = H - b.r - 8;
-          b.dy = -Math.abs(b.dy);
-          sfx.paddleHit(0);
-        } else {
-          balls.splice(i, 1);
-        }
-      }
-    }
-
-    // Check Life Lost
-    if (balls.length === 0) {
-      lives--;
-      sfx.lostLife();
-      updateHUD();
-      if (lives <= 0) {
-        gameOver(false);
-      } else {
-        resetRound();
-      }
-    }
-  }
-
-  // Check Level Clear
-  if (bricks.length > 0 && bricks.every(b => !b.alive)) {
-    sfx.levelWin();
-    currentLevel++;
-    if (currentLevel > 5) {
-      gameOver(true);
-    } else {
-      buildBricks(currentLevel);
-      resetRound();
-      updateHUD();
-    }
-  }
-
-  draw();
-  requestAnimationFrame(update);
-}
-
-// --- DRAWING ---
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-
-  // Background Grid Lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x <= W; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= H; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-
-  // Shield Bar at bottom if active
-  if (hasShield) {
-    ctx.fillStyle = '#00f0ff';
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#00f0ff';
-    ctx.fillRect(0, H - 4, W, 4);
-    ctx.shadowBlur = 0;
-  }
-
-  // Bricks
-  bricks.forEach(b => {
-    if (!b.alive) return;
-    ctx.fillStyle = b.color;
-    ctx.globalAlpha = b.hp === b.maxHp ? 1.0 : 0.6;
-    ctx.fillRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
-
-    // Subtle edge highlight
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fillRect(b.x + 1, b.y + 1, b.w - 2, 2);
-    ctx.globalAlpha = 1.0;
-  });
-
-  // Powerup Capsules
-  powerups.forEach(p => {
-    ctx.save();
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 10px JetBrains Mono';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(p.type[0].toUpperCase(), p.x + p.w / 2, p.y + p.h / 2);
-    ctx.restore();
-  });
-
-  // Lasers
-  ctx.fillStyle = '#00f0ff';
-  lasers.forEach(l => {
-    ctx.fillRect(l.x - 1.5, l.y, 3, 10);
-  });
-
-  // Paddle
-  ctx.fillStyle = laserTimer > 0 ? '#f43f5e' : '#00f0ff';
-  ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.fillRect(paddle.x, paddle.y, paddle.w, 2);
-
-  // Balls
-  balls.forEach(b => {
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i];
-    pt.x += pt.vx;
-    pt.y += pt.vy;
-    pt.life -= 0.03;
-    if (pt.life <= 0) {
-      particles.splice(i, 1);
-    } else {
-      ctx.fillStyle = pt.color;
-      ctx.globalAlpha = pt.life;
-      ctx.fillRect(pt.x, pt.y, 2.5, 2.5);
-      ctx.globalAlpha = 1.0;
-    }
-  }
-}
-
-function gameOver(isWin) {
-  running = false;
-  document.getElementById('go-title').textContent = isWin ? 'VICTORY!' : 'GAME OVER';
-  document.getElementById('go-tag').textContent = isWin ? 'All Sectors Cleared' : 'Shield Depleted';
-  document.getElementById('go-score').textContent = score;
-  document.getElementById('go-broken').textContent = totalBricksBroken;
-  document.getElementById('go-combo').textContent = 'x' + maxCombo;
-  document.getElementById('go-best').textContent = bestScore;
-  document.getElementById('overlay-gameover').classList.remove('hidden');
-}
-
-// --- CONTROLS & LISTENERS ---
-function setPaddleX(clientX) {
-  const rect = canvas.getBoundingClientRect();
-  const scale = W / rect.width;
-  const canvasX = (clientX - rect.left) * scale;
-  paddle.x = Math.max(0, Math.min(W - paddle.w, canvasX - paddle.w / 2));
-}
-
-window.addEventListener('mousemove', e => {
-  if (running && !paused) setPaddleX(e.clientX);
+function canAct(){return running&&!paused}
+bindKey(kL,()=>{if(canAct())holdL=true},()=>{holdL=false});
+bindKey(kR,()=>{if(canAct())holdR=true},()=>{holdR=false});
+bindKey(kF,()=>{if(!canAct())return;if(!launch())fire()},null);
+function pressVis(el,ms){el.classList.add('is-down');setTimeout(()=>el.classList.remove('is-down'),ms||90)}
+window.addEventListener('keydown',e=>{
+const k=e.key;
+if(k==='ArrowLeft'||k==='a'||k==='A'){holdL=canAct();kL.classList.add('is-down');e.preventDefault()}
+else if(k==='ArrowRight'||k==='d'||k==='D'){holdR=canAct();kR.classList.add('is-down');e.preventDefault()}
+else if(k===' '||k==='ArrowUp'){e.preventDefault();if(!e.repeat&&canAct()){pressVis(kF);if(!launch())fire()}else if(canAct())fire()}
+else if(k==='p'||k==='P'){togglePause()}
 });
-
-window.addEventListener('touchmove', e => {
-  if (running && !paused && e.touches.length > 0) {
-    setPaddleX(e.touches[0].clientX);
-  }
-}, { passive: true });
-
-window.addEventListener('click', () => {
-  if (running && !paused) launchStuckBall();
+window.addEventListener('keyup',e=>{
+const k=e.key;
+if(k==='ArrowLeft'||k==='a'||k==='A'){holdL=false;kL.classList.remove('is-down')}
+else if(k==='ArrowRight'||k==='d'||k==='D'){holdR=false;kR.classList.remove('is-down')}
 });
-
-window.addEventListener('keydown', e => {
-  if (!running || paused) {
-    if (e.key === 'p' || e.key === 'P') togglePause();
-    return;
-  }
-  initAudio();
-
-  const step = 28;
-  switch (e.key) {
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      paddle.x = Math.max(0, paddle.x - step);
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      paddle.x = Math.min(W - paddle.w, paddle.x + step);
-      break;
-    case ' ':
-      launchStuckBall();
-      fireLasers();
-      break;
-    case 'p':
-    case 'P':
-    case 'Escape':
-      togglePause();
-      break;
-  }
-});
-
-function togglePause() {
-  if (!running) return;
-  paused = !paused;
-  document.getElementById('overlay-pause').classList.toggle('hidden', !paused);
+function dragTo(cx){
+if(!canAct())return;
+const r=cv.getBoundingClientRect(),s=W/r.width;
+paddle.x=Math.max(0,Math.min(W-paddle.w,(cx-r.left)*s-paddle.w/2));
 }
-
-document.getElementById('btn-pause').addEventListener('click', togglePause);
-document.getElementById('btn-resume').addEventListener('click', togglePause);
-document.getElementById('btn-restart').addEventListener('click', () => {
-  document.getElementById('overlay-pause').classList.add('hidden');
-  initGame();
+cv.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='mouse')dragTo(e.clientX)});
+cv.addEventListener('pointerdown',e=>{dragTo(e.clientX);if(canAct()&&stuck&&!tut)launch()});
+function togglePause(){
+if(!running)return;
+if(overlay.hidden){
+paused=true;holdL=holdR=false;overlayMode='pause';head.textContent='Paused';msg.textContent='Take a breath.';statsBox.hidden=true;rules.hidden=false;start.textContent='Resume';tutBtn.hidden=true;overlay.hidden=false;
+}else if(overlayMode==='pause'||overlayMode==='help'){resume()}
+}
+function resume(){paused=false;overlay.hidden=true;defHint()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused&&overlay.hidden)togglePause()});
+start.addEventListener('click',()=>{
+if(overlayMode==='pause'||overlayMode==='help'){resume();return}
+tutBtn.hidden=false;startGame();
 });
-
-document.getElementById('btn-start').addEventListener('click', () => {
-  initAudio();
-  document.getElementById('overlay-start').classList.add('hidden');
-  initGame();
+tutBtn.addEventListener('click',()=>{tutBtn.hidden=false;startTutorial()});
+guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+soundBtn.addEventListener('click',()=>setSound(!sound));
+helpBtn.addEventListener('click',()=>{
+if(running&&!paused){paused=true;holdL=holdR=false}
+overlayMode=running?'help':'menu';
+head.textContent='How to play';
+msg.textContent='Clear every brick. Do not let the last ball fall.';
+statsBox.hidden=true;rules.hidden=false;start.textContent=running?'Resume':'Play';tutBtn.hidden=false;overlay.hidden=false;
 });
-
-document.getElementById('btn-playagain').addEventListener('click', () => {
-  initAudio();
-  document.getElementById('overlay-gameover').classList.add('hidden');
-  initGame();
-});
-
-update();
+window.__t={s:()=>({tut:tut?tut.step:null,px:paddle.x,pw:paddle.w,stuck:stuck,balls:balls.length,lives:lives,score:score,level:level,running:running,bricks:bricks.filter(b=>b.alive).length,caps:caps.length}),
+hold:(d,v)=>{if(d==='L')holdL=v;else holdR=v},launch:()=>launch(),setX:x=>{paddle.x=x},
+ballTo:()=>{const b=balls[0];if(b){paddle.x=Math.max(0,Math.min(W-paddle.w,b.x-paddle.w/2))}},
+capX:()=>caps[0]?caps[0].x:null};
+reset(false);running=false;
+$('hud-best').textContent=best;
+layout();loop();
+})();
 </script>
-  <script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>

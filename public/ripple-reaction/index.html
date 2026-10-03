@@ -1,37 +1,198 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ripple Reaction — D'Games</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9d1be">
+<title>Ripple Reaction - D'Games</title>
 <link rel="stylesheet" href="/assets/dgames-ui.css">
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1417}body{touch-action:none;font-family:Inter,system-ui,sans-serif}canvas{width:100%;height:100%;display:block}
-.hud{position:fixed;left:16px;top:88px;z-index:4;color:#f4efe2;padding:10px 12px;border:1px solid rgba(242,238,224,.22);border-radius:10px;background:rgba(9,17,20,.76);backdrop-filter:blur(9px)}.hud small{display:block;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace;letter-spacing:.14em}.hud b{display:block;margin-top:4px;font:900 22px/1 Space Grotesk,sans-serif}.hud span{display:block;margin-top:5px;color:#9ca6a2;font:800 7px/1 JetBrains Mono,monospace}
-.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:18px;background:rgba(3,10,12,.82);backdrop-filter:blur(8px)}.panel{width:min(430px,100%);padding:24px;border:2px solid rgba(242,238,224,.55);border-radius:16px;background:rgba(18,28,31,.95);color:#f4efe2}.code{font:800 8px/1 JetBrains Mono,monospace;color:#74cdb8;letter-spacing:.16em;text-transform:uppercase}.panel h1{margin:10px 0 7px;font:900 40px/.9 Space Grotesk,sans-serif;letter-spacing:-.05em}.panel p{margin:0;color:#a8b2ae;font:700 10px/1.65 Inter,sans-serif}.panel button{width:100%;min-height:46px;margin-top:18px;border:2px solid #f4efe2;border-radius:10px;background:#f4efe2;color:#202729;font:900 9px/1 JetBrains Mono,monospace;letter-spacing:.08em;text-transform:uppercase}.hidden{display:none!important}
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#c4503c;--lime:#8fc23a;--limed:#5e8a1f}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;background-image:linear-gradient(#242a2a1f 1px,transparent 1px),linear-gradient(90deg,#242a2a1f 1px,transparent 1px);background-size:32px 32px}
+.ui{position:fixed;z-index:3;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:max(60px,calc(env(safe-area-inset-top) + 56px));padding-bottom:max(60px,calc(env(safe-area-inset-bottom) + 56px));pointer-events:none}
+.top{display:flex;gap:4px;padding:4px 8px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:none}
+.stat{min-width:54px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:3px;font:900 14px/1 ui-monospace,monospace}
+.row{display:flex;gap:6px;align-items:center;width:calc(100% - 16px);max-width:460px;margin-top:5px;flex:none}.hint{flex:1;margin:0;padding:4px 8px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.02em;text-align:center;min-height:0}
+.hint em{font-style:normal;color:var(--brick)}
+.tools{margin:0;display:flex;gap:5px;pointer-events:auto;flex:none}
+.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:7px 6px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini:active{transform:translateY(3px);box-shadow:none}
+.mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
+.stage{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center;margin:6px 0;pointer-events:none}
+.boardwrap{border:3px solid #242a2a;border-radius:6px;background:#eee8d9;box-shadow:0 6px 0 #242a2a30;pointer-events:auto;line-height:0}
+#cv{display:block;touch-action:none}
+.pad{width:min(440px,calc(100% - 16px));display:grid;grid-template-columns:1fr;gap:9px;pointer-events:auto;flex:none}
+.k{position:relative;height:46px;padding:0;border:0;border-radius:14px;background:var(--base);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none;color:#fff;touch-action:none}
+.k .cap{position:absolute;inset:0 0 7px 0;border-radius:14px;background:linear-gradient(180deg,#ffffff40,#ffffff00 46%),var(--cap);border:2px solid #00000038;box-shadow:inset 0 2px 0 #ffffff70,inset 0 -5px 8px #00000022;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;transition:transform .05s}
+.k b{font:900 20px/1 ui-monospace,monospace;text-shadow:0 1px 0 #0006}
+.k span{font:800 7px/1 ui-monospace,monospace;letter-spacing:.1em;opacity:.9}
+.k.is-down .cap{transform:translateY(6px);box-shadow:inset 0 2px 0 #ffffff30,inset 0 -2px 4px #00000040;transition-duration:.02s}
+.k.teal{--cap:#2fb5a0;--base:#1d7a6c;color:#06332c}.k.teal b{text-shadow:none}.k.ink{--cap:#4a5250;--base:#242a2a}.k.blue{--cap:#3b72d8;--base:#27489a}.k.lime{--cap:var(--lime);--base:var(--limed);color:#1d2a0c}.k.lime b{text-shadow:none}
+.k.guide .cap{animation:ring .9s ease-in-out infinite;outline:4px solid #fff;outline-offset:2px}
+.k.guide::before{content:"PRESS";position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:var(--ink);color:#fff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.12em;z-index:2}
+@keyframes ring{0%,100%{box-shadow:0 0 0 0 #ffffffcc,inset 0 2px 0 #ffffff70}50%{box-shadow:0 0 0 10px #ffffff00,inset 0 2px 0 #ffffff70}}
+.k:focus-visible .cap{outline:3px solid var(--ink)}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:18px;background:#242a2a45;backdrop-filter:blur(4px);overflow:auto;touch-action:pan-y}
+.overlay[hidden]{display:none}
+.panel{width:min(430px,100%);padding:22px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center;margin:auto}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(32px,9vw,46px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#555c58;font-size:12px;line-height:1.55;max-width:360px}
+.btns{display:grid;gap:9px;margin-top:16px}
+.big{width:100%;min-height:50px;border:2px solid var(--ink);border-radius:12px;background:var(--ink);color:var(--paper2);font:900 11px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .05s}
+.big:active{transform:translateY(5px);box-shadow:none}
+.big.alt{background:var(--paper2);color:var(--ink);box-shadow:0 5px 0 #242a2a66}
+.big:focus-visible,.mini:focus-visible{outline:3px solid var(--olive);outline-offset:3px}
+.rules{margin:14px auto 0;padding:0;list-style:none;text-align:left;display:grid;gap:6px}
+.rules li{padding:7px 9px;border-radius:9px;background:#d9d1be88;font:800 10px/1.35 ui-monospace,monospace;letter-spacing:.03em}
+.keys{margin-top:10px;font:800 9px/1.5 ui-monospace,monospace;color:#6a706b}
+.stats{margin:12px auto 0;display:grid;gap:5px;font:800 11px/1.3 ui-monospace,monospace;max-width:260px}
+.stats div{display:flex;justify-content:space-between;padding:6px 9px;border-radius:8px;background:#d9d1be88}
+@media(orientation:landscape) and (max-height:560px){.hint{display:none}.ui{padding-top:66px;padding-bottom:76px}.k{height:44px}}
+@media(max-height:700px){.ui{padding-bottom:max(86px,calc(env(safe-area-inset-bottom) + 82px))}}
+@media(prefers-reduced-motion:reduce){.k .cap,.k.guide .cap{transition:none;animation:none}}
 </style>
-<link rel="stylesheet" href="/assets/dgames-mobile.css">
 </head>
 <body class="dg-retro-skin" data-game="ripple">
-<canvas id="c" aria-label="Ripple Reaction game"></canvas>
-<div class="hud"><small>REACTION SCORE</small><b id="score">0</b><span>COMBO ×<i id="combo">1</i> · LIVES <i id="lives">3</i></span></div>
-<div id="start" class="overlay"><div class="panel"><div class="code">DG-08 · Chain Reaction</div><h1>RIPPLE REACTION</h1><p>Place a gravity well and pull teal nodes into its core. Red nodes destabilize the field. Build a combo by clearing cleanly and keep all three lives intact.</p><button id="startBtn" type="button" onclick="startGame()" aria-label="Begin Ripple Reaction">Begin Reaction</button></div></div>
-<div id="over" class="overlay hidden"><div class="panel"><div class="code">FIELD COLLAPSE</div><h1>REACTION LOST</h1><p id="result">Score 0</p><button id="againBtn" type="button">Restart Field</button></div></div>
+<div class="ui" id="ui">
+<div class="top" aria-live="polite">
+<div class="stat"><small>SCORE</small><b id="hud-score">0</b></div>
+<div class="stat"><small>COMBO</small><b id="hud-combo">x1</b></div>
+<div class="stat"><small>LIVES</small><b id="hud-lives">3</b></div>
+<div class="stat"><small>LEVEL</small><b id="hud-level">1</b></div>
+<div class="stat"><small>BEST</small><b id="hud-best">0</b></div>
+</div>
+<div class="row"><div id="hint" class="hint">Press Play to start</div>
+<div class="tools" id="tools">
+<button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE ON</button>
+<button id="soundBtn" class="mini" type="button" aria-pressed="true">SND ON</button>
+<button id="helpBtn" class="mini" type="button">HOW TO</button>
+</div></div>
+<div class="stage" id="stage"><div class="boardwrap"><canvas id="cv" aria-label="Ripple Reaction playfield. Tap to drop a ripple."></canvas></div></div>
+<div class="pad" id="pad">
+<button class="k teal" id="kA" type="button" aria-label="Drop a ripple at the best spot (Space)"><div class="cap"><b>&#9678;</b><span>AUTO DROP</span></div></button>
+</div>
+</div>
+<div id="overlay" class="overlay">
+<section class="panel" role="dialog" aria-labelledby="headline">
+<div class="eyebrow">D'GAMES &#183; CHAIN DESK</div>
+<h1 id="headline">Ripple Reaction</h1>
+<p id="message">Drop ripples to catch the teal nodes. Keep the red ones out of the ring. New here? The tutorial walks through the controls.</p>
+<div id="statsBox" class="stats" hidden></div>
+<div class="btns">
+<button id="start" class="big" type="button">Play</button>
+<button id="tutBtn" class="big alt" type="button">Tutorial</button>
+</div>
+<ul class="rules" id="rules">
+<li>Tap anywhere on the field to drop a ripple. It grows and pulls nearby teal nodes in.</li>
+<li>AUTO DROP puts a ripple on the best spot for you (Space).</li>
+<li>Catch teal nodes back to back to raise the combo, up to x12.</li>
+<li>A red node caught by a ripple costs a life and resets the combo. Three lives.</li>
+<li>Colors start vivid and fade as the level climbs.</li>
+</ul>
+<div class="keys">Keys: Space auto drop, P pause. Tap or click to place.</div>
+</section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
 <script>
-const c=document.getElementById('c'),ctx=c.getContext('2d');let W=innerWidth,H=innerHeight,dpr=1,running=false,score=0,combo=1,lives=3,dots=[],ripples=[],last=performance.now(),raf=0;
-function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
-class Dot{constructor(){this.spawn()}spawn(){this.x=20+Math.random()*(W-40);this.y=90+Math.random()*Math.max(80,H-130);this.vx=(Math.random()-.5)*1.5;this.vy=(Math.random()-.5)*1.5;this.bad=Math.random()<.2;this.r=this.bad?7:5;this.color=this.bad?'#dc6b63':'#68d6bd'}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<this.r||this.x>W-this.r)this.vx*=-1;if(this.y<75+this.r||this.y>H-30-this.r)this.vy*=-1}}
-class Ripple{constructor(x,y){this.x=x;this.y=y;this.r=0;this.life=1;this.flash=0}update(){this.r+=5.8;this.life-=.018;this.flash=Math.max(0,this.flash-.08)}}
-function sync(){document.getElementById('score').textContent=score;document.getElementById('combo').textContent=combo;document.getElementById('lives').textContent=lives}
-function reset(){score=0;combo=1;lives=3;dots=Array.from({length:32},()=>new Dot());ripples=[];running=true;const start=document.getElementById('start');start.classList.add('hidden');start.style.display='none';document.getElementById('over').classList.add('hidden');sync()}
-function startGame(){reset();const start=document.getElementById('start');start.classList.add('hidden');start.style.display='none';start.setAttribute('aria-hidden','true');last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
-window.addEventListener('pointerdown',()=>{const start=document.getElementById('start');if(!running&&!start.classList.contains('hidden'))startGame()},{capture:true});
-window.addEventListener('keydown',e=>{const start=document.getElementById('start');if(!running&&!start.classList.contains('hidden')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();startGame()}},{capture:true});
-function over(){running=false;document.getElementById('result').textContent='Score '+score+' · Best chain ×'+combo;document.getElementById('over').classList.remove('hidden')}
-function place(x,y){if(running)ripples.push(new Ripple(x,y))}
-c.addEventListener('pointerdown',e=>{e.preventDefault();place(e.clientX,e.clientY)});
-function frame(t){const dt=Math.min(.05,(t-last)/16.67);last=t;ctx.fillStyle='rgba(11,20,23,.28)';ctx.fillRect(0,0,W,H);if(running){for(const d of dots)d.update();for(let ri=ripples.length-1;ri>=0;ri--){const r=ripples[ri];r.update();for(const d of dots){const dx=r.x-d.x,dy=r.y-d.y,dist=Math.hypot(dx,dy);if(dist<r.r){if(d.bad&&dist<16){d.spawn();r.life=.12;lives--;combo=1;sync();if(lives<=0){over();break}}else if(!d.bad&&dist<20){d.spawn();score+=combo;combo=Math.min(12,combo+1);r.flash=1;sync()}}else if(dist<r.r+55&&!d.bad){d.x+=dx*.006*dt;d.y+=dy*.006*dt}}}if(r.life<=0)ripples.splice(ri,1)}dots.forEach(d=>{ctx.fillStyle=d.color;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()});ripples.forEach(r=>{ctx.strokeStyle=r.flash>0?'rgba(242,239,224,.95)':'rgba(104,214,189,'+Math.max(0,r.life)+')';ctx.lineWidth=r.flash>0?4:2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke()})}raf=requestAnimationFrame(frame)}
-document.getElementById('startBtn').addEventListener('pointerup',e=>{e.preventDefault();startGame()});document.getElementById('againBtn').addEventListener('click',startGame);raf=requestAnimationFrame(frame);
+(() => {
+const $=id=>document.getElementById(id);
+const W=360,H=440;
+const cv=$('cv'),ctx=cv.getContext('2d');
+let dpr=Math.min(2,window.devicePixelRatio||1);
+cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message'),hintEl=$('hint'),statsBox=$('statsBox'),rules=$('rules');
+const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),helpBtn=$('helpBtn'),kA=$('kA');
+const PI2=Math.PI*2;
+function level(){return 1+Math.floor(score/80)}
+function goodCol(){const L=Math.min(8,level()-1);return 'hsl('+(168+L*14)+' '+Math.max(30,80-L*7)+'% '+(46+L)+'%)'}
+function badCol(){const L=Math.min(8,level()-1);return 'hsl('+(8+L*3)+' '+Math.max(30,70-L*5)+'% '+(52+L)+'%)'}
+let dots=[],ripples=[],parts=[],score=0,combo=1,lives=3,bestChain=1,placed=0,cd=0,last=0,raf=0;
+let running=false,paused=false,guideOn=true,guideTouched=false,sound=true,tut=null,overlayMode='menu',target=null;
+let best=+localStorage.getItem('ripple-reaction-best')||0;
+let ac=null;
+function tone(f,d,type,g){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),v=ac.createGain();o.type=type||'triangle';o.frequency.value=f;v.gain.setValueAtTime(g||.05,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function layout(){const st=$('stage');const ah=st.clientHeight-12,aw=st.clientWidth-16;const s=Math.max(.3,Math.min(ah/(H+6),aw/(W+6),1.5));cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px'}
+addEventListener('resize',layout);
+function mkDot(bad){const sp=(.5+Math.random()*.8)*(1+Math.min(8,level()-1)*.07);const a=Math.random()*PI2;return {x:16+Math.random()*(W-32),y:16+Math.random()*(H-32),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,bad:bad,r:bad?7:5}}
+function respawn(d){const b=d.bad;Object.assign(d,mkDot(b))}
+function hud(){$('hud-score').textContent=score;$('hud-combo').textContent='x'+combo;$('hud-lives').textContent=lives;$('hud-level').textContent=level();$('hud-best').textContent=best}
+function setHint(h){hintEl.innerHTML=h}
+function defHint(){if(tut)return;if(!running){setHint('Press Play to start');return}setHint(guideOn?'The <em>ring</em> marks a good spot to tap.':'Guide off. Read the field yourself.')}
+function setGuide(on,user){guideOn=on;if(user)guideTouched=true;guideBtn.textContent='GUIDE '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));if(!on)kA.classList.remove('guide');defHint()}
+function setSound(on){sound=on;soundBtn.textContent='SND '+(on?'ON':'OFF');soundBtn.setAttribute('aria-pressed',String(on))}
+function reset(n,bn){score=0;combo=1;lives=3;bestChain=1;placed=0;cd=0;ripples=[];parts=[];dots=[];for(let i=0;i<n;i++)dots.push(mkDot(false));for(let i=0;i<bn;i++)dots.push(mkDot(true));hud()}
+function burst(x,y,c,n){for(let i=0;i<(n||8);i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,c:c,l:1})}
+function place(x,y){if(!running||paused||cd>0)return false;ripples.push({x:x,y:y,r:0,life:1,flash:0});cd=.3;placed++;tone(380,.07,'triangle',.06);buzz(10);if(tut&&tut.step===0)tut.placed=true;return true}
+function bestSpot(){let b=null,bs=0;for(const d of dots){if(d.bad)continue;let s=0;for(const e of dots){const dist=Math.hypot(e.x-d.x,e.y-d.y);if(dist<90)s+=e.bad?(dist<55?-3:-.5):1}if(s>bs){bs=s;b={x:d.x,y:d.y,s:s}}}return b}
+function autoDrop(){if(!running||paused)return false;const b=bestSpot();if(!b){return false}const ok=place(b.x,b.y);if(ok&&tut&&tut.step===2)tut.auto=true;return ok}
+function loseLife(){lives--;combo=1;hud();tone(110,.25,'sawtooth',.07);buzz([40,30,40]);if(lives<=0)gameOver()}
+function step(dt){
+if(cd>0)cd-=dt/60;
+const sp=1+Math.min(8,level()-1)*.05;
+for(const d of dots){d.x+=d.vx*dt*sp;d.y+=d.vy*dt*sp;if(d.x<d.r){d.x=d.r;d.vx=Math.abs(d.vx)}if(d.x>W-d.r){d.x=W-d.r;d.vx=-Math.abs(d.vx)}if(d.y<d.r){d.y=d.r;d.vy=Math.abs(d.vy)}if(d.y>H-d.r){d.y=H-d.r;d.vy=-Math.abs(d.vy)}}
+for(let ri=ripples.length-1;ri>=0;ri--){const r=ripples[ri];r.r+=3.4*dt;r.life-=.011*dt;r.flash=Math.max(0,r.flash-.06*dt);
+for(const d of dots){const dx=r.x-d.x,dy=r.y-d.y,dist=Math.hypot(dx,dy);
+if(dist<r.r){
+if(d.bad&&dist<18){burst(d.x,d.y,badCol(),10);respawn(d);r.life=Math.min(r.life,.12);if(!tut)loseLife();else{combo=1;hud();tone(150,.15,'sawtooth',.05)}if(!running)return}
+else if(!d.bad&&dist<22){burst(d.x,d.y,goodCol(),8);respawn(d);score+=combo;bestChain=Math.max(bestChain,combo);combo=Math.min(12,combo+1);r.flash=1;tone(500+combo*40,.09,'triangle',.06);hud();if(tut){tut.got=(tut.got||0)+1}if(score>best&&!tut){best=score;localStorage.setItem('ripple-reaction-best',best)}}
+}else if(dist<r.r+55&&!d.bad){d.x+=dx*.006*dt;d.y+=dy*.006*dt}}
+if(r.life<=0)ripples.splice(ri,1)}
+for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=.04*dt;if(p.l<=0)parts.splice(i,1)}
+// keep the field populated
+const goods=dots.filter(d=>!d.bad).length;
+}
+function draw(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle='#eee8d9';ctx.fillRect(0,0,W,H);
+ctx.strokeStyle='#242a2a14';ctx.lineWidth=1;for(let x=0;x<=W;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<=H;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+if(guideOn&&running&&!paused&&target){const t=performance.now()/1000;const pr=14+Math.sin(t*5)*3;ctx.strokeStyle='#242a2a';ctx.lineWidth=2.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(target.x,target.y,pr+6,0,PI2);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#242a2a';ctx.font='900 9px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('TAP',target.x,target.y-pr-12)}
+const gc=goodCol(),bc=badCol();
+for(const r of ripples){ctx.strokeStyle=r.flash>0?'#8fc23a':'rgba(36,42,42,'+Math.max(0,r.life*.85)+')';ctx.lineWidth=r.flash>0?4:2.5;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,PI2);ctx.stroke();ctx.fillStyle='rgba(143,194,58,'+Math.max(0,r.life*.1)+')';ctx.fill()}
+for(const d of dots){ctx.fillStyle=d.bad?bc:gc;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,PI2);ctx.fill();ctx.strokeStyle='#242a2a99';ctx.lineWidth=1.5;ctx.stroke();if(d.bad){ctx.strokeStyle='#242a2a';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(d.x-3,d.y-3);ctx.lineTo(d.x+3,d.y+3);ctx.moveTo(d.x+3,d.y-3);ctx.lineTo(d.x-3,d.y+3);ctx.stroke()}}
+for(const p of parts){ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.fillRect(p.x-2,p.y-2,4,4)}ctx.globalAlpha=1;
+if(paused){ctx.fillStyle='#242a2acc';ctx.fillRect(0,0,W,H);ctx.fillStyle='#eee8d9';ctx.font='900 24px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText('PAUSED',W/2,H/2)}
+}
+function tutSet(){const t=tut;if(!t)return;
+const s=[
+'<em>1/4</em> Tap the field near teal nodes to drop a ripple.',
+'<em>2/4</em> Catch 3 teal nodes. Stay away from the red X nodes.',
+'<em>3/4</em> Press AUTO DROP. It picks a good spot for you.',
+'<em>4/4</em> Nice. Chain catches to raise the combo. Finishing...'][t.step];setHint(s);kA.classList.toggle('guide',t.step===2)}
+function tutTick(){const t=tut;if(!t)return;
+if(t.step===0&&t.placed){t.step=1;t.got=0;tone(660,.1);tutSet()}
+else if(t.step===1&&t.got>=3){t.step=2;tone(660,.1);tutSet()}
+else if(t.step===2&&t.auto){t.step=3;t.t=0;tone(780,.15);tutSet()}
+else if(t.step===3){t.t+=1/60;if(t.t>2.2)endTut()}}
+function guideTick(){target=bestSpot();if(tut&&tut.step===2){kA.classList.add('guide')}else if(!tut){const on=guideOn&&running;kA.classList.toggle('guide',false)}}
+function endTut(){tut=null;kA.classList.remove('guide');running=false;showMenu('Tutorial done','You know the controls. Hit Play for a real run.')}
+function frame(ts){raf=requestAnimationFrame(frame);if(!last)last=ts;const dt=Math.min(3,(ts-last)/16.67);last=ts;
+if(running&&!paused){step(dt);if(tut)tutTick();guideTick();
+if(!tut&&!guideTouched&&guideOn&&level()>=3)setGuide(false,false)}
+draw()}
+function showMenu(title,text,stats){overlayMode='menu';head.textContent=title;msg.textContent=text;rules.hidden=!!stats;if(stats){statsBox.hidden=false;statsBox.innerHTML=stats}else statsBox.hidden=true;start.textContent=stats?'Play again':'Play';overlay.hidden=false;defHint()}
+function gameOver(){running=false;kA.classList.remove('guide');if(score>best){best=score;localStorage.setItem('ripple-reaction-best',best)}hud();tone(90,.5,'sawtooth',.08);showMenu('Reaction lost','The field collapsed.','<div><span>Score</span><b>'+score+'</b></div><div><span>Best chain</span><b>x'+bestChain+'</b></div><div><span>Best</span><b>'+best+'</b></div>')}
+function begin(isTut){overlay.hidden=true;paused=false;if(isTut){tut={step:0,placed:false,got:0,auto:false,t:0};reset(12,3);setGuide(true,true)}else{tut=null;reset(26,6);if(!guideTouched)setGuide(true,false)}running=true;last=0;layout();if(tut)tutSet();else defHint();tone(440,.1)}
+function pause(on){if(!running)return;if(on===paused)return;paused=on;if(paused){setHint('Paused. Press P to resume.')}else{defHint();if(tut)tutSet()}}
+start.addEventListener('click',()=>begin(false));
+tutBtn.addEventListener('click',()=>begin(true));
+helpBtn.addEventListener('click',()=>{if(running)pause(true);showMenu('How to play','Drop ripples, catch teal, dodge red.');rules.hidden=false;start.textContent=running?'Resume':'Play';overlayMode='help'});
+start.addEventListener('click',e=>{if(overlayMode==='help'&&running){e.stopImmediatePropagation();overlay.hidden=true;pause(false)}},true);
+guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
+soundBtn.addEventListener('click',()=>setSound(!sound));
+function press(el){el.classList.add('is-down')}function release(el){el.classList.remove('is-down')}
+kA.addEventListener('pointerdown',e=>{e.preventDefault();press(kA);autoDrop()});
+['pointerup','pointercancel','pointerleave'].forEach(n=>kA.addEventListener(n,()=>release(kA)));
+cv.addEventListener('pointerdown',e=>{e.preventDefault();const r=cv.getBoundingClientRect();place((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H)});
+addEventListener('keydown',e=>{if(e.key===' '||e.code==='Space'){if(!overlay.hidden){return}e.preventDefault();if(!e.repeat){press(kA);autoDrop()}}else if(e.key==='p'||e.key==='P'){pause(!paused)}});
+addEventListener('keyup',e=>{if(e.key===' ')release(kA)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true)});
+window.__t={s:()=>({tut:tut?tut.step:null,running,score,lives,combo,placed,level:level(),guide:guideOn}),spot:()=>bestSpot(),tap:(x,y)=>place(x,y)};
+setSound(true);setGuide(true,false);hud();layout();reset(26,6);running=false;raf=requestAnimationFrame(frame);
+})();
 </script>
-<script src="/assets/dgames-ui.js" defer></script>
 </body>
 </html>
