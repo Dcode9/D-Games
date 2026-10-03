@@ -1,6 +1,17 @@
 (() => {
   const GAMES = [
     {
+      id: "circuit-stitch",
+      title: "Circuit Stitch",
+      category: "puzzle",
+      genre: "Logic",
+      tag: "Rotate",
+      desc: "Rotate the wire tiles until power travels from the source to the target in as few moves as possible.",
+      img: "/assets/covers/circuit-stitch.svg",
+      url: "/circuit-stitch/",
+      time: "2–7 min",
+    },
+    {
       id: "parcel-sort",
       title: "Parcel Sort",
       category: "arcade",
