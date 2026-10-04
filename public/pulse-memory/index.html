@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#d9d1be">
+<title>Pulse Memory — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box} :root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--olive:#718466;--brick:#a85d49;--blue:#55758a}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none}.ui{position:fixed;inset:0;z-index:4;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.top{margin-top:max(84px,calc(env(safe-area-inset-top) + 76px));display:flex;gap:7px;padding:8px 10px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18}
+.stat{min-width:68px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 17px/1 ui-monospace,monospace}#streak{color:var(--brick)}
+.hint{margin-top:8px;padding:5px 9px;border:1px solid #242a2a28;border-radius:7px;background:#eee8d9df;color:#606762;font:800 7px/1 ui-monospace,monospace;letter-spacing:.05em}
+#board{position:fixed;z-index:3;top:50%;left:50%;transform:translate(-50%,-48%);display:grid;gap:8px;width:min(82vw,430px);aspect-ratio:1}
+.cell{appearance:none;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9;box-shadow:0 4px 0 #242a2a20;color:transparent;cursor:pointer;transition:transform .08s,background .12s,box-shadow .12s}
+.cell:active,.cell.is-armed{transform:translateY(3px);box-shadow:0 1px 0 #242a2a20}
+.cell.is-preview{background:#c9a94b;border-color:#242a2a;box-shadow:0 0 0 3px #c9a94b55,0 5px 0 #242a2a20}
+.cell.is-cursor{outline:3px solid var(--olive);outline-offset:2px}
+.cell.is-good{background:#718466;border-color:#242a2a;color:#eee8d9}
+.cell.is-bad{background:#a85d49;border-color:#242a2a}
+.controls{position:fixed;z-index:5;left:50%;bottom:max(16px,calc(env(safe-area-inset-bottom) + 14px));transform:translateX(-50%);display:flex;gap:8px;pointer-events:auto}
+.ctrl{min-width:96px;min-height:42px;border:2px solid #242a2a55;border-radius:10px;background:#eee8d9ee;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em}
+.overlay{position:fixed;z-index:10;inset:0;display:grid;place-items:center;padding:22px;background:#242a2a35;backdrop-filter:blur(4px)}
+.panel{width:min(420px,100%);padding:25px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}.panel h1{margin:11px 0 8px;font:900 clamp(38px,10vw,54px)/.9 Inter,sans-serif;letter-spacing:-.06em}.panel p{margin:0 auto;color:#666d68;font-size:12px;line-height:1.55;max-width:340px}
+#start{width:100%;min-height:48px;margin-top:18px;border:2px solid var(--ink);border-radius:11px;background:var(--ink);color:var(--paper2);font:900 10px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
+@media(max-width:520px){.top{margin-top:max(80px,calc(env(safe-area-inset-top) + 70px))}.stat{min-width:59px}.stat b{font-size:15px}.hint{max-width:calc(100% - 28px);text-align:center;line-height:1.35}.cell{border-radius:9px}.controls{bottom:max(12px,calc(env(safe-area-inset-bottom) + 10px))}}
+@media(orientation:landscape) and (max-height:560px){.top{margin-top:68px}.hint{display:none}#board{width:min(52vh,390px);top:52%}.controls{bottom:8px}}
+@media(prefers-reduced-motion:reduce){.cell{transition:none}}
+</style>
+</head>
+<body class="dg-retro-skin" data-game="pulse-memory">
+<canvas id="game" aria-hidden="true"></canvas>
+<div class="ui">
+  <div class="top" aria-live="polite">
+    <div class="stat"><small>SCORE</small><b id="score">00000</b></div>
+    <div class="stat"><small>ROUND</small><b id="round">01</b></div>
+    <div class="stat"><small>STREAK</small><b id="streak">×1</b></div>
+    <div class="stat"><small>LIVES</small><b id="lives">●●●</b></div>
+  </div>
+  <div id="hint" class="hint">WATCH THE PULSE · THEN REPEAT THE PATTERN · ARROWS + ENTER</div>
+</div>
+<div id="board" aria-label="Memory grid"></div>
+<div class="controls">
+  <button id="clear" class="ctrl" type="button">CLEAR</button>
+  <button id="replay" class="ctrl" type="button">REPLAY</button>
+</div>
+<div id="overlay" class="overlay">
+  <section class="panel" role="dialog" aria-labelledby="title">
+    <div class="eyebrow">D'GAMES · MEMORY DESK</div>
+    <h1 id="title">Pulse Memory</h1>
+    <p id="message">Watch the cells light up, then repeat the exact pattern. Every round adds a pulse. One mistake costs a life — the board keeps changing.</p>
+    <button id="start" type="button">Start the sequence</button>
+  </section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(()=> {
+  const board=document.getElementById('board'),overlay=document.getElementById('overlay'),start=document.getElementById('start'),message=document.getElementById('message');
+  const scoreEl=document.getElementById('score'),roundEl=document.getElementById('round'),streakEl=document.getElementById('streak'),livesEl=document.getElementById('lives'),hintEl=document.getElementById('hint');
+  const clearBtn=document.getElementById('clear'),replayBtn=document.getElementById('replay');
+  let size=3,cells=[],sequence=[],input=[],cursor=0,round=1,score=0,streak=1,lives=3,running=false,watching=false,previewTimer=0,locked=false,best=Number(localStorage.getItem('pulse-memory-best')||0);
+
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const fmt=n=>String(Math.max(0,Math.floor(n))).padStart(5,'0');
+  function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');streakEl.textContent='×'+streak;livesEl.textContent='●'.repeat(lives)+'○'.repeat(3-lives);hintEl.textContent=watching?'WATCH THE PULSE · '+sequence.length+' CELLS':('REPEAT '+input.length+'/'+sequence.length+' · ARROWS + ENTER');}
+  function buildGrid(){board.innerHTML='';cells=[];const count=size*size;board.style.gridTemplateColumns='repeat('+size+',1fr)';for(let i=0;i<count;i++){const b=document.createElement('button');b.className='cell';b.type='button';b.dataset.i=i;b.setAttribute('aria-label','Cell '+(i+1));b.addEventListener('click',()=>press(i));board.appendChild(b);cells.push(b)}}
+  function nextSize(){return round<4?3:round<8?4:5}
+  function makeSequence(){size=nextSize();buildGrid();const count=size*size,target=Math.min(3+Math.floor((round-1)*.7),Math.min(14,count));sequence=[];while(sequence.length<target){let n=Math.floor(Math.random()*count);if(sequence.at(-1)!==n&&sequence.slice(-2).indexOf(n)<0)sequence.push(n)}}
+  async function showSequence(){watching=true;locked=true;input=[];cursor=sequence[0]||0;setHud();cells.forEach(c=>c.classList.remove('is-preview','is-good','is-bad','is-cursor'));await sleep(300);for(const i of sequence){if(!running)return;cells[i].classList.add('is-preview');await sleep(Math.max(250,520-round*12));cells[i].classList.remove('is-preview');await sleep(Math.max(90,170-round*4))}watching=false;locked=false;input=[];cursor=0;cells.forEach(c=>c.classList.remove('is-cursor'));cells[cursor]?.classList.add('is-cursor');setHud();}
+  function reset(){round=1;score=0;streak=1;lives=3;running=true;locked=false;makeSequence();overlay.style.display='none';showSequence()}
+  function startGame(){clearTimeout(previewTimer);reset()}
+  function endGame(){running=false;locked=true;best=Math.max(best,score);localStorage.setItem('pulse-memory-best',String(best));message.textContent='Sequence broken. Score '+score+'. Best '+best+'.';start.textContent='Run it back';overlay.style.display='grid'}
+  async function fail(i){locked=true;streak=1;lives--;cells[i]?.classList.add('is-bad');setHud();await sleep(180);cells[i]?.classList.remove('is-bad');if(lives<=0){endGame();return}await sleep(280);showSequence()}
+  async function press(i){if(!running||watching||locked)return;cursor=i;cells.forEach(c=>c.classList.remove('is-cursor'));cells[i].classList.add('is-cursor');input.push(i);cells[i].classList.add('is-armed');setTimeout(()=>cells[i]?.classList.remove('is-armed'),90);if(i!==sequence[input.length-1]){await fail(i);return}cells[i].classList.add('is-good');setTimeout(()=>cells[i]?.classList.remove('is-good'),130);if(input.length===sequence.length){locked=true;const gain=sequence.length*12*streak;score+=gain;streak=Math.min(9,streak+1);round++;setHud();await sleep(260);makeSequence();showSequence()}}
+  function move(dx,dy){if(!running||watching||locked)return;const x=cursor%size,y=Math.floor(cursor/size),nx=Math.max(0,Math.min(size-1,x+dx)),ny=Math.max(0,Math.min(size-1,y+dy));cursor=ny*size+nx;cells.forEach(c=>c.classList.remove('is-cursor'));cells[cursor].classList.add('is-cursor')}
+  function clearInput(){if(!running||watching||locked)return;input=[];cells.forEach(c=>c.classList.remove('is-good'));setHud()}
+  function replay(){if(!running||watching||locked)return;showSequence()}
+  addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','enter',' ','r','escape'].includes(k))e.preventDefault();if(!running&&(k==='enter'||k===' ')){startGame();return}if(k==='r'){replay();return}if(k==='escape'){clearInput();return}if(k==='arrowup')move(0,-1);if(k==='arrowdown')move(0,1);if(k==='arrowleft')move(-1,0);if(k==='arrowright')move(1,0);if(k==='enter'||k===' ')press(cursor)},{passive:false});
+  start.addEventListener('click',startGame);clearBtn.addEventListener('click',clearInput);replayBtn.addEventListener('click',replay);
+  buildGrid();setHud();
+})();
+</script>
+</body></html>

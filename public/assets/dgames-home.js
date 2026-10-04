@@ -1,6 +1,17 @@
 (() => {
   const GAMES = [
     {
+      id: "pulse-memory",
+      title: "Pulse Memory",
+      category: "classic",
+      genre: "Memory",
+      tag: "Recall",
+      desc: "Watch the pulse, then repeat the pattern as the grid grows and your streak gets longer.",
+      img: "/assets/covers/pulse-memory.svg",
+      url: "/pulse-memory/",
+      time: "2–6 min",
+    },
+    {
       id: "circuit-stitch",
       title: "Circuit Stitch",
       category: "puzzle",

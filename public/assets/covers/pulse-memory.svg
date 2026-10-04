@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
+<rect width="640" height="420" rx="28" fill="#d9d1be"/>
+<g opacity=".16" stroke="#242a2a"><path d="M0 70h640M0 140h640M0 210h640M0 280h640M0 350h640"/><path d="M80 0v420M160 0v420M240 0v420M320 0v420M400 0v420M480 0v420M560 0v420"/></g>
+<rect x="138" y="62" width="364" height="296" rx="24" fill="#eee8d9" stroke="#242a2a" stroke-width="5"/>
+<g fill="#c5bba6" stroke="#242a2a" stroke-width="3">
+<rect x="168" y="92" width="72" height="72" rx="12"/><rect x="256" y="92" width="72" height="72" rx="12"/><rect x="344" y="92" width="72" height="72" rx="12"/><rect x="432" y="92" width="40" height="72" rx="12"/>
+<rect x="168" y="180" width="72" height="72" rx="12"/><rect x="256" y="180" width="72" height="72" rx="12"/><rect x="344" y="180" width="72" height="72" rx="12"/><rect x="432" y="180" width="40" height="72" rx="12"/>
+</g>
+<g fill="#c9a94b"><rect x="168" y="92" width="72" height="72" rx="12"/><rect x="344" y="180" width="72" height="72" rx="12"/><circle cx="292" cy="282" r="10"/></g>
+<text x="320" y="335" text-anchor="middle" font-family="monospace" font-size="24" font-weight="900" fill="#242a2a">PULSE MEMORY</text>
+</svg>
