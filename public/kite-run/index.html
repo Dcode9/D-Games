@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#d9d1be">
+<title>Kite Run — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box}
+:root{--paper:#d9d1be;--paper2:#eee8d9;--ink:#242a2a;--muted:#6f746e;--brick:#a85d49;--olive:#718466;--blue:#55758a}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:none;user-select:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+.ui{position:fixed;z-index:3;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.top{margin-top:max(78px,calc(env(safe-area-inset-top) + 70px));display:flex;gap:8px;align-items:center;padding:8px 11px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18}
+.stat{min-width:72px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 18px/1 ui-monospace,monospace}
+#combo{color:var(--brick)}
+.hint{margin-top:8px;padding:5px 9px;border:1px solid #242a2a28;border-radius:7px;background:#eee8d9d9;color:#606762;font:800 7px/1 ui-monospace,monospace;letter-spacing:.06em}
+.controls{position:absolute;bottom:max(18px,calc(env(safe-area-inset-bottom) + 16px));left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 22px));display:grid;grid-template-columns:repeat(3,1fr);gap:8px;pointer-events:auto}
+.control{min-height:58px;border:2px solid #242a2a5a;border-radius:13px;background:#eee8d9ee;box-shadow:0 5px 0 #242a2a20;color:var(--ink);font:900 10px ui-monospace,monospace;cursor:pointer}
+.control:active,.control.is-held{transform:translateY(3px);box-shadow:0 2px 0 #242a2a20;background:#d0c6b1}
+.control small{display:block;margin-top:4px;color:var(--muted);font:800 7px ui-monospace,monospace}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:22px;background:#242a2a35;backdrop-filter:blur(4px)}
+.panel{width:min(430px,100%);padding:25px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center}
+.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}
+.panel h1{margin:11px 0 8px;font:900 clamp(38px,10vw,54px)/.9 Inter,sans-serif;letter-spacing:-.06em}
+.panel p{margin:0 auto;color:#666d68;font-size:12px;line-height:1.55;max-width:350px}
+#start{width:100%;min-height:48px;margin-top:18px;border:2px solid var(--ink);border-radius:11px;background:var(--ink);color:var(--paper2);font:900 10px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+@media(max-width:520px){.top{margin-top:max(74px,calc(env(safe-area-inset-top) + 66px));gap:5px}.stat{min-width:61px}.stat b{font-size:16px}.hint{max-width:calc(100% - 24px);text-align:center;line-height:1.35}.controls{gap:6px}.control{min-height:62px}}
+@media(orientation:landscape) and (max-height:560px){.top{margin-top:58px}.controls{bottom:9px}.control{min-height:48px}.control small{display:none}.hint{display:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="dg-retro-skin" data-game="kite-run">
+<canvas id="game" aria-label="Kite Run game board"></canvas>
+<div class="ui">
+  <div class="top" aria-live="polite">
+    <div class="stat"><small>DISTANCE</small><b id="distance">00000</b></div>
+    <div class="stat"><small>RIBBONS</small><b id="ribbons">00</b></div>
+    <div class="stat"><small>STREAK</small><b id="combo">×1</b></div>
+    <div class="stat"><small>HEALTH</small><b id="health">●●●</b></div>
+  </div>
+  <div id="hint" class="hint">KEEP THE KITE IN THE WIND · PASS THE OPEN GATES · COLLECT RIBBONS</div>
+  <div class="controls" aria-label="Kite controls">
+    <button class="control" data-key="left" type="button">◀ LEFT<small>A / ←</small></button>
+    <button class="control" data-key="lift" type="button">▲ LIFT<small>W / ↑</small></button>
+    <button class="control" data-key="right" type="button">RIGHT ▶<small>D / →</small></button>
+  </div>
+</div>
+<div id="overlay" class="overlay">
+  <section class="panel" role="dialog" aria-labelledby="title">
+    <div class="eyebrow">D'GAMES · SKY DESK</div>
+    <h1 id="title">Kite Run</h1>
+    <p id="message">Ride the wind through moving gates. Steer left and right, tap LIFT to climb, and skim ribbons for bonus points. The gusts get wilder the farther you fly.</p>
+    <button id="start" type="button">Launch the kite</button>
+  </section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(()=> {
+const c=document.getElementById('game'),x=c.getContext('2d'),overlay=document.getElementById('overlay'),start=document.getElementById('start'),msg=document.getElementById('message');
+const distEl=document.getElementById('distance'),ribEl=document.getElementById('ribbons'),comboEl=document.getElementById('combo'),healthEl=document.getElementById('health'),hintEl=document.getElementById('hint');
+const btns=[...document.querySelectorAll('.control')];
+let W=0,H=0,dpr=1,raf=0,last=0,running=false,distance=0,ribbons=0,combo=1,health=3,best=+localStorage.getItem('kite-run-best')||0;
+let kite={px:.5,py:.56,vx:0,vy:0},gates=[],ribbonBits=[],particles=[],wind=0,gust=0,spawn=0,world=0,invuln=0;
+const keys={left:false,right:false,lift:false};
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0)} addEventListener('resize',resize,{passive:true});resize();
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),fmt=n=>String(Math.floor(n)).padStart(5,'0');
+function hud(){distEl.textContent=fmt(distance);ribEl.textContent=String(ribbons).padStart(2,'0');comboEl.textContent='×'+combo;healthEl.textContent='●'.repeat(health)+'○'.repeat(3-health);hintEl.textContent=distance<900?'KEEP THE KITE IN THE WIND · PASS THE OPEN GATES · COLLECT RIBBONS':distance<2200?'WIND RISING · GATES SHIFT FASTER · KEEP YOUR MOMENTUM':'STORM FRONT · GUSTS ARE STRONG · SURVIVE FOR A NEW BEST';}
+function reset(){distance=0;ribbons=0;combo=1;health=3;kite={px:.5,py:.56,vx:0,vy:0};gates=[];ribbonBits=[];particles=[];wind=0;gust=0;spawn=.4;world=0;invuln=0;hud();for(let i=0;i<4;i++)addGate(i*.95+.8)}
+function addGate(delay=0){const gap=.25+Math.random()*.18;const center=.24+Math.random()*(.52);gates.push({z:delay+Math.random()*.15,center,gap,width:.09+Math.random()*.04,scored:false,hit:false});}
+function addRibbon(){ribbonBits.push({z:1.2+Math.random()*.8,px:.16+Math.random()*.68,py:.28+Math.random()*.48,taken:false});}
+function startGame(){overlay.style.display='none';running=true;reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function endGame(){running=false;best=Math.max(best,Math.floor(distance));localStorage.setItem('kite-run-best',best);msg.textContent='The kite came down after '+Math.floor(distance)+'m. Ribbons: '+ribbons+'. Best flight: '+best+'m.';start.textContent='Fly again';overlay.style.display='grid';}
+function burst(px,py,col){for(let i=0;i<9;i++)particles.push({x:px,y:py,vx:(Math.random()-.5)*90,vy:(Math.random()-.5)*90,a:1,c:col,s:2+Math.random()*3})}
+function damage(){if(invuln>0)return;health--;combo=1;invuln=.9;burst(kite.px*W,kite.py*H,'#a85d49');hud();if(health<=0)endGame()}
+function project(z){return 1/(1+z*.72)}
+function update(dt){
+world+=dt;distance+=dt*(105+Math.min(115,distance*.035));invuln=Math.max(0,invuln-dt);
+const difficulty=Math.min(2.2,distance/1700);wind=Math.sin(world*.72)*(.018+.012*difficulty)+Math.sin(world*1.9)*.008;gust+=(Math.random()-.5)*dt*.16;gust=clamp(gust,-.055-.04*difficulty,.055+.04*difficulty);
+kite.vx+=(keys.left?-1:0)*1.7*dt+(keys.right?1:0)*1.7*dt+wind+gust;
+kite.vx*=Math.pow(.12,dt);kite.px+=kite.vx*dt;
+kite.vy+=.32*dt-(keys.lift?1.25:0)*dt;kite.vy*=Math.pow(.18,dt);kite.py+=kite.vy*dt;
+if(kite.px<.07){kite.px=.07;kite.vx=Math.abs(kite.vx)*.35} if(kite.px>.93){kite.px=.93;kite.vx=-Math.abs(kite.vx)*.35}
+if(kite.py<.18){kite.py=.18;kite.vy=.25} if(kite.py>.77){damage();kite.py=.66;kite.vy=-.35}
+const gateSpeed=.43+.08*difficulty;for(const g of gates){g.z-=dt*gateSpeed;if(!g.hit&&g.z<.12&&g.z>-.05){if(Math.abs(kite.px-g.center)>g.gap){damage()}else{g.hit=true;combo=Math.min(9,combo+1);burst(kite.px*W,kite.py*H,'#718466')}}}
+gates=gates.filter(g=>g.z>-.15);if(gates.length<4) addGate(1.4+Math.random()*.5);
+if(Math.random()<dt*(.5+.35*difficulty))addRibbon();
+for(const r of ribbonBits){r.z-=dt*gateSpeed*1.05;if(!r.taken&&r.z<.14&&r.z>-.08){if(Math.hypot(kite.px-r.px,kite.py-r.py)<.075){r.taken=true;ribbons++;combo=Math.min(9,combo+1);burst(kite.px*W,kite.py*H,'#c9a94b')}}} ribbonBits=ribbonBits.filter(r=>r.z>-.12&&!r.taken);
+for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.a-=dt*2.5}particles=particles.filter(p=>p.a>0);hud();
+}
+function draw(){
+x.fillStyle='#d9d1be';x.fillRect(0,0,W,H);const horizon=H*.18;
+x.fillStyle='#eee8d9';x.fillRect(0,horizon,W,H-horizon);x.globalAlpha=.14;x.strokeStyle='#242a2a';x.lineWidth=1;
+for(let yy=horizon;yy<H;yy+=34){x.beginPath();x.moveTo(0,yy);x.lineTo(W,yy);x.stroke()}for(let xx=0;xx<W;xx+=42){x.beginPath();x.moveTo(xx,horizon);x.lineTo(xx,H);x.stroke()}x.globalAlpha=1;
+x.fillStyle='#c5bba6';x.fillRect(0,horizon-2,W,5);
+for(const g of gates){const s=project(g.z),cx=g.center*W,gw=g.gap*W*s,yy=horizon+(H-horizon)*(.16+.68*(1-s));const thick=10+26*s;x.fillStyle='#718466';x.globalAlpha=.9;x.fillRect(cx-gw/2-thick,yy-thick/2,thick,thick);x.fillRect(cx+gw/2,yy-thick/2,thick,thick);x.globalAlpha=1;x.strokeStyle='#242a2a55';x.lineWidth=2;x.strokeRect(cx-gw/2-thick,yy-thick/2,thick,thick);x.strokeRect(cx+gw/2,yy-thick/2,thick,thick)}
+for(const r of ribbonBits){const s=project(r.z),rx=r.px*W,ry=horizon+(H-horizon)*r.py;x.globalAlpha=.7+s*.3;x.strokeStyle='#a85d49';x.lineWidth=4*s;x.beginPath();x.moveTo(rx-9*s,ry);x.quadraticCurveTo(rx,ry-13*s,rx+9*s,ry);x.stroke();x.globalAlpha=1}
+const kx=kite.px*W,ky=kite.py*H;x.save();x.translate(kx,ky);x.rotate(kite.vx*.45);x.globalAlpha=invuln>0&&Math.floor(invuln*12)%2?0.35:1;x.fillStyle='#a85d49';x.strokeStyle='#242a2a';x.lineWidth=3;x.beginPath();x.moveTo(0,-20);x.lineTo(20,7);x.lineTo(0,2);x.lineTo(-20,7);x.closePath();x.fill();x.stroke();x.beginPath();x.moveTo(0,2);x.lineTo(0,35);x.stroke();x.strokeStyle='#55758a';x.beginPath();x.moveTo(0,35);x.quadraticCurveTo(-12,48,3,60);x.quadraticCurveTo(17,70,5,82);x.stroke();x.restore();
+for(const p of particles){x.globalAlpha=p.a;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.s,p.s)}x.globalAlpha=1;
+}
+function loop(now){if(!running)return;const dt=Math.min(.032,(now-last)/1000);last=now;update(dt);draw();raf=requestAnimationFrame(loop)}
+function press(k){keys[k]=true;document.querySelector('[data-key="'+k+'"]')?.classList.add('is-held')}
+function release(k){keys[k]=false;document.querySelector('[data-key="'+k+'"]')?.classList.remove('is-held')}
+btns.forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);press(k)});['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,e=>{if(ev!=='pointerleave'||e.buttons===0)release(k)}))});
+const km={a:'left',arrowleft:'left',d:'right',arrowright:'right',w:'lift',arrowup:'lift'};
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='enter'||k===' '){e.preventDefault();if(!running)startGame();return}if(k in km){e.preventDefault();press(km[k])}},{passive:false});
+addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k in km){e.preventDefault();release(km[k])}});
+start.addEventListener('click',startGame);hud();draw();
+})();
+</script>
+</body>
+</html>
