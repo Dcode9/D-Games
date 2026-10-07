@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#d9d1be">
+<title>Number Forge — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box} :root{--paper:#d9d1be;--panel:#eee8d9;--ink:#242a2a;--muted:#6f746e;--brick:#a85d49;--olive:#718466;--blue:#55758a}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{touch-action:manipulation;user-select:none}.game{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;padding:max(78px,calc(env(safe-area-inset-top) + 68px)) 12px max(12px,env(safe-area-inset-bottom));overflow:auto}
+.hud{display:flex;gap:7px;align-items:center;padding:8px 10px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:0 0 auto}
+.stat{min-width:64px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:4px;font:900 17px/1 ui-monospace,monospace}.accent{color:var(--brick)}
+.stage{width:min(620px,100%);margin:10px 0 8px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font:800 8px/1 ui-monospace,monospace;letter-spacing:.08em}.timer{height:5px;background:#242a2a20;border-radius:99px;overflow:hidden}.timer i{display:block;height:100%;width:100%;background:var(--brick);transform-origin:left}
+.forge{width:min(620px,100%);margin-top:9px;padding:18px 14px 15px;border:2px solid #242a2a55;border-radius:16px;background:#eee8d9f2;box-shadow:0 7px 0 #242a2a18;text-align:center}
+.label{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--olive)}h1{margin:8px 0 2px;font:900 clamp(36px,10vw,52px)/.9 Inter,sans-serif;letter-spacing:-.06em}.target{margin:9px 0 12px;font:900 clamp(34px,9vw,54px)/1 ui-monospace,monospace}.target span{color:var(--brick)}
+.expression{min-height:58px;display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;padding:7px;border:2px dashed #242a2a35;border-radius:10px;background:#d9d1be55}.expr-token{min-width:36px;height:38px;padding:0 8px;display:grid;place-items:center;border:2px solid #242a2a55;border-radius:8px;background:#f6f3ec;font:900 18px/1 ui-monospace,monospace}.expr-token.op{color:var(--brick);background:#a85d4912}.empty{color:#8a8e88;font:800 9px/1 ui-monospace,monospace;letter-spacing:.08em}
+.controls{width:min(620px,100%);margin-top:10px}.bank{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.key{min-height:52px;border:2px solid #242a2a55;border-radius:10px;background:#eee8d9ee;color:var(--ink);box-shadow:0 4px 0 #242a2a20;font:900 17px/1 ui-monospace,monospace;cursor:pointer}.key:active,.key.used{transform:translateY(3px);box-shadow:0 1px 0 #242a2a20}.key.op{background:#a85d4910;color:var(--brick)}.key.used{opacity:.34;pointer-events:none}
+.actions{display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:7px;margin-top:7px}.action{min-height:43px;border:2px solid #242a2a55;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em}.action.primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}.action:active{transform:translateY(2px)}
+.tip{margin:9px auto 0;color:var(--muted);font:800 7px/1.4 ui-monospace,monospace;letter-spacing:.05em;text-align:center}
+.overlay{position:fixed;z-index:10;inset:0;display:grid;place-items:center;padding:20px;background:#242a2a35;backdrop-filter:blur(4px)}.panel{width:min(430px,100%);padding:25px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center}.panel p{margin:9px auto;color:#666d68;font-size:12px;line-height:1.55;max-width:350px}.start{width:100%;min-height:48px;margin-top:12px;border:2px solid var(--ink);border-radius:11px;background:var(--ink);color:var(--panel);font:900 10px/1 ui-monospace,monospace;letter-spacing:.1em}
+@media(min-width:700px){.game{padding-top:86px}.bank{grid-template-columns:repeat(7,1fr)}.key{min-height:56px}}
+@media(orientation:landscape) and (max-height:560px){.game{padding-top:68px}.forge{padding:12px}.target{margin:5px 0 8px;font-size:34px}.expression{min-height:48px}.key{min-height:44px}.tip{display:none}}
+</style>
+</head>
+<body class="dg-retro-skin" data-game="number-forge">
+<div class="game">
+  <div class="hud" aria-live="polite">
+    <div class="stat"><small>SCORE</small><b id="score">00000</b></div>
+    <div class="stat"><small>ROUND</small><b id="round">01</b></div>
+    <div class="stat"><small>STREAK</small><b id="streak" class="accent">×1</b></div>
+    <div class="stat"><small>BEST</small><b id="best">00000</b></div>
+  </div>
+  <div class="stage"><span id="level">FORGE 1 · 18s</span><span id="feedback">READY</span></div>
+  <div class="timer" style="width:min(620px,100%)"><i id="timer"></i></div>
+  <section class="forge">
+    <div class="label">FORGE THE TARGET</div>
+    <div class="target"><span id="target">24</span></div>
+    <div id="expression" class="expression" aria-live="polite"><span class="empty">SELECT TILES TO BUILD AN EQUATION</span></div>
+  </section>
+  <div class="controls">
+    <div id="bank" class="bank" aria-label="Number and operator tiles"></div>
+    <div class="actions">
+      <button class="action" id="back" type="button">BACKSPACE</button>
+      <button class="action" id="clear" type="button">CLEAR</button>
+      <button class="action primary" id="forgeBtn" type="button">FORGE ↵</button>
+    </div>
+    <div class="tip">BUILD AN EXACT TARGET · NUMBERS ONCE · + − × ÷ · ENTER FORGE · BACKSPACE UNDO</div>
+  </div>
+</div>
+<div id="overlay" class="overlay">
+  <section class="panel">
+    <div class="label">D'GAMES · MENTAL MATH</div>
+    <h1>Number Forge</h1>
+    <p>Build the exact target from the tiles. Choose numbers and operators, then forge the equation before the timer burns out. Faster solutions and longer streaks score more.</p>
+    <button id="start" class="start" type="button">LIGHT THE FORGE</button>
+  </section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(()=>{const $=s=>document.querySelector(s),bankEl=$('#bank'),exprEl=$('#expression'),targetEl=$('#target'),timerEl=$('#timer'),scoreEl=$('#score'),roundEl=$('#round'),streakEl=$('#streak'),bestEl=$('#best'),levelEl=$('#level'),feedbackEl=$('#feedback'),overlay=$('#overlay'),start=$('#start');let score=0,round=1,streak=1,best=Number(localStorage.getItem('number-forge-best')||0),tokens=[],used=[],target=0,solution=[],deadline=0,running=false,raf=0,roundMs=18000;
+const ops=['+','−','×','÷'];const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;const fmt=n=>String(Math.max(0,Math.floor(n))).padStart(5,'0');
+function safeEval(ts){if(!ts.length||/^[+−×÷]/.test(ts.join(''))||/[+−×÷]$/.test(ts.join('')))return null;let out=Number(ts[0]);for(let i=1;i<ts.length;i+=2){let op=ts[i],n=Number(ts[i+1]);if(!Number.isFinite(n))return null;if(op==='+')out+=n;if(op==='−')out-=n;if(op==='×')out*=n;if(op==='÷'){if(n===0||out%n!==0)return null;out/=n}}return Number.isFinite(out)&&Number.isInteger(out)?out:null}
+function makeRound(){let found=false;for(let tries=0;tries<500&&!found;tries++){let a=rand(2,9),b=rand(2,9),c=rand(1,9),o1=ops[rand(0,2)],o2=ops[rand(0,2)],ts=[String(a),o1,String(b),o2,String(c)],v=safeEval(ts);if(v!==null&&v>=8&&v<=120){target=v;solution=ts;found=true}}if(!found){solution=['8','×','4','−','3'];target=29}tokens=[...solution];while(tokens.length<9){let t=Math.random()<.62?String(rand(1,9)):ops[rand(0,3)];if(t==='÷'&&tokens[tokens.length-1]=== '÷')continue;tokens.push(t)}tokens=tokens.sort(()=>Math.random()-.5);used=Array(tokens.length).fill(false);targetEl.textContent=target;render();deadline=performance.now()+roundMs;feedbackEl.textContent='BUILD';}
+function render(){bankEl.innerHTML='';tokens.forEach((t,i)=>{let b=document.createElement('button');b.className='key '+(ops.includes(t)?'op':'');b.type='button';b.textContent=t;b.dataset.i=i;b.disabled=used[i];if(used[i])b.classList.add('used');b.addEventListener('click',()=>pick(i));bankEl.appendChild(b)});exprEl.innerHTML=tokensFromUsed().length?tokensFromUsed().map((t,i)=>'<span class="expr-token '+(ops.includes(t)?'op':'')+'">'+t+'</span>').join(''):'<span class="empty">SELECT TILES TO BUILD AN EQUATION</span>';scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');streakEl.textContent='×'+streak;bestEl.textContent=fmt(best);levelEl.textContent='FORGE '+(1+Math.floor((round-1)/5))+' · '+(roundMs/1000)+'s';}
+function tokensFromUsed(){return tokens.filter((_,i)=>used[i]).map(t=>t)}
+function pick(i){if(!running||used[i])return;let t=tokens[i],cur=tokensFromUsed();if(ops.includes(t)){if(!cur.length||ops.includes(cur.at(-1)))return}else if(cur.length&& !ops.includes(cur.at(-1)))return;used[i]=true;render();if(safeEval(tokensFromUsed())===target)forge()}
+function undo(){for(let i=tokens.length-1;i>=0;i--)if(used[i]){used[i]=false;render();return}}
+function clearAll(){used.fill(false);render()}
+function forge(){let value=safeEval(tokensFromUsed());if(value!==target)return;let left=Math.max(0,deadline-performance.now()),pts=100+Math.floor(left/120)+(streak-1)*30;score+=pts;streak=Math.min(9,streak+1);best=Math.max(best,score);localStorage.setItem('number-forge-best',best);feedbackEl.textContent='FORGED +'+pts;round++;if(round%5===1)roundMs=Math.max(9000,18000-(round-1)*450);makeRound()}
+function fail(){streak=1;feedbackEl.textContent='MISSED';round++;if(round%5===1)roundMs=Math.max(9000,18000-(round-1)*450);makeRound()}
+function loop(now){if(!running)return;let left=Math.max(0,deadline-now),pct=left/roundMs;timerEl.style.transform='scaleX('+pct+')';if(left<=0){fail()}raf=requestAnimationFrame(loop)}
+function startGame(){overlay.style.display='none';running=true;score=0;round=1;streak=1;roundMs=18000;makeRound();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function key(e){if(!running)return;if((e.key>='0'&&e.key<='9')||ops.includes(e.key)){let wanted=e.key==='*'?'×':e.key==='-'?'−':e.key==='/ ' ? '÷':e.key;if(e.key==='/')wanted='÷';let i=tokens.findIndex((t,i)=>!used[i]&&t===wanted);if(i>=0){e.preventDefault();pick(i)}}else if(e.key==='Backspace'){e.preventDefault();undo()}else if(e.key==='Escape'){e.preventDefault();clearAll()}else if(e.key==='Enter'){e.preventDefault();forge()}}
+start.addEventListener('click',startGame);$('#back').addEventListener('click',undo);$('#clear').addEventListener('click',clearAll);$('#forgeBtn').addEventListener('click',forge);addEventListener('keydown',key,{passive:false});render();
+})();
+</script>
+</body></html>
