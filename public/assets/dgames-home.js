@@ -1,6 +1,17 @@
 (() => {
   const GAMES = [
     {
+      id: "flockkeeper",
+      title: "Flockkeeper",
+      category: "arcade",
+      genre: "Herding",
+      tag: "Guide",
+      desc: "Guide a nervous flock through the meadow gate while gusts and a roaming fox break their formation.",
+      img: "/assets/covers/flockkeeper.svg",
+      url: "/flockkeeper/",
+      time: "2–7 min",
+    },
+    {
       id: "pulse-memory",
       title: "Pulse Memory",
       category: "classic",
