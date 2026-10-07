@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#d9d1be">
+<title>Flockkeeper — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#d9d1be;color:#242a2a;font-family:Inter,ui-sans-serif,system-ui,sans-serif}body{touch-action:none;user-select:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;z-index:4;top:max(78px,calc(env(safe-area-inset-top) + 70px));left:50%;transform:translateX(-50%);display:flex;gap:7px;padding:7px 9px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ed;box-shadow:0 5px 0 #242a2a18;pointer-events:none}
+.stat{min-width:66px;text-align:center}.stat small{display:block;font:900 7px/1 ui-monospace,monospace;letter-spacing:.12em;color:#6f746e}.stat b{display:block;margin-top:4px;font:900 17px/1 ui-monospace,monospace}
+#combo{color:#a85d49}.hint{position:fixed;z-index:4;top:calc(max(78px,calc(env(safe-area-inset-top) + 70px)) + 62px);left:50%;transform:translateX(-50%);padding:5px 8px;border:1px solid #242a2a28;border-radius:7px;background:#eee8d9d9;color:#606762;font:800 7px/1 ui-monospace,monospace;letter-spacing:.05em;white-space:nowrap;pointer-events:none}
+.controls{position:fixed;z-index:5;left:50%;bottom:max(14px,calc(env(safe-area-inset-bottom) + 12px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;pointer-events:auto}.control{min-width:74px;min-height:48px;border:2px solid #242a2a66;border-radius:11px;background:#eee8d9ee;color:#242a2a;box-shadow:0 5px 0 #242a2a20;font:900 8px/1 ui-monospace,monospace;letter-spacing:.06em}.control:active,.control.is-held{transform:translateY(3px);box-shadow:0 2px 0 #242a2a20}.control b{display:block;font-size:11px}.control span{display:block;margin-top:4px;color:#6f746e;font-size:6px}
+.overlay{position:fixed;z-index:8;inset:0;display:grid;place-items:center;padding:20px;background:#242a2a38;backdrop-filter:blur(4px)}.panel{width:min(430px,100%);padding:25px;border:2px solid #242a2a70;border-radius:17px;background:#eee8d9f7;box-shadow:0 12px 0 #242a2a18,0 25px 70px #242a2a25;text-align:center}.eyebrow{font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;color:#718466}.panel h1{margin:11px 0 8px;font:900 clamp(38px,10vw,54px)/.9 Inter,sans-serif;letter-spacing:-.06em}.panel p{margin:0 auto;color:#666d68;font-size:12px;line-height:1.55;max-width:350px}#start{width:100%;min-height:48px;margin-top:18px;border:2px solid #242a2a;border-radius:11px;background:#242a2a;color:#f7f3e8;font:900 10px/1 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
+@media(max-width:560px){.hud{top:max(72px,calc(env(safe-area-inset-top) + 64px));}.stat{min-width:58px}.stat b{font-size:15px}.hint{top:calc(max(72px,calc(env(safe-area-inset-top) + 64px)) + 58px);max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}.controls{width:calc(100% - 22px);justify-content:center}.control{flex:1;min-width:0;max-width:120px}}
+@media(orientation:landscape) and (max-height:560px){.hud{top:54px}.hint{display:none}.controls{bottom:8px}.control{min-height:42px}}
+@media(prefers-reduced-motion:reduce){.control{transition:none}}
+</style>
+</head>
+<body class="dg-retro-skin" data-game="flockkeeper">
+<canvas id="game" aria-label="Flockkeeper meadow"></canvas>
+<div class="hud" aria-live="polite">
+  <div class="stat"><small>SCORE</small><b id="score">00000</b></div>
+  <div class="stat"><small>ROUND</small><b id="round">01</b></div>
+  <div class="stat"><small>FLOCK</small><b id="flock">0/0</b></div>
+  <div class="stat"><small>LIVES</small><b id="lives">●●●</b></div>
+</div>
+<div id="hint" class="hint">KEEP THE SHEEP TOGETHER · GUIDE THEM THROUGH THE GATE</div>
+<div class="controls" aria-label="Shepherd controls">
+  <button class="control" data-dir="left" type="button"><b>◀</b><span>A / ←</span></button>
+  <button class="control" data-dir="up" type="button"><b>▲</b><span>W / ↑</span></button>
+  <button class="control" data-dir="down" type="button"><b>▼</b><span>S / ↓</span></button>
+  <button class="control" data-dir="right" type="button"><b>▶</b><span>D / →</span></button>
+</div>
+<div id="overlay" class="overlay">
+<section class="panel" role="dialog" aria-labelledby="title">
+<div class="eyebrow">D'GAMES · MEADOW DUTY</div><h1 id="title">Flockkeeper</h1>
+<p id="message">Move the shepherd around the meadow. Sheep flee from you, so approach from the opposite side and steer the flock through the open gate. Keep them away from the fox.</p>
+<button id="start" type="button">Open the meadow</button>
+</section>
+</div>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(()=>{const c=document.getElementById('game'),x=c.getContext('2d'),scoreEl=document.getElementById('score'),roundEl=document.getElementById('round'),flockEl=document.getElementById('flock'),livesEl=document.getElementById('lives'),hint=document.getElementById('hint'),overlay=document.getElementById('overlay'),start=document.getElementById('start'),message=document.getElementById('message'),buttons=[...document.querySelectorAll('.control')];
+let W=0,H=0,dpr=1,raf=0,last=0,running=false,score=0,round=1,lives=3,sheep=[],particles=[],gate={x:0,y:0,w:0,h:0},fox={x:0,y:0,vx:0,vy:0},keeper={x:0,y:0,vx:0,vy:0},keys={};let best=Number(localStorage.getItem('flockkeeper-best')||0);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),fmt=n=>String(Math.max(0,Math.floor(n))).padStart(5,'0');
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0);if(running){keeper.x=clamp(keeper.x,30,W-30);keeper.y=clamp(keeper.y,80,H-45)}}addEventListener('resize',resize,{passive:true});resize();
+function setHud(){scoreEl.textContent=fmt(score);roundEl.textContent=String(round).padStart(2,'0');flockEl.textContent=sheep.filter(s=>s.done).length+'/'+sheep.length;livesEl.textContent='●'.repeat(lives)+'○'.repeat(3-lives);hint.textContent='ROUND '+round+' · '+(round<3?'APPROACH SLOWLY · SHEEP FLEE FROM YOU':'WIND UP · FOX IS ROAMING · KEEP THE FLOCK TOGETHER')}
+function spawn(){const count=Math.min(14,5+Math.floor((round-1)*1.3));gate={x:W-35,y:H*.5+(Math.random()-.5)*H*.24,w:22,h:Math.max(92,H*.17)};keeper={x:W*.5,y:H*.7,vx:0,vy:0};fox={x:W*.75,y:H*.28,vx:-18,vy:12};sheep=[];for(let i=0;i<count;i++)sheep.push({x:W*.27+(Math.random()-.5)*90,y:H*.48+(Math.random()-.5)*130,vx:(Math.random()-.5)*20,vy:(Math.random()-.5)*20,r:10+Math.random()*2,done:false,scared:0});setHud()}
+function reset(){score=0;round=1;lives=3;particles=[];spawn();setHud()}
+function startGame(){overlay.style.display='none';running=true;reset();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function endGame(){running=false;best=Math.max(best,score);localStorage.setItem('flockkeeper-best',String(best));message.textContent='The meadow is closed. You guided '+score+' points of sheep to safety. Best: '+best+'.';start.textContent='Herd again';overlay.style.display='grid'}
+function burst(px,py,col){for(let i=0;i<12;i++)particles.push({x:px,y:py,vx:(Math.random()-.5)*90,vy:(Math.random()-.5)*90,a:1,c:col,s:2+Math.random()*3})}
+function input(){let ax=0,ay=0;if(keys.left)ax--;if(keys.right)ax++;if(keys.up)ay--;if(keys.down)ay++;const m=Math.hypot(ax,ay)||1;return{ax:ax/m,ay:ay/m}}
+function hitFox(){lives--;score=Math.max(0,score-20);burst(fox.x,fox.y,'#a85d49');if(lives<=0){endGame();return true}spawn();return false}
+function update(dt){const q=input();keeper.vx+=(q.ax*330-keeper.vx)*Math.min(1,dt*7);keeper.vy+=(q.ay*330-keeper.vy)*Math.min(1,dt*7);keeper.x=clamp(keeper.x+keeper.vx*dt,22,W-22);keeper.y=clamp(keeper.y+keeper.vy*dt,82,H-30);
+fox.x+=fox.vx*dt;fox.y+=fox.vy*dt;if(fox.x<60||fox.x>W-50)fox.vx*=-1;if(fox.y<90||fox.y>H-90)fox.vy*=-1;
+const center=sheep.reduce((a,s)=>({x:a.x+s.x/sheep.length,y:a.y+s.y/sheep.length}),{x:0,y:0});const gust=Math.sin(performance.now()/1800)*18;
+for(const s of sheep){if(s.done)continue;let rx=s.x-keeper.x,ry=s.y-keeper.y,d=Math.hypot(rx,ry)||1;if(d<150){const force=(1-d/150)*220;s.vx+=rx/d*force*dt;s.vy+=ry/d*force*dt;s.scared=Math.min(1,s.scared+dt*4)}else{s.scared=Math.max(0,s.scared-dt*2)}
+let fx=s.x-fox.x,fy=s.y-fox.y,fd=Math.hypot(fx,fy)||1;if(fd<125){const force=(1-fd/125)*170;s.vx+=fx/fd*force*dt;s.vy+=fy/fd*force*dt}
+let cx=s.x-center.x,cy=s.y-center.y,cd=Math.hypot(cx,cy)||1;if(cd>105){s.vx-=cx/cd*45*dt;s.vy-=cy/cd*45*dt}
+s.vx+=(gust+Math.sin(s.y*.015))*dt;s.vy+=Math.cos(s.x*.012)*dt;s.vx*=Math.pow(.985,dt*60);s.vy*=Math.pow(.985,dt*60);s.x+=s.vx*dt;s.y+=s.vy*dt;
+if(s.x>W-55&&Math.abs(s.y-gate.y)<gate.h/2){s.done=true;score+=30+Math.floor(s.scared*15);burst(s.x,s.y,'#718466')}
+s.x=clamp(s.x,18,W-18);s.y=clamp(s.y,84,H-28);if(dist(s,fox)<20){if(hitFox())return}}
+const active=sheep.filter(s=>!s.done);if(active.length===0){score+=round*50;round++;spawn();setHud();return}
+if(active.some(s=>dist(s,fox)<27)){if(hitFox())return}setHud()}
+function draw(now){x.fillStyle='#d9d1be';x.fillRect(0,0,W,H);x.fillStyle='#c5bba6';x.fillRect(0,70,W,H-105);x.strokeStyle='#242a2a18';x.lineWidth=1;for(let i=0;i<W;i+=34){x.beginPath();x.moveTo(i,70);x.lineTo(i-35,H);x.stroke()}for(let i=95;i<H;i+=34){x.beginPath();x.moveTo(0,i);x.lineTo(W,i);x.stroke()}
+x.fillStyle='#9f9685';x.fillRect(W-48,70,48,H-105);x.fillStyle='#718466';x.fillRect(W-10,gate.y-gate.h/2,10,gate.h);x.fillStyle='#eee8d9';x.font='900 7px ui-monospace,monospace';x.textAlign='center';x.fillText('GATE',W-30,gate.y+3);
+for(const s of sheep){if(s.done)continue;x.save();x.translate(s.x,s.y);x.fillStyle='#f2eee0';x.strokeStyle='#242a2a';x.lineWidth=1.5;x.beginPath();x.arc(0,0,s.r,0,Math.PI*2);x.fill();x.stroke();x.fillStyle='#242a2a';x.beginPath();x.arc(s.r*.45,-s.r*.2,2,0,Math.PI*2);x.fill();if(s.scared>.55){x.strokeStyle='#a85d49';x.beginPath();x.arc(0,0,s.r+5,0,Math.PI*2);x.stroke()}x.restore()}
+x.save();x.translate(fox.x,fox.y);x.fillStyle='#a85d49';x.beginPath();x.moveTo(-13,8);x.lineTo(-7,-9);x.lineTo(0,-4);x.lineTo(7,-9);x.lineTo(13,8);x.closePath();x.fill();x.fillStyle='#eee8d9';x.beginPath();x.arc(4,-1,2,0,Math.PI*2);x.fill();x.restore();
+x.save();x.translate(keeper.x,keeper.y);x.fillStyle='#242a2a';x.strokeStyle='#eee8d9';x.lineWidth=2;x.beginPath();x.arc(0,0,13,0,Math.PI*2);x.fill();x.stroke();x.strokeStyle='#242a2a';x.lineWidth=4;x.beginPath();x.moveTo(8,-8);x.lineTo(17,-22);x.stroke();x.restore();
+for(const p of particles){p.x+=p.vx/60;p.y+=p.vy/60;p.a-=.025;x.globalAlpha=Math.max(0,p.a);x.fillStyle=p.c;x.fillRect(p.x,p.y,p.s,p.s)}x.globalAlpha=1;particles=particles.filter(p=>p.a>0)}
+function loop(now){if(!running)return;const dt=Math.min(.033,Math.max(0,(now-last)/1000));last=now;update(dt);draw(now);raf=requestAnimationFrame(loop)}
+const map={a:'left',arrowleft:'left',d:'right',arrowright:'right',w:'up',arrowup:'up',s:'down',arrowdown:'down'};addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='enter'||k===' '){e.preventDefault();if(!running)startGame();return}if(map[k]){e.preventDefault();keys[map[k]]=true}},{passive:false});addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(map[k])keys[map[k]]=false});
+buttons.forEach(b=>{const dir=b.dataset.dir;const on=e=>{e.preventDefault();keys[dir]=true;b.classList.add('is-held');b.setPointerCapture?.(e.pointerId)};const off=e=>{e.preventDefault();keys[dir]=false;b.classList.remove('is-held')};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',e=>{if(e.buttons===0)off(e)})});start.addEventListener('click',startGame);setHud();spawn();draw(0)})();
+</script>
+</body>
+</html>
