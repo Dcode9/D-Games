@@ -2,6 +2,16 @@
   if (window.__DGAMES_CHROME__) return;
   window.__DGAMES_CHROME__ = true;
 
+  // Load the shared paper-console game skin once for every game page.
+  document.body.classList.add("dg-retro-skin");
+  if (!document.querySelector("link[data-dgames-skin]")) {
+    const skinLink = document.createElement("link");
+    skinLink.rel = "stylesheet";
+    skinLink.href = "/assets/dgames-game-skin.css?v=20261011";
+    skinLink.dataset.dgamesSkin = "true";
+    document.head.appendChild(skinLink);
+  }
+
   const rawTitle = document.title
     .replace(/\s*[—-]\s*D['’]Games.*$/i, "")
     .trim();
