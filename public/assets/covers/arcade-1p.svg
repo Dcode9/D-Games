@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420"><rect width="640" height="420" fill="#f6f3ec"/>
-<g stroke-width="6"><rect x="60" y="70" width="150" height="190" rx="28" fill="#dfd3fc" stroke="#a794dd"/><rect x="245" y="40" width="150" height="190" rx="28" fill="#c1ee81" stroke="#8fc24a"/><rect x="430" y="70" width="150" height="190" rx="28" fill="#f7de8a" stroke="#d8b948"/></g>
-<g stroke="#4a3b86" stroke-width="12" stroke-linecap="round"><path d="M100 130l30 30M130 130l-30 30"/></g><circle cx="170" cy="215" r="16" fill="none" stroke="#d4755d" stroke-width="12"/>
-<path d="M280 190c30 20 60-10 45-40s-30-10-30-50" fill="none" stroke="#3f6b2a" stroke-width="22" stroke-linecap="round"/>
-<path d="M465 245c0-45 14-70 30-70s30 25 30 70z" fill="#a6784a"/><circle cx="485" cy="215" r="5" fill="#282d26"/><circle cx="505" cy="215" r="5" fill="#282d26"/>
-<text x="320" y="340" text-anchor="middle" font-family="ui-sans-serif,system-ui" font-weight="900" font-size="54" fill="#282d26">1 PLAYER</text></svg>
