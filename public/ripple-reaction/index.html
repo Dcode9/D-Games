@@ -14,10 +14,10 @@ body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-hig
 .ui{position:fixed;z-index:3;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:max(60px,calc(env(safe-area-inset-top) + 56px));padding-bottom:max(60px,calc(env(safe-area-inset-bottom) + 56px));pointer-events:none}
 .top{display:flex;gap:4px;padding:4px 8px;border:2px solid #242a2a55;border-radius:11px;background:#eee8d9ee;box-shadow:0 4px 0 #242a2a18;flex:none}
 .stat{min-width:54px;text-align:center}.stat small{display:block;font:800 7px/1 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}.stat b{display:block;margin-top:3px;font:900 14px/1 ui-monospace,monospace}
-.row{display:flex;gap:6px;align-items:center;width:calc(100% - 16px);max-width:460px;margin-top:5px;flex:none}.hint{flex:1;margin:0;padding:4px 8px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.02em;text-align:center;min-height:0}
+.row{display:flex;gap:6px;align-items:center;width:calc(100% - 16px);max-width:460px;margin-top:5px;flex:none}.hint{flex:1;min-width:0;margin:0;padding:4px 8px;border:1px solid #242a2a28;border-radius:9px;background:#eee8d9f2;color:#3b423f;font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.02em;text-align:center;min-height:0}
 .hint em{font-style:normal;color:var(--brick)}
 .tools{margin:0;display:flex;gap:5px;pointer-events:auto;flex:none}
-.mini{border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:7px 6px;cursor:pointer;box-shadow:0 3px 0 #242a2a30}
+.mini{min-height:36px;border:2px solid #242a2a66;border-radius:9px;background:#eee8d9;color:var(--ink);font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;padding:8px 6px;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 0 #242a2a30}.mini:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.mini:disabled:active{transform:none}
 .mini:active{transform:translateY(3px);box-shadow:none}
 .mini[aria-pressed="true"]{background:#242a2a;color:#eee8d9}
 .stage{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center;margin:6px 0;pointer-events:none}
@@ -68,6 +68,7 @@ body{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-hig
 <div class="tools" id="tools">
 <button id="guideBtn" class="mini" type="button" aria-pressed="true">GUIDE ON</button>
 <button id="soundBtn" class="mini" type="button" aria-pressed="true">SND ON</button>
+<button id="pauseBtn" class="mini" type="button" aria-label="Pause game" disabled>PAUSE</button>
 <button id="helpBtn" class="mini" type="button">HOW TO</button>
 </div></div>
 <div class="stage" id="stage"><div class="boardwrap"><canvas id="cv" aria-label="Ripple Reaction playfield. Tap to drop a ripple."></canvas></div></div>
@@ -104,7 +105,7 @@ const cv=$('cv'),ctx=cv.getContext('2d');
 let dpr=Math.min(2,window.devicePixelRatio||1);
 cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
 const overlay=$('overlay'),start=$('start'),tutBtn=$('tutBtn'),head=$('headline'),msg=$('message'),hintEl=$('hint'),statsBox=$('statsBox'),rules=$('rules');
-const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),helpBtn=$('helpBtn'),kA=$('kA');
+const guideBtn=$('guideBtn'),soundBtn=$('soundBtn'),pauseBtn=$('pauseBtn'),helpBtn=$('helpBtn'),kA=$('kA');
 const PI2=Math.PI*2;
 function level(){return 1+Math.floor(score/80)}
 function goodCol(){const L=Math.min(8,level()-1);return 'hsl('+(168+L*14)+' '+Math.max(30,80-L*7)+'% '+(46+L)+'%)'}
@@ -124,6 +125,7 @@ function setHint(h){hintEl.innerHTML=h}
 function defHint(){if(tut)return;if(!running){setHint('Press Play to start');return}setHint(guideOn?'The <em>ring</em> marks a good spot to tap.':'Guide off. Read the field yourself.')}
 function setGuide(on,user){guideOn=on;if(user)guideTouched=true;guideBtn.textContent='GUIDE '+(on?'ON':'OFF');guideBtn.setAttribute('aria-pressed',String(on));if(!on)kA.classList.remove('guide');defHint()}
 function setSound(on){sound=on;soundBtn.textContent='SND '+(on?'ON':'OFF');soundBtn.setAttribute('aria-pressed',String(on))}
+function syncPauseButton(){pauseBtn.textContent=paused?'RESUME':'PAUSE';pauseBtn.setAttribute('aria-label',paused?'Resume game':'Pause game');pauseBtn.disabled=!running}
 function reset(n,bn){score=0;combo=1;lives=3;bestChain=1;placed=0;cd=0;ripples=[];parts=[];dots=[];for(let i=0;i<n;i++)dots.push(mkDot(false));for(let i=0;i<bn;i++)dots.push(mkDot(true));hud()}
 function burst(x,y,c,n){for(let i=0;i<(n||8);i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,c:c,l:1})}
 function place(x,y){if(!running||paused||cd>0)return false;ripples.push({x:x,y:y,r:0,life:1,flash:0});cd=.3;placed++;tone(380,.07,'triangle',.06);buzz(10);if(tut&&tut.step===0)tut.placed=true;return true}
@@ -168,21 +170,22 @@ else if(t.step===1&&t.got>=3){t.step=2;tone(660,.1);tutSet()}
 else if(t.step===2&&t.auto){t.step=3;t.t=0;tone(780,.15);tutSet()}
 else if(t.step===3){t.t+=1/60;if(t.t>2.2)endTut()}}
 function guideTick(){target=bestSpot();if(tut&&tut.step===2){kA.classList.add('guide')}else if(!tut){const on=guideOn&&running;kA.classList.toggle('guide',false)}}
-function endTut(){tut=null;kA.classList.remove('guide');running=false;showMenu('Tutorial done','You know the controls. Hit Play for a real run.')}
+function endTut(){tut=null;kA.classList.remove('guide');running=false;syncPauseButton();showMenu('Tutorial done','You know the controls. Hit Play for a real run.')}
 function frame(ts){raf=requestAnimationFrame(frame);if(!last)last=ts;const dt=Math.min(3,(ts-last)/16.67);last=ts;
 if(running&&!paused){step(dt);if(tut)tutTick();guideTick();
 if(!tut&&!guideTouched&&guideOn&&level()>=3)setGuide(false,false)}
 draw()}
 function showMenu(title,text,stats){overlayMode='menu';head.textContent=title;msg.textContent=text;rules.hidden=!!stats;if(stats){statsBox.hidden=false;statsBox.innerHTML=stats}else statsBox.hidden=true;start.textContent=stats?'Play again':'Play';overlay.hidden=false;defHint()}
-function gameOver(){running=false;kA.classList.remove('guide');if(score>best){best=score;localStorage.setItem('ripple-reaction-best',best)}hud();tone(90,.5,'sawtooth',.08);showMenu('Reaction lost','The field collapsed.','<div><span>Score</span><b>'+score+'</b></div><div><span>Best chain</span><b>x'+bestChain+'</b></div><div><span>Best</span><b>'+best+'</b></div>')}
-function begin(isTut){overlay.hidden=true;paused=false;if(isTut){tut={step:0,placed:false,got:0,auto:false,t:0};reset(12,3);setGuide(true,true)}else{tut=null;reset(26,6);if(!guideTouched)setGuide(true,false)}running=true;last=0;layout();if(tut)tutSet();else defHint();tone(440,.1)}
-function pause(on){if(!running)return;if(on===paused)return;paused=on;if(paused){setHint('Paused. Press P to resume.')}else{defHint();if(tut)tutSet()}}
+function gameOver(){running=false;syncPauseButton();kA.classList.remove('guide');if(score>best){best=score;localStorage.setItem('ripple-reaction-best',best)}hud();tone(90,.5,'sawtooth',.08);showMenu('Reaction lost','The field collapsed.','<div><span>Score</span><b>'+score+'</b></div><div><span>Best chain</span><b>x'+bestChain+'</b></div><div><span>Best</span><b>'+best+'</b></div>')}
+function begin(isTut){overlay.hidden=true;paused=false;if(isTut){tut={step:0,placed:false,got:0,auto:false,t:0};reset(12,3);setGuide(true,true)}else{tut=null;reset(26,6);if(!guideTouched)setGuide(true,false)}running=true;syncPauseButton();last=0;layout();if(tut)tutSet();else defHint();tone(440,.1)}
+function pause(on){if(!running)return;if(on===paused)return;paused=on;syncPauseButton();if(paused){setHint('Paused. Tap RESUME or press P.')}else{defHint();if(tut)tutSet()}}
 start.addEventListener('click',()=>begin(false));
 tutBtn.addEventListener('click',()=>begin(true));
 helpBtn.addEventListener('click',()=>{if(running)pause(true);showMenu('How to play','Drop ripples, catch teal, dodge red.');rules.hidden=false;start.textContent=running?'Resume':'Play';overlayMode='help'});
 start.addEventListener('click',e=>{if(overlayMode==='help'&&running){e.stopImmediatePropagation();overlay.hidden=true;pause(false)}},true);
 guideBtn.addEventListener('click',()=>setGuide(!guideOn,true));
 soundBtn.addEventListener('click',()=>setSound(!sound));
+pauseBtn.addEventListener('click',()=>pause(!paused));
 function press(el){el.classList.add('is-down')}function release(el){el.classList.remove('is-down')}
 kA.addEventListener('pointerdown',e=>{e.preventDefault();press(kA);autoDrop()});
 ['pointerup','pointercancel','pointerleave'].forEach(n=>kA.addEventListener(n,()=>release(kA)));
@@ -191,7 +194,7 @@ addEventListener('keydown',e=>{if(e.key===' '||e.code==='Space'){if(!overlay.hid
 addEventListener('keyup',e=>{if(e.key===' ')release(kA)});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true)});
 window.__t={s:()=>({tut:tut?tut.step:null,running,score,lives,combo,placed,level:level(),guide:guideOn}),spot:()=>bestSpot(),tap:(x,y)=>place(x,y)};
-setSound(true);setGuide(true,false);hud();layout();reset(26,6);running=false;raf=requestAnimationFrame(frame);
+setSound(true);setGuide(true,false);hud();layout();reset(26,6);running=false;syncPauseButton();raf=requestAnimationFrame(frame);
 })();
 </script>
 <script src="/haptics.js" defer></script></body>
