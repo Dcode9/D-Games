@@ -76,5 +76,5 @@ function loop(now){if(!running)return;const dt=Math.min(.033,Math.max(0,(now-las
 const map={a:'left',arrowleft:'left',d:'right',arrowright:'right',w:'up',arrowup:'up',s:'down',arrowdown:'down'};addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='enter'||k===' '){e.preventDefault();if(!running)startGame();return}if(map[k]){e.preventDefault();keys[map[k]]=true}},{passive:false});addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(map[k])keys[map[k]]=false});
 buttons.forEach(b=>{const dir=b.dataset.dir;const on=e=>{e.preventDefault();keys[dir]=true;b.classList.add('is-held');b.setPointerCapture?.(e.pointerId)};const off=e=>{e.preventDefault();keys[dir]=false;b.classList.remove('is-held')};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',e=>{if(e.buttons===0)off(e)})});start.addEventListener('click',startGame);setHud();spawn();draw(0)})();
 </script>
-</body>
+<script src="/haptics.js" defer></script></body>
 </html>
