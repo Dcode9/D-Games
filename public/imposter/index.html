@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ece7db">
+<meta name="description" content="Imposter: a secret-word party game for 3–8 players on one phone.">
+<title>Imposter — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+:root{--paper:#ece7db;--surface:#fbf9f3;--ink:#282d26;--muted:#74776b;--line:rgba(40,45,38,.18);--lime:#c1ee81;--olive:#718466;--brick:#a45946;--lav:#e5ddf6}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{background-image:radial-gradient(ellipse at 12% 4%,rgba(193,238,129,.23),transparent 32%),radial-gradient(ellipse at 92% 36%,rgba(229,221,246,.42),transparent 34%),linear-gradient(135deg,rgba(40,45,38,.025) 25%,transparent 25%,transparent 75%,rgba(40,45,38,.025) 75%);background-size:auto,auto,18px 18px;overflow-x:hidden}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7253b1;outline-offset:3px}
+.shell{width:min(100%,1000px);margin:0 auto;padding:82px 22px 76px}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 24px}
+.kicker{display:inline-flex;align-items:center;gap:8px;margin:0 0 9px;color:var(--olive);font:900 10px/1.2 ui-monospace,monospace;letter-spacing:.17em;text-transform:uppercase}
+.kicker:before{content:"";display:block;width:19px;height:3px;border-radius:5px;background:var(--lime)}
+.hero h1{margin:0;font-size:clamp(46px,8vw,82px);font-weight:950;line-height:.83;letter-spacing:-.085em}.hero h1 span{color:var(--brick)}
+.hero-copy{max-width:480px;margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.round-chip{flex:0 0 auto;min-width:84px;padding:12px 14px;border:1.5px solid var(--line);border-radius:15px;background:rgba(251,249,243,.82);text-align:center;box-shadow:0 4px 0 rgba(40,45,38,.06)}
+.round-chip span{display:block;color:var(--muted);font:900 8px ui-monospace,monospace;letter-spacing:.16em}.round-chip b{display:block;margin-top:5px;font:900 26px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums}
+#app{min-height:250px}.lobby-grid{display:grid;grid-template-columns:.88fr 1.12fr;gap:16px;align-items:stretch}
+.paper-card{min-width:0;padding:clamp(18px,3vw,28px);border:1.5px solid var(--line);border-radius:22px;background:rgba(251,249,243,.91);box-shadow:0 5px 0 rgba(40,45,38,.055),0 17px 35px rgba(40,45,38,.035)}
+.card-kicker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;color:var(--olive);font:900 9px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#efeee5;color:var(--muted);font:800 8px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}
+.paper-card h2,.phase-card h2{margin:0;font-size:clamp(24px,4vw,34px);font-weight:900;letter-spacing:-.055em;line-height:1}
+.body-copy{margin:12px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+.how-list{display:grid;gap:13px;margin:22px 0 0;padding:0;list-style:none}.how-list li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start}
+.step-no{display:grid;place-items:center;width:30px;height:30px;border:1.5px solid var(--line);border-radius:10px;background:#efeee5;font:900 10px ui-monospace,monospace}
+.how-list strong{display:block;font-size:12px;font-weight:850}.how-list p{margin:3px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.setup-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.count-control{display:flex;align-items:center;gap:9px;padding:4px;border:1.5px solid var(--line);border-radius:13px;background:#f0eee5}
+.count-control button{width:34px;height:34px;border:1px solid transparent;border-radius:9px;background:var(--surface);font:900 19px/1 ui-monospace,monospace}.count-control button:disabled{opacity:.35;cursor:not-allowed}.count-control output{min-width:19px;text-align:center;font:900 16px ui-monospace,monospace}
+.roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0 20px}.name-field{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 9px;border:1.5px solid var(--line);border-radius:12px;background:#fffdf8}
+.name-index{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border-radius:8px;background:var(--lav);font:900 9px ui-monospace,monospace}
+.name-field input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:12px;font-weight:750}
+.field-label{display:block;margin:0 0 7px;color:var(--muted);font:900 9px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}
+select,.text-input{width:100%;min-height:46px;padding:0 12px;border:1.5px solid var(--line);border-radius:12px;background:#fffdf8;color:var(--ink);font-size:13px;font-weight:750}
+.button-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+.primary,.secondary,.quiet-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 16px;border:1.5px solid var(--ink);border-radius:13px;font-weight:900;font-size:12px;transition:transform .12s,box-shadow .12s,background .12s}
+.primary{background:var(--ink);color:#fbf9f3;box-shadow:0 4px 0 rgba(40,45,38,.13)}.primary:hover{background:#3b4538}
+.secondary{border-color:var(--line);background:#efeee5;color:var(--ink);box-shadow:0 3px 0 rgba(40,45,38,.055)}
+.quiet-button{min-height:40px;border-color:transparent;background:transparent;color:var(--muted);padding:0 10px}
+.primary:active,.secondary:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(40,45,38,.10)}.primary:disabled,.secondary:disabled{opacity:.45;cursor:not-allowed}.primary.full{width:100%;margin-top:16px}
+.phase-wrap{width:min(720px,100%);margin:0 auto}.phase-card{padding:clamp(22px,5vw,42px);border:1.5px solid var(--line);border-radius:24px;background:rgba(251,249,243,.95);box-shadow:0 6px 0 rgba(40,45,38,.065),0 22px 55px rgba(40,45,38,.055)}
+.phase-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.progress{height:5px;margin:0 0 24px;border-radius:99px;background:#e5e2d8;overflow:hidden}.progress i{display:block;height:100%;border-radius:inherit;background:var(--olive);transition:width .2s}
+.phase-card h2{font-size:clamp(27px,5vw,42px)}.center{text-align:center}.center .body-copy{max-width:460px;margin-left:auto;margin-right:auto}
+.handoff{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:185px;margin:10px 0 18px;padding:24px;border:1.5px dashed rgba(40,45,38,.24);border-radius:18px;background:linear-gradient(135deg,#efeee5,#f8f4e9);text-align:center}
+.handoff-label{color:var(--muted);font:900 9px ui-monospace,monospace;letter-spacing:.16em}.handoff-name{margin:10px 0 0;font-size:clamp(27px,6vw,43px);line-height:1;letter-spacing:-.065em;font-weight:950}
+.role-card{width:100%;max-width:420px;margin:0 auto 18px;padding:24px 18px;border:2px solid var(--ink);border-radius:19px;background:#dfe9d6;text-align:center}.role-card.imposter{background:#f4ded5}
+.role-mark{display:inline-grid;place-items:center;width:42px;height:42px;border:1.5px solid currentColor;border-radius:14px;font-size:20px}
+.role-title{margin:12px 0 0;font-size:clamp(25px,6vw,38px);font-weight:950;letter-spacing:-.06em;line-height:1}.role-tag{margin:9px 0 0;color:var(--muted);font:900 9px ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase}
+.secret-word{margin:15px 0 0;font-size:clamp(25px,6vw,40px);font-weight:950;letter-spacing:-.045em;text-transform:capitalize}.secret-hint{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.role-note{margin:0 auto;color:var(--muted);font-size:11px;line-height:1.55}
+.clue-list{display:grid;gap:8px;margin:18px 0 0;padding:0;list-style:none}.clue-item{display:flex;align-items:center;gap:11px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fffdf8}
+.clue-avatar{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#efeee5;font:900 9px ui-monospace,monospace}.clue-copy{min-width:0;flex:1}.clue-copy strong{display:block;font-size:11px;font-weight:850}.clue-copy span{display:block;margin-top:2px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.empty-clues{padding:18px 12px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;text-align:center}
+.vote-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:20px}.vote-choice{display:flex;align-items:center;gap:10px;min-width:0;min-height:56px;padding:10px;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;text-align:left;font-weight:850}.vote-choice:hover{background:#efeee5}.vote-choice .name-index{flex:0 0 32px;width:32px;height:32px}
+.score-list{display:grid;gap:8px;margin:20px 0}.score-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fffdf8}.score-rank{color:var(--muted);font:900 10px ui-monospace,monospace}.score-name{font-size:12px;font-weight:850;min-width:0;overflow-wrap:anywhere}.score-detail{display:block;color:var(--muted);font-size:9px;margin-top:3px;font-weight:650}.score-points{font:900 16px ui-monospace,monospace}
+.vote-bars{display:grid;gap:8px;margin-top:14px}.vote-bar-row{display:grid;grid-template-columns:minmax(74px,1fr) minmax(40px,2fr) 24px;align-items:center;gap:8px;font-size:10px;font-weight:800}.vote-bar{height:9px;background:#e7e3d8;border-radius:99px;overflow:hidden}.vote-bar i{display:block;height:100%;background:var(--brick);border-radius:inherit}
+.site-foot{display:flex;justify-content:space-between;gap:12px;margin:22px 2px 0;color:var(--muted);font:800 8px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:760px){.shell{padding:70px 14px 72px}.lobby-grid{grid-template-columns:1fr;gap:12px}.how-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.how-list li{grid-template-columns:1fr;gap:7px}.how-list p{font-size:10px}.how-card{order:2}.setup-card{order:1}.paper-card{border-radius:19px}.hero{margin-bottom:18px}.hero-copy{font-size:12px}.phase-card{border-radius:20px}.site-foot{font-size:7px}}
+@media(max-width:460px){.hero h1{font-size:54px}.hero-copy{max-width:260px}.round-chip{min-width:65px;padding:10px}.round-chip b{font-size:22px}.roster{grid-template-columns:1fr 1fr;gap:6px}.name-field{padding:6px}.name-index{width:23px;height:23px;flex-basis:23px}.name-field input{font-size:11px}.how-list{grid-template-columns:1fr;gap:12px}.how-list li{grid-template-columns:30px minmax(0,1fr);gap:9px}.vote-grid{grid-template-columns:1fr}.phase-card{padding:20px 16px}.button-row>*{flex:1}.site-foot{flex-direction:column}}
+@media(max-height:560px) and (orientation:landscape){.shell{padding-top:60px;padding-bottom:54px}.hero{align-items:center;margin-bottom:12px}.hero h1{font-size:46px}.hero-copy{margin-top:7px}.lobby-grid{grid-template-columns:.8fr 1.2fr;gap:10px}.paper-card{padding:15px;border-radius:16px}.how-list{gap:7px;margin-top:13px}.how-list li{grid-template-columns:26px minmax(0,1fr)}.step-no{width:25px;height:25px}.phase-card{padding:18px;border-radius:17px}.phase-top{margin-bottom:12px}.progress{margin-bottom:12px}.handoff{min-height:95px;padding:12px;margin:6px 0 10px}.role-card{padding:12px;margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="dg-retro-skin">
+<main class="shell">
+<header class="hero"><div><p class="kicker">D'Games · Party Protocol</p><h1>IMPOSTER<span>.</span></h1><p class="hero-copy">One secret word. One player in the dark. Keep your clues sharp, read the room, and catch the imposter before they blend in.</p></div><div class="round-chip"><span>ROUND</span><b id="round-number">01</b></div></header>
+<div id="app" aria-live="polite"></div>
+<footer class="site-foot"><span>3–8 players · One phone · Pass &amp; play</span><span>No downloads. No extra devices.</span></footer>
+</main>
+<script src="/assets/dgames-ui.js"></script>
+<script>
+(() => {
+"use strict";
+const $=(selector,root=document)=>root.querySelector(selector),app=$("#app");
+const WORDS={
+Food:["pizza","pancake","sushi","popcorn","burger","mango","cupcake","noodles","sandwich","chocolate","taco","lemonade","dumpling","waffle"],
+Animals:["penguin","dolphin","giraffe","octopus","hamster","flamingo","crocodile","butterfly","owl","turtle","fox","kangaroo","meerkat","peacock"],
+Places:["airport","museum","beach","library","hospital","campsite","stadium","bakery","lighthouse","aquarium","subway","rooftop","observatory","waterpark"],
+Objects:["umbrella","compass","backpack","mirror","flashlight","suitcase","headphones","telescope","toothbrush","snowglobe","keychain","camera","skateboard","hourglass"],
+Activities:["camping","skating","karaoke","gardening","bowling","surfing","painting","dancing","fishing","hiking","baking","juggling","snorkelling","photography"],
+Nature:["thunder","glacier","volcano","waterfall","desert","rainforest","eclipse","coral reef","mountain","tornado","aurora","canyon","moonlight","wildfire"]
+};
+const THEMES=["Mix it up",...Object.keys(WORDS)];
+function loadPlayers(){try{const saved=JSON.parse(localStorage.getItem("dg-imposter-lineup-v1")||"null");if(Array.isArray(saved)&&saved.length>=3)return saved.slice(0,8).map((p,i)=>({name:String(p?.name||("Player "+(i+1))).slice(0,18),score:Math.max(0,Number(p?.score)||0)}))}catch{}return ["Player 1","Player 2","Player 3","Player 4"].map(name=>({name,score:0}))}
+let players=loadPlayers(),playerCount=Math.max(3,Math.min(8,players.length)),draftNames=Array.from({length:playerCount},(_,i)=>players[i]?.name||("Player "+(i+1)));
+let theme="Mix it up",roundNo=1,phase="lobby",imposterIndex=-1,secretWord="",secretCategory="",revealIndex=0,roleVisible=false,clueIndex=0,voteIndex=0;
+let clues=[],votes=[],voteCounts=[],resultKind="",resultText="";
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const titleCase=v=>String(v).replace(/\b[a-z]/g,c=>c.toUpperCase());
+const initial=v=>(String(v).trim().charAt(0)||"?").toUpperCase();
+const persist=()=>{try{localStorage.setItem("dg-imposter-lineup-v1",JSON.stringify(players))}catch{}};
+const randomInt=max=>Math.floor(Math.random()*max);
+const getClues=()=>clues.map((c,i)=>'<li class="clue-item"><span class="clue-avatar" aria-hidden="true">'+String(i+1).padStart(2,"0")+'</span><span class="clue-copy"><strong>'+esc(c.name)+'</strong><span>'+esc(c.text)+'</span></span></li>').join("");
+const progress=(n,total)=>'<div class="progress" aria-hidden="true"><i style="width:'+Math.round(n/Math.max(1,total)*100)+'%"></i></div>';
+function renderLobby(){
+const scoreExists=players.some(p=>p.score>0);
+app.innerHTML='<section class="lobby-grid"><article class="paper-card how-card"><p class="card-kicker">THE BRIEF <span class="pill">2–5 MIN</span></p><h2>Spot the missing piece.</h2><p class="body-copy">Everyone gets the same secret word — except one player. The imposter knows only the category. Can your clues expose them?</p><ol class="how-list"><li><span class="step-no">01</span><div><strong>Pass &amp; peek</strong><p>Players secretly reveal their role one at a time.</p></div></li><li><span class="step-no">02</span><div><strong>Drop a clue</strong><p>Give one clever hint without saying the word.</p></div></li><li><span class="step-no">03</span><div><strong>Vote &amp; reveal</strong><p>Find the imposter — or let them steal the win.</p></div></li></ol>'+(scoreExists?'<p class="body-copy"><strong>Series in progress.</strong> Scores are saved on this device.</p>':'')+'</article><article class="paper-card setup-card"><div class="setup-head"><div><p class="card-kicker">01 / PLAYERS</p><h2>Set the table.</h2></div><div class="count-control"><button type="button" data-act="count-down" aria-label="Remove a player" '+(playerCount<=3?'disabled':'')+'>−</button><output aria-label="Player count">'+playerCount+'</output><button type="button" data-act="count-up" aria-label="Add a player" '+(playerCount>=8?'disabled':'')+'>+</button></div></div><div class="roster">'+Array.from({length:playerCount},(_,i)=>'<label class="name-field"><span class="name-index">'+String(i+1).padStart(2,"0")+'</span><input data-name="'+i+'" aria-label="Player '+(i+1)+' name" maxlength="18" autocomplete="off" value="'+esc(draftNames[i]||("Player "+(i+1)))+'" placeholder="Player '+(i+1)+'"></label>').join("")+'</div><label class="field-label" for="theme">02 / SECRET WORD PACK</label><select id="theme" name="theme">'+THEMES.map(t=>'<option value="'+esc(t)+'" '+(t===theme?'selected':'')+'>'+esc(t)+'</option>').join("")+'</select><button type="button" class="primary full" data-act="start">Deal secret roles <span aria-hidden="true">↗</span></button>'+(scoreExists?'<button type="button" class="quiet-button" data-act="reset-scores">Reset series scores</button>':'')+'<p class="body-copy">Use one phone and pass it around. Make sure the next player cannot see the previous role.</p></article></section>';
+}
+function renderReveal(){
+const player=players[revealIndex],isImposter=revealIndex===imposterIndex;
+app.innerHTML='<section class="phase-wrap"><article class="phase-card center"><div class="phase-top"><span class="pill">ROLE CHECK</span><span class="pill">'+String(revealIndex+1).padStart(2,"0")+' / '+players.length+'</span></div>'+progress(revealIndex+1,players.length)+(!roleVisible?'<p class="card-kicker" style="justify-content:center">PHONE HANDOFF</p><h2>Pass to '+esc(player.name)+'.</h2><div class="handoff"><span class="handoff-label">ONLY THIS PLAYER SHOULD LOOK</span><strong class="handoff-name">'+esc(player.name)+'</strong><p class="body-copy">When everyone else looks away, reveal your secret role.</p></div><button type="button" class="primary" data-act="reveal">I am '+esc(player.name)+' — reveal role</button>':'<p class="card-kicker" style="justify-content:center">YOUR SECRET ROLE</p><h2>'+(isImposter?'Blend in.':'Keep a straight face.')+'</h2><div class="role-card '+(isImposter?'imposter':'crew')+'"><span class="role-mark" aria-hidden="true">'+(isImposter?'◉':'✳')+'</span><div class="role-title">'+(isImposter?'YOU ARE THE IMPOSTER':'YOU ARE CREW')+'</div><p class="role-tag">'+esc(secretCategory)+' PACK</p>'+(isImposter?'<div class="secret-word">No word for you.</div><p class="secret-hint">Listen closely. Match the group’s energy and avoid getting caught.</p>':'<div class="secret-word">'+esc(titleCase(secretWord))+'</div><p class="secret-hint">Give a clue that fits this word, but do not say the word itself.</p>')+'</div><p class="role-note">Memorise your role, then hide this screen before passing the phone.</p><button type="button" class="primary" data-act="hide-role">'+(revealIndex===players.length-1?'Everyone knows their role — start clues':'Hide role &amp; pass the phone')+' <span aria-hidden="true">→</span></button>')+'</article></section>';
+}
+function renderClues(){
+const player=players[clueIndex];
+app.innerHTML='<section class="phase-wrap"><article class="phase-card"><div class="phase-top"><span class="pill">CLUE ROUND</span><span class="pill">'+String(clueIndex+1).padStart(2,"0")+' / '+players.length+'</span></div>'+progress(clueIndex+1,players.length)+'<p class="card-kicker">YOUR TURN, '+esc(player.name.toUpperCase())+'</p><h2>Say just enough.</h2><p class="body-copy">Enter one short clue for the group. Avoid saying the secret word — and don’t make it so vague that everyone suspects you.</p>'+(clues.length?'<ul class="clue-list">'+getClues()+'</ul>':'<div class="empty-clues" style="margin-top:18px">No clues yet. Be the first to set the tone.</div>')+'<form id="clue-form"><label class="field-label" for="clue-input" style="margin-top:18px">Your clue</label><input id="clue-input" class="text-input" maxlength="32" autocomplete="off" placeholder="One clever hint…" required><div class="button-row"><button type="submit" class="primary">'+(clueIndex===players.length-1?'Lock clue &amp; discuss':'Lock clue &amp; pass')+' <span aria-hidden="true">→</span></button></div></form></article></section>';
+}
+function renderDiscussion(){
+app.innerHTML='<section class="phase-wrap"><article class="phase-card"><div class="phase-top"><span class="pill">OPEN DISCUSSION</span><span class="pill">'+players.length+' CLUES LOCKED</span></div><p class="card-kicker">READ BETWEEN THE LINES</p><h2>Who doesn’t fit?</h2><p class="body-copy">Discuss the clues out loud. Look for someone who was too vague, too specific, or seems to be guessing the category.</p><ul class="clue-list">'+getClues()+'</ul><div class="button-row"><button type="button" class="primary" data-act="begin-vote">Lock discussion &amp; vote <span aria-hidden="true">→</span></button><button type="button" class="secondary" data-act="edit-players">End round</button></div></article></section>';
+}
+function renderVote(){
+const voter=players[voteIndex];
+app.innerHTML='<section class="phase-wrap"><article class="phase-card"><div class="phase-top"><span class="pill">SECRET BALLOT</span><span class="pill">'+String(voteIndex+1).padStart(2,"0")+' / '+players.length+'</span></div>'+progress(voteIndex+1,players.length)+'<p class="card-kicker">PASS TO '+esc(voter.name.toUpperCase())+'</p><h2>Who is the imposter?</h2><p class="body-copy">Only '+esc(voter.name)+' should choose. Votes stay hidden until everyone has cast one.</p><div class="vote-grid">'+players.map((p,i)=>i===voteIndex?'':'<button type="button" class="vote-choice" data-act="vote" data-target="'+i+'"><span class="name-index">'+esc(initial(p.name))+'</span><span>'+esc(p.name)+'</span></button>').filter(Boolean).join("")+'</div><p class="body-copy">You cannot vote for yourself. No vote can be changed after it is locked.</p></article></section>';
+}
+function renderGuess(){
+app.innerHTML='<section class="phase-wrap"><article class="phase-card center"><div class="phase-top"><span class="pill">FINAL CHANCE</span><span class="pill">ONE GUESS</span></div><p class="card-kicker" style="justify-content:center">THE IMPOSTER WAS CAUGHT</p><h2>Steal it back.</h2><p class="body-copy">The group has picked <strong>'+esc(players[imposterIndex].name)+'</strong>. Before the word is revealed, the imposter gets one shot to guess it.</p><form id="guess-form" style="max-width:420px;margin:22px auto 0"><label class="field-label" for="guess-input">Imposter’s final guess</label><input id="guess-input" class="text-input" maxlength="40" autocomplete="off" placeholder="What’s the secret word?" required><div class="button-row"><button class="primary" type="submit">Lock final guess <span aria-hidden="true">→</span></button><button class="secondary" type="button" data-act="skip-guess">Give up</button></div></form><p class="body-copy">Everyone can watch this final moment — don’t reveal the answer early.</p></article></section>';
+}
+function renderResult(){
+const caught=resultKind!=="imposter-escaped",heading=resultKind==="crew-win"?"Crew wins!":resultKind==="imposter-guessed"?"Imposter stole the win!":"Imposter escaped!";
+const sorted=players.map((p,i)=>({...p,idx:i})).sort((a,b)=>b.score-a.score);
+app.innerHTML='<section class="phase-wrap"><article class="phase-card"><div class="phase-top"><span class="pill">ROUND '+String(roundNo).padStart(2,"0")+' · FINAL REVEAL</span><span class="pill">'+(caught?'IMPOSTER FOUND':'IMPOSTER SURVIVED')+'</span></div><p class="card-kicker">CASE CLOSED</p><h2>'+heading+'</h2><p class="body-copy">'+esc(resultText)+'</p><div class="role-card '+(caught?'crew':'imposter')+'" style="margin-top:20px"><p class="role-tag">THE SECRET WORD WAS</p><div class="secret-word">'+esc(titleCase(secretWord))+'</div><p class="secret-hint">Category: '+esc(secretCategory)+' · Imposter: <strong>'+esc(players[imposterIndex].name)+'</strong></p></div><div class="card-kicker" style="margin-top:22px">VOTE BREAKDOWN</div><div class="vote-bars">'+players.map((p,i)=>'<div class="vote-bar-row"><span>'+esc(p.name)+'</span><div class="vote-bar"><i style="width:'+(Math.max(0,voteCounts[i]||0)/Math.max(1,players.length-1)*100)+'%"></i></div><span>'+Math.max(0,voteCounts[i]||0)+'</span></div>').join("")+'</div><div class="card-kicker" style="margin-top:24px">SERIES SCORE</div><div class="score-list">'+sorted.map((p,i)=>'<div class="score-row"><span class="score-rank">#'+(i+1)+'</span><span class="score-name">'+esc(p.name)+'<small class="score-detail">'+(p.idx===imposterIndex?'IMPOSTER':'CREW')+'</small></span><strong class="score-points">'+p.score+' <small>PTS</small></strong></div>').join("")+'</div><div class="button-row"><button type="button" class="primary" data-act="next-round">Deal next round ↗</button><button type="button" class="secondary" data-act="edit-players">Change players</button></div></article></section>';
+}
+function render(){
+$("#round-number").textContent=String(roundNo).padStart(2,"0");
+if(phase==="lobby")renderLobby();else if(phase==="reveal")renderReveal();else if(phase==="clues")renderClues();else if(phase==="discussion")renderDiscussion();else if(phase==="vote")renderVote();else if(phase==="guess")renderGuess();else renderResult();
+}
+function beginRound(){
+const oldScores=new Map(players.map(p=>[p.name.toLowerCase(),p.score])),taken=new Set();
+const names=Array.from({length:playerCount},(_,i)=>{let value=String(draftNames[i]||"").trim().slice(0,18)||("Player "+(i+1)),base=value,suffix=2;while(taken.has(value.toLowerCase())){value=(base.slice(0,Math.max(1,15-String(suffix).length))+" "+suffix).slice(0,18);suffix++}taken.add(value.toLowerCase());return value});
+players=names.map(name=>({name,score:oldScores.get(name.toLowerCase())||0}));
+const categories=Object.keys(WORDS),chosen=theme==="Mix it up"?categories[randomInt(categories.length)]:theme;
+secretCategory=chosen;const bank=WORDS[chosen];secretWord=bank[randomInt(bank.length)];imposterIndex=randomInt(players.length);
+revealIndex=0;roleVisible=false;clueIndex=0;voteIndex=0;clues=[];votes=[];voteCounts=[];phase="reveal";persist();render();
+}
+function finishRound(kind,text){
+resultKind=kind;resultText=text;
+if(kind==="crew-win")players.forEach((p,i)=>{if(i!==imposterIndex)p.score+=2});
+else if(kind==="imposter-guessed")players[imposterIndex].score+=4;
+else players[imposterIndex].score+=3;
+persist();phase="result";render();
+}
+function resolveVotes(){
+voteCounts=players.map((_,i)=>votes.filter(v=>v.target===i).length);
+const high=Math.max(...voteCounts),leaders=voteCounts.map((n,i)=>n===high?i:-1).filter(i=>i>=0);
+if(high>0&&leaders.length===1&&leaders[0]===imposterIndex){phase="guess";render()}
+else if(high>0&&leaders.length===1)finishRound("imposter-escaped",players[imposterIndex].name+" avoided the vote. The group picked "+players[leaders[0]].name+" instead, so the imposter survives.");
+else finishRound("imposter-escaped","The vote ended in a tie. No one was exposed, so the imposter survives.");
+}
+function castVote(target){
+if(phase!=="vote"||!Number.isInteger(target)||target<0||target>=players.length||target===voteIndex)return;
+votes.push({voter:voteIndex,target});voteIndex++;
+if(voteIndex>=players.length)resolveVotes();else render();
+}
+function guessWord(value){
+const guess=String(value||"").trim().toLocaleLowerCase().replace(/[^a-z0-9]+/g,""),answer=secretWord.toLocaleLowerCase().replace(/[^a-z0-9]+/g,"");
+if(!guess){$("#guess-input")?.focus();return}
+if(guess===answer)finishRound("imposter-guessed","The imposter guessed correctly and stole the round, even after being caught.");
+else finishRound("crew-win","The imposter’s guess was wrong. Every crew member earns 2 points.");
+}
+function nextRound(){roundNo++;beginRound()}
+function toLobby(){phase="lobby";draftNames=players.map(p=>p.name);playerCount=players.length;render()}
+function resetScores(){if(!confirm("Reset all series points on this device?"))return;players=players.map(p=>({...p,score:0}));persist();draftNames=players.map(p=>p.name);render()}
+app.addEventListener("input",e=>{if(e.target.matches("[data-name]"))draftNames[Number(e.target.dataset.name)]=e.target.value;if(e.target.id==="theme")theme=e.target.value});
+app.addEventListener("change",e=>{if(e.target.id==="theme")theme=e.target.value});
+app.addEventListener("submit",e=>{
+if(e.target.id==="clue-form"){e.preventDefault();const field=$("#clue-input"),text=String(field?.value||"").trim();if(!text){field?.focus();return}clues.push({name:players[clueIndex].name,text:text.slice(0,32)});clueIndex++;if(clueIndex>=players.length)phase="discussion";render()}
+if(e.target.id==="guess-form"){e.preventDefault();guessWord($("#guess-input")?.value||"")}
+});
+app.addEventListener("click",e=>{
+const button=e.target.closest("[data-act]");if(!button)return;const action=button.dataset.act;
+if(action==="count-down"&&playerCount>3){playerCount--;draftNames=draftNames.slice(0,playerCount);render()}
+else if(action==="count-up"&&playerCount<8){draftNames.push("Player "+(playerCount+1));playerCount++;render()}
+else if(action==="start")beginRound()
+else if(action==="reveal"){roleVisible=true;render()}
+else if(action==="hide-role"){roleVisible=false;revealIndex++;if(revealIndex>=players.length){phase="clues";clueIndex=0}else phase="reveal";render()}
+else if(action==="begin-vote"){votes=[];voteIndex=0;phase="vote";render()}
+else if(action==="vote")castVote(Number(button.dataset.target))
+else if(action==="skip-guess")finishRound("crew-win","The imposter gave up. Every crew member earns 2 points.")
+else if(action==="next-round")nextRound()
+else if(action==="edit-players")toLobby()
+else if(action==="reset-scores")resetScores();
+});
+render();
+})();
+</script>
+<script src="/haptics.js" defer></script>
+</body>
+</html>
