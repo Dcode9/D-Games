@@ -1,80 +1,256 @@
-
-/* D'Games retro field-console skin */
-body.dg-retro-skin{
-  --dg-paper:#ece6d7;
-  --dg-paper2:#f6f1e6;
-  --dg-ink:#202729;
-  --dg-muted:#737a76;
-  --dg-line:rgba(32,39,41,.22);
-  background:#071016!important;
+/* D'Games unified paper-console game skin.
+   Loaded by dgames-ui.js so every game inherits the same design language. */
+:root {
+  --dg-skin-ink: #282d26;
+  --dg-skin-muted: #74776b;
+  --dg-skin-paper: #f6f3ec;
+  --dg-skin-surface: rgba(255, 253, 248, .97);
+  --dg-skin-line: rgba(40, 45, 38, .19);
+  --dg-skin-accent: #c1ee81;
+  --dg-skin-olive: #718466;
+  --dg-skin-brick: #a45946;
 }
-body.dg-retro-skin .glass-panel{
-  background:rgba(238,232,217,.92)!important;
-  border:1px solid var(--dg-line)!important;
-  color:var(--dg-ink)!important;
-  box-shadow:0 6px 0 rgba(32,39,41,.08),0 18px 35px rgba(0,0,0,.18)!important;
-  backdrop-filter:blur(14px);
+html, body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+body.dg-retro-skin {
+  color: var(--dg-skin-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Soft, legible start / pause / game-over cards. */
+body.dg-retro-skin .overlay {
+  background: rgba(30, 35, 31, .48) !important;
+  backdrop-filter: blur(8px) saturate(.82) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(.82);
+  padding: max(14px, env(safe-area-inset-left)) !important;
+}
+body.dg-retro-skin .panel {
+  width: min(440px, 100%) !important;
+  max-height: min(86dvh, 760px) !important;
+  overflow: auto !important;
+  overscroll-behavior: contain;
+  padding: clamp(20px, 5vw, 30px) !important;
+  border: 1.5px solid var(--dg-skin-line) !important;
+  border-radius: 22px !important;
+  background: var(--dg-skin-surface) !important;
+  box-shadow: 0 7px 0 rgba(40, 45, 38, .08), 0 24px 60px rgba(0, 0, 0, .22) !important;
+  color: var(--dg-skin-ink) !important;
+  backdrop-filter: blur(16px) saturate(1.06);
+  -webkit-backdrop-filter: blur(16px) saturate(1.06);
+}
+body.dg-retro-skin .panel h1 {
+  color: var(--dg-skin-ink) !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: clamp(34px, 9vw, 52px) !important;
+  font-weight: 900 !important;
+  line-height: .94 !important;
+  letter-spacing: -.06em !important;
+}
+body.dg-retro-skin .panel p,
+body.dg-retro-skin .panel #intro,
+body.dg-retro-skin .panel #message {
+  color: var(--dg-skin-muted) !important;
+  font-size: clamp(12px, 2.8vw, 14px) !important;
+  line-height: 1.6 !important;
+}
+body.dg-retro-skin .eyebrow,
+body.dg-retro-skin .panel .eyebrow {
+  color: var(--dg-skin-olive) !important;
+}
+body.dg-retro-skin .panel .big,
+body.dg-retro-skin .panel #start {
+  min-height: 48px !important;
+  border: 2px solid var(--dg-skin-ink) !important;
+  border-radius: 13px !important;
+  background: var(--dg-skin-ink) !important;
+  color: var(--dg-skin-paper) !important;
+  box-shadow: 0 4px 0 rgba(40, 45, 38, .12) !important;
+  font-weight: 900 !important;
+  letter-spacing: .01em;
+  touch-action: manipulation;
+}
+body.dg-retro-skin .panel .alt {
+  min-height: 44px !important;
+  border: 1.5px solid var(--dg-skin-line) !important;
+  border-radius: 13px !important;
+  background: #efeee5 !important;
+  color: var(--dg-skin-ink) !important;
+  box-shadow: 0 3px 0 rgba(40, 45, 38, .07) !important;
+  font-weight: 800 !important;
+  touch-action: manipulation;
+}
+body.dg-retro-skin .panel .big:active,
+body.dg-retro-skin .panel #start:active,
+body.dg-retro-skin .panel .alt:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(40, 45, 38, .12) !important;
+}
+
+/* One shared score-card treatment across all game layouts. */
+body.dg-retro-skin .top,
+body.dg-retro-skin .hud {
+  border: 1.5px solid var(--dg-skin-line) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 253, 248, .95) !important;
+  box-shadow: 0 5px 0 rgba(40, 45, 38, .08), 0 12px 24px rgba(40, 45, 38, .06) !important;
+  color: var(--dg-skin-ink) !important;
+  backdrop-filter: blur(12px) saturate(1.04);
+  -webkit-backdrop-filter: blur(12px) saturate(1.04);
+}
+body.dg-retro-skin .stat small {
+  color: var(--dg-skin-muted) !important;
+  font-size: 8px !important;
+  font-weight: 900 !important;
+  letter-spacing: .11em !important;
+}
+body.dg-retro-skin .stat b {
+  color: var(--dg-skin-ink);
+  font-variant-numeric: tabular-nums;
+}
+body.dg-retro-skin .hint,
+body.dg-retro-skin .legend,
+body.dg-retro-skin .energy,
+body.dg-retro-skin .help {
+  border: 1px solid var(--dg-skin-line) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 253, 248, .93) !important;
+  color: var(--dg-skin-muted) !important;
+  box-shadow: 0 3px 0 rgba(40, 45, 38, .045) !important;
+}
+body.dg-retro-skin .hint em,
+body.dg-retro-skin .help strong {
+  color: var(--dg-skin-brick) !important;
+}
+
+/* Shared tactile buttons. Colored puzzle tiles remain game-specific. */
+body.dg-retro-skin .mini,
+body.dg-retro-skin .control,
+body.dg-retro-skin .ctrl {
+  min-height: 42px !important;
+  border: 1.5px solid rgba(40, 45, 38, .26) !important;
+  border-radius: 12px !important;
+  background: var(--dg-skin-surface) !important;
+  color: var(--dg-skin-ink) !important;
+  box-shadow: 0 4px 0 rgba(40, 45, 38, .085) !important;
+  font-weight: 900 !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+body.dg-retro-skin .mini[aria-pressed="true"] {
+  background: var(--dg-skin-ink) !important;
+  border-color: var(--dg-skin-ink) !important;
+  color: var(--dg-skin-paper) !important;
+}
+body.dg-retro-skin .mini:active,
+body.dg-retro-skin .control:active,
+body.dg-retro-skin .ctrl:active,
+body.dg-retro-skin .control.is-held {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(40, 45, 38, .10) !important;
+}
+body.dg-retro-skin .mini:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+body.dg-retro-skin button:focus-visible,
+body.dg-retro-skin [role="button"]:focus-visible {
+  outline: 3px solid #7253b1 !important;
+  outline-offset: 3px !important;
+}
+body.dg-retro-skin .glass-panel {
+  background: var(--dg-skin-surface) !important;
+  border: 1px solid var(--dg-skin-line) !important;
+  border-radius: 20px !important;
+  color: var(--dg-skin-ink) !important;
+  box-shadow: 0 7px 0 rgba(40, 45, 38, .08), 0 18px 35px rgba(0, 0, 0, .16) !important;
+  backdrop-filter: blur(14px);
 }
 body.dg-retro-skin .glass-panel .text-white,
 body.dg-retro-skin .glass-panel .text-zinc-300,
 body.dg-retro-skin .glass-panel .text-zinc-400,
-body.dg-retro-skin .glass-panel .text-zinc-500{color:var(--dg-muted)!important}
+body.dg-retro-skin .glass-panel .text-zinc-500 {
+  color: var(--dg-skin-muted) !important;
+}
 body.dg-retro-skin .glass-panel h1,
 body.dg-retro-skin .glass-panel h2,
 body.dg-retro-skin .glass-panel h3,
-body.dg-retro-skin .glass-panel .font-display{color:var(--dg-ink)!important}
-body.dg-retro-skin .action-btn{
-  background:rgba(255,255,255,.35)!important;
-  border-color:rgba(32,39,41,.25)!important;
-  color:var(--dg-ink)!important;
+body.dg-retro-skin .glass-panel .font-display {
+  color: var(--dg-skin-ink) !important;
 }
-body.dg-retro-skin .action-btn:hover{background:rgba(255,255,255,.58)!important}
-body.dg-retro-skin header{border-color:rgba(32,39,41,.18)!important}
-body.dg-retro-skin kbd{background:rgba(32,39,41,.08)!important;color:var(--dg-ink)!important;border:1px solid rgba(32,39,41,.12)}
+body.dg-retro-skin .action-btn {
+  background: #efeee5 !important;
+  border-color: var(--dg-skin-line) !important;
+  color: var(--dg-skin-ink) !important;
+}
+body.dg-retro-skin .action-btn:hover { background: #e5e9da !important; }
+body.dg-retro-skin header { border-color: var(--dg-skin-line) !important; }
+body.dg-retro-skin kbd {
+  background: rgba(40, 45, 38, .07) !important;
+  color: var(--dg-skin-ink) !important;
+  border: 1px solid var(--dg-skin-line);
+}
 body.dg-retro-skin [id^="overlay-"] > div,
-body.dg-retro-skin #overlay > div{
-  background:rgba(246,241,230,.97)!important;
-  border:2px solid rgba(32,39,41,.26)!important;
-  color:var(--dg-ink)!important;
-  box-shadow:0 8px 0 rgba(32,39,41,.09),0 24px 55px rgba(0,0,0,.28)!important;
+body.dg-retro-skin #overlay > div {
+  background: var(--dg-skin-surface) !important;
+  border: 1.5px solid var(--dg-skin-line) !important;
+  border-radius: 22px !important;
+  color: var(--dg-skin-ink) !important;
+  box-shadow: 0 8px 0 rgba(40, 45, 38, .08), 0 24px 55px rgba(0, 0, 0, .20) !important;
 }
 body.dg-retro-skin [id^="overlay-"] p,
-body.dg-retro-skin #overlay p{color:var(--dg-muted)!important}
+body.dg-retro-skin #overlay p { color: var(--dg-skin-muted) !important; }
 body.dg-retro-skin [id^="overlay-"] button:not(.action-btn),
-body.dg-retro-skin #overlay button:not(.action-btn){
-  background:var(--dg-ink)!important;color:#f6f1e6!important;border:2px solid var(--dg-ink)!important;
+body.dg-retro-skin #overlay button:not(.action-btn) {
+  background: var(--dg-skin-ink) !important;
+  color: var(--dg-skin-paper) !important;
+  border: 2px solid var(--dg-skin-ink) !important;
+  border-radius: 13px !important;
+  min-height: 46px;
+  font-weight: 900;
 }
-body.dg-retro-skin .top{
-  background:rgba(246,241,230,.90)!important;
-  color:var(--dg-ink)!important;
-  border-color:rgba(32,39,41,.18)!important;
+
+/* Very short screens need their playfield back, not oversized chrome. */
+@media (max-height: 560px) and (orientation: landscape) {
+  body.dg-retro-skin .ui {
+    padding-top: 50px !important;
+    padding-bottom: 50px !important;
+  }
+  body.dg-retro-skin .ui .top { margin-top: 0 !important; }
+  body.dg-retro-skin .hud { top: 50px !important; }
+  body.dg-retro-skin .hud + .hint,
+  body.dg-retro-skin .hud + .legend { top: 105px !important; }
+  body.dg-retro-skin .panel {
+    max-height: calc(100dvh - 20px) !important;
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+  body.dg-retro-skin .panel h1 {
+    margin: 6px 0 !important;
+    font-size: clamp(26px, 6vw, 38px) !important;
+  }
+  body.dg-retro-skin .panel p { font-size: 11px !important; }
+  body.dg-retro-skin .controls .control { min-height: 40px !important; }
 }
-body.dg-retro-skin .title,
-body.dg-retro-skin .subtitle,
-body.dg-retro-skin .pill,
-body.dg-retro-skin .energy-label{color:var(--dg-ink)!important}
-body.dg-retro-skin .subtitle,
-body.dg-retro-skin .energy-label{opacity:.62}
-body.dg-retro-skin .pill{background:rgba(255,255,255,.32)!important}
-body.dg-retro-skin .help{
-  background:rgba(246,241,230,.90)!important;
-  color:var(--dg-muted)!important;
-  border-color:rgba(32,39,41,.18)!important;
-  box-shadow:0 5px 0 rgba(32,39,41,.07);
+@media (max-width: 650px) {
+  body.dg-retro-skin .panel {
+    width: min(440px, calc(100vw - 28px)) !important;
+    max-height: min(82dvh, 720px) !important;
+    border-radius: 19px !important;
+  }
+  body.dg-retro-skin .top,
+  body.dg-retro-skin .hud { max-width: calc(100vw - 18px); }
+  body.dg-retro-skin .mini { min-width: 38px; padding-left: 7px; padding-right: 7px; }
 }
-body.dg-retro-skin .help strong{color:var(--dg-ink)!important}
-body.dg-retro-skin .mobile button{
-  background:rgba(246,241,230,.90)!important;
-  border-color:rgba(32,39,41,.22)!important;
-  color:var(--dg-ink)!important;
-  box-shadow:0 5px 0 rgba(32,39,41,.08);
+@media (prefers-reduced-motion: reduce) {
+  body.dg-retro-skin *,
+  body.dg-retro-skin *::before,
+  body.dg-retro-skin *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
 }
-body.dg-retro-skin .panel{
-  background:rgba(246,241,230,.97)!important;
-  color:var(--dg-ink)!important;
-  border-color:rgba(32,39,41,.24)!important;
-}
-body.dg-retro-skin .panel p{color:var(--dg-muted)!important}
-body.dg-retro-skin .panel .code{color:#657657!important}
-body.dg-retro-skin .panel .stats div{border-color:rgba(32,39,41,.14)!important}
-@media(max-width:650px){body.dg-retro-skin .top{border-radius:0 0 14px 14px}}
