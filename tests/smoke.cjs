@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
     .getByRole("button", { name: "See all", exact: false })
     .first()
     .click();
-  assert.equal(await page.locator("#all-games-grid .dg-game-card").count(), 11);
+  assert.equal(await page.locator("#all-games-grid .dg-game-card").count(), 17);
   await page.screenshot({
     path: path.join(artifacts, "library.png"),
     fullPage: true,
@@ -53,11 +53,11 @@ const server = http.createServer((req, res) => {
   await page.reload();
   assert.equal(await page.locator("#saved-count").innerText(), "1");
   await page.locator(".dg-album").nth(1).click();
-  assert.equal(await page.locator("#all-games-grid .dg-game-card").count(), 3);
+  assert.equal(await page.locator("#all-games-grid .dg-game-card").count(), 4);
   await page.getByRole("searchbox").fill("");
   await page.locator('.dg-sidebar [data-category="all"]').click();
   let gameResults = [];
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i < 17; i++) {
     await page.locator("#all-games-grid .dg-game-launch").nth(i).click();
     await page.locator("#game-iframe").waitFor();
     let f;
@@ -79,7 +79,7 @@ const server = http.createServer((req, res) => {
       await start.first().click();
       await page.waitForTimeout(400);
     }
-    if (i === 10) {
+    if (i === 16) {
       assert.equal(await f.locator("#board button").count(), 25);
       await f.locator("#board button").first().click();
       assert.equal(await f.locator("#board button").first().innerText(), "△");
