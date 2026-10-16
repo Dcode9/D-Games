@@ -1,6 +1,84 @@
 (() => {
   const GAMES = [
     {
+      id: "tic-tac-toe",
+      title: "Tic Tac Toe",
+      category: "classic",
+      genre: "Strategy",
+      tag: "Mini",
+      desc: "Beat a computer that gets sharper every time you win.",
+      img: "/assets/covers/arcade-tic-tac-toe.svg",
+      url: "/arcade/?embed=1#tic-tac-toe",
+      time: "1-3 min",
+      players: "1",
+      mini: true,
+    },
+    {
+      id: "snakes",
+      title: "Snakes",
+      category: "arcade",
+      genre: "Classic",
+      tag: "Mini",
+      desc: "Swipe to steer, eat berries, outgrow your own tail. Speeds up as you go.",
+      img: "/assets/covers/arcade-snakes.svg",
+      url: "/arcade/?embed=1#snakes",
+      time: "2-5 min",
+      players: "1",
+      mini: true,
+    },
+    {
+      id: "memory",
+      title: "Memory",
+      category: "puzzle",
+      genre: "Memory",
+      tag: "Mini",
+      desc: "Flip cards and find the pairs. Every cleared board is bigger.",
+      img: "/assets/covers/arcade-memory.svg",
+      url: "/arcade/?embed=1#memory",
+      time: "2-5 min",
+      players: "1",
+      mini: true,
+    },
+    {
+      id: "whack",
+      title: "Whack-a-Mole",
+      category: "action",
+      genre: "Reflex",
+      tag: "Mini",
+      desc: "Tap the moles, skip the bombs. Faster every level.",
+      img: "/assets/covers/arcade-whack.svg",
+      url: "/arcade/?embed=1#whack",
+      time: "1-3 min",
+      players: "1",
+      mini: true,
+    },
+    {
+      id: "math",
+      title: "Math Quiz",
+      category: "puzzle",
+      genre: "Brain",
+      tag: "Mini",
+      desc: "Beat the timer bar. Sums get harder as you climb.",
+      img: "/assets/covers/arcade-math.svg",
+      url: "/arcade/?embed=1#math",
+      time: "2-4 min",
+      players: "1",
+      mini: true,
+    },
+    {
+      id: "dots-boxes",
+      title: "Dots and Boxes",
+      category: "puzzle",
+      genre: "Strategy",
+      tag: "Mini",
+      desc: "Close boxes against the computer on bigger and bigger boards.",
+      img: "/assets/covers/arcade-dots-boxes.svg",
+      url: "/arcade/?embed=1#dots-boxes",
+      time: "3-8 min",
+      players: "1",
+      mini: true,
+    },
+    {
       id: "imposter",
       title: "Imposter",
       category: "classic",
@@ -9,6 +87,7 @@
       desc: "Pass the phone, trade clues, and catch the one player who doesn't know the secret word.",
       img: "/assets/covers/imposter.svg",
       url: "/imposter/",
+      players: "party",
       time: "5–12 min",
     },
     {
@@ -185,6 +264,7 @@
       desc: "A three-player board duel built for quick rematches.",
       img: "/assets/covers/3xo.svg",
       url: "/3xo.html",
+      players: "3",
       time: "3–8 min",
     },
   ];
@@ -233,6 +313,25 @@
     }
   }
 
+  function readRecent() {
+    try {
+      const v = JSON.parse(localStorage.getItem("dgames-recent") || "[]");
+      return Array.isArray(v) ? v.filter((id) => GAMES.some((g) => g.id === id)).slice(0, 6) : [];
+    } catch {
+      return [];
+    }
+  }
+  const playersOf = (g) => g.players || "1";
+  const PLAYER_WORDS = (g) =>
+    playersOf(g) === "1" ? "1 player solo single" : "multiplayer party friends " + playersOf(g) + " players";
+  function levelOf(g) {
+    if (!g.mini) return 0;
+    try {
+      return Number(JSON.parse(localStorage.getItem("dg1p:" + g.id + ":max")) || JSON.parse(localStorage.getItem("dg1p:" + g.id + ":level")) || 0);
+    } catch {
+      return 0;
+    }
+  }
   const ICONS = {
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9L12 4Z"/></svg>',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m9 6 9 6-9 6z"/></svg>',
@@ -247,7 +346,10 @@
   const state = {
     view: "home",
     category: "all",
+    players: "all",
     search: "",
+    featuredIndex: 0,
+    recent: readRecent(),
     favorites: readFavorites(),
     modalGame: null,
     lastFocus: null,
@@ -293,15 +395,27 @@
     return GAMES.filter(
       (game) =>
         (state.category === "all" || game.category === state.category) &&
+        (state.players === "all" ||
+          (state.players === "1" ? playersOf(game) === "1" : playersOf(game) !== "1")) &&
         (!query ||
-          [game.title, game.genre, game.desc, game.tag].some((value) =>
-            value.toLowerCase().includes(query),
+          [game.title, game.genre, game.desc, game.tag, game.category, PLAYER_WORDS(game)].some(
+            (value) => value.toLowerCase().includes(query),
           )),
     );
   }
-  function createCard(game) {
+  const SECTIONS = [
+    ["Solo mini-games", "Quick one-player rounds that get harder as you climb.", (g) => playersOf(g) === "1" && g.mini],
+    ["Arcade & action", "Reflexes, rhythm and high scores.", (g) => playersOf(g) === "1" && !g.mini && ["arcade", "action"].includes(g.category)],
+    ["Puzzle & brain", "Slow down and think it through.", (g) => playersOf(g) === "1" && !g.mini && g.category === "puzzle"],
+    ["Classics", "Old favourites, freshly painted.", (g) => playersOf(g) === "1" && !g.mini && g.category === "classic"],
+    ["Multiplayer & party", "Pass the phone or gather the table.", (g) => playersOf(g) !== "1"],
+  ];
+  function createCard(game, i) {
+    const lv = levelOf(game);
     return (
-      '<article class="dg-game-card" data-game-id="' +
+      '<article class="dg-game-card" style="--i:' +
+      ((i || 0) % 12) +
+      '" data-game-id="' +
       esc(game.id) +
       '"><button class="dg-game-launch" type="button" aria-label="Play ' +
       esc(game.title) +
@@ -309,6 +423,10 @@
       '<div class="dg-game-art"><img src="' +
       esc(game.img) +
       '" alt="" width="640" height="420" loading="lazy" decoding="async">' +
+      (lv > 1 ? '<span class="dg-lv">Lv ' + lv + "</span>" : "") +
+      '<span class="dg-players">' +
+      (playersOf(game) === "1" ? "1P" : playersOf(game) === "party" ? "Party" : playersOf(game) + "P") +
+      "</span>" +
       '<div class="dg-game-hover" aria-hidden="true"><span>' +
       icon("play") +
       "</span></div></div>" +
@@ -357,18 +475,37 @@
   }
   function renderGames() {
     const list = filteredGames();
-    const limited = list.slice(0, 6);
-    $("#home-games-grid").innerHTML = limited.length
-      ? limited.map(createCard).join("")
-      : emptyState("No games found", "Try another search or genre.");
-    $("#all-games-grid").innerHTML = list.length
-      ? list.map(createCard).join("")
-      : emptyState("Nothing here yet", "Try another search or genre.", true);
-    wireCards($("#home-games-grid"));
-    wireCards($("#all-games-grid"));
-    $("#result-count").textContent =
-      list.length + " " + (list.length === 1 ? "game" : "games");
-    $("#plays-count").textContent = list.length;
+    const solo = GAMES.filter((g) => playersOf(g) === "1" && g.mini);
+    $("#home-solo-grid").innerHTML = solo.map(createCard).join("");
+    $("#home-games-grid").innerHTML = GAMES.filter((g) => !g.mini).slice(0, 6).map(createCard).join("");
+    const recent = state.recent.map(gameById).filter(Boolean);
+    $("#recent-section").hidden = !recent.length;
+    $("#home-recent-grid").innerHTML = recent.map(createCard).join("");
+    const filtered = state.category !== "all" || state.players !== "all" || state.search;
+    const sec = $("#all-games-sections"), flat = $("#all-games-grid");
+    if (!filtered) {
+      flat.hidden = true;
+      sec.hidden = false;
+      let n = 0;
+      sec.innerHTML = SECTIONS.map(([title, desc, test]) => {
+        const items = list.filter(test);
+        if (!items.length) return "";
+        return (
+          '<section class="dg-section dg-group"><div class="dg-section-header"><div><h2>' + esc(title) + '</h2><p class="dg-group-desc">' + esc(desc) + '</p></div><span class="dg-result-count">' + items.length + '</span></div><div class="dg-game-grid">' +
+          items.map((g) => createCard(g, n++)).join("") + "</div></section>"
+        );
+      }).join("");
+    } else {
+      sec.hidden = true;
+      sec.innerHTML = "";
+      flat.hidden = false;
+      flat.innerHTML = list.length
+        ? list.map(createCard).join("")
+        : emptyState("Nothing here yet", "Try another search, genre or player count.", true);
+    }
+    ["#home-recent-grid", "#home-solo-grid", "#home-games-grid", "#all-games-sections", "#all-games-grid"].forEach((q) => wireCards($(q)));
+    $("#result-count").textContent = list.length + " " + (list.length === 1 ? "game" : "games");
+    $("#plays-count").textContent = GAMES.length;
     $("#saved-count").textContent = state.favorites.length;
   }
   function renderFavorites() {
@@ -384,15 +521,44 @@
     wireCards($("#favorites-grid"));
   }
   function renderFeatured() {
-    const game = dailyGame();
-    $("#featured-image").src = game.img;
-    $("#featured-image").alt = game.title + " artwork";
-    $("#featured-title").textContent = game.title;
-    $("#featured-desc").textContent = game.desc;
-    $("#featured-genre").textContent = game.genre;
-    $("#featured-time").textContent = game.time;
-    $("#featured-tag").textContent = game.tag;
-    $("#featured-play").dataset.gameId = game.id;
+    const game = GAMES[state.featuredIndex % GAMES.length];
+    const art = $(".dg-featured-art"), copy = $(".dg-featured-copy");
+    const apply = () => {
+      $("#featured-image").src = game.img;
+      $("#featured-image").alt = game.title + " artwork";
+      $("#featured-title").textContent = game.title;
+      $("#featured-desc").textContent = game.desc;
+      $("#featured-genre").textContent = game.genre + " \u2022 " + (playersOf(game) === "1" ? "1 player" : "Multiplayer");
+      $("#featured-time").textContent = game.time;
+      $("#featured-tag").textContent = game.mini ? "Mini" : game.tag;
+      $("#featured-play").dataset.gameId = game.id;
+      art.classList.remove("is-swap");
+      copy.classList.remove("is-swap");
+    };
+    if (renderFeatured.started) {
+      art.classList.add("is-swap");
+      copy.classList.add("is-swap");
+      setTimeout(apply, 180);
+    } else apply();
+    renderFeatured.started = true;
+  }
+  function startRotation() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let paused = false;
+    const f = $(".dg-featured");
+    f.addEventListener("pointerenter", () => (paused = true));
+    f.addEventListener("pointerleave", () => (paused = false));
+    setInterval(() => {
+      if (paused || state.view !== "home" || state.modalGame || document.hidden) return;
+      state.featuredIndex = (state.featuredIndex + 1) % GAMES.length;
+      renderFeatured();
+    }, 6500);
+  }
+  function setPlayers(value) {
+    state.players = value;
+    $$("[data-players]").forEach((b) => b.classList.toggle("is-active", b.dataset.players === value));
+    renderGames();
+    if (state.view !== "plays") setView("plays");
   }
   function renderAlbums() {
     $("#albums-grid").innerHTML = ALBUMS.map(
@@ -486,6 +652,10 @@
   function openGame(id) {
     const game = gameById(id);
     if (!game) return;
+    state.recent = [id, ...state.recent.filter((v) => v !== id)].slice(0, 6);
+    try {
+      localStorage.setItem("dgames-recent", JSON.stringify(state.recent));
+    } catch {}
     state.modalGame = game;
     state.lastFocus = document.activeElement;
     $("#modal-title").textContent = game.title;
@@ -517,6 +687,7 @@
       state.lastFocus.focus({ preventScroll: true });
     state.lastFocus = null;
     state.modalGame = null;
+    renderGames();
   }
   function reloadGame() {
     const frame = $("#game-iframe"),
@@ -563,6 +734,15 @@
         setCategory(button.dataset.category),
       ),
     );
+    $$("[data-players]").forEach((b) => b.addEventListener("click", () => setPlayers(b.dataset.players)));
+    $$("[data-players-action]").forEach((b) => b.addEventListener("click", () => setPlayers(b.dataset.playersAction)));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && !/input|textarea/i.test(document.activeElement.tagName) && !state.modalGame) {
+        e.preventDefault();
+        $("#search-shell").classList.add("is-open");
+        $("#search-input").focus();
+      }
+    });
     $('[data-view-action="plays"]')?.addEventListener("click", () =>
       setView("plays"),
     );
@@ -585,6 +765,8 @@
       if (event.target.closest("[data-clear-filters]")) {
         state.search = "";
         state.category = "all";
+        state.players = "all";
+        $$("[data-players]").forEach((b) => b.classList.toggle("is-active", b.dataset.players === "all"));
         $("#search-input").value = "";
         $("#search-clear").hidden = true;
         $$("[data-category]").forEach((button) =>
@@ -656,4 +838,7 @@
   renderUpcoming();
   bindSearch();
   bindNavigation();
+  startRotation();
+  const section = new URLSearchParams(location.search).get("section");
+  if (section === "1p") setPlayers("1");
 })();

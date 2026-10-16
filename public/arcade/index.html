@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#f6f3ec">
+<title>1 Player Games · D'Games</title>
+<link rel="stylesheet" href="/arcade/arcade.css">
+</head>
+<body>
+<div id="app">
+  <section id="lobby" class="screen is-active" aria-label="1 Player Games">
+    <header class="bar">
+      <a class="btn-round" href="/" aria-label="Back to D'Games">‹</a>
+      <h1>1 Player Games</h1>
+    </header>
+    <div id="grid" class="grid"></div>
+  </section>
+  <section id="play" class="screen" aria-label="Game">
+    <header class="bar">
+      <button id="back" class="btn-round" type="button" aria-label="Back to games">‹</button>
+      <h2 id="g-title">Game</h2>
+      <div class="hud"><button id="g-level" class="pill pill-btn" type="button" aria-label="Change level or difficulty">Lv 1</button><span id="g-score" class="pill pill-lime">0</span></div>
+      <button id="g-help" class="btn-round" type="button" aria-label="How to play">?</button>
+      <button id="g-restart" class="btn-round" type="button" aria-label="Restart">↻</button>
+    </header>
+    <div id="loadbar" class="loadbar" hidden><i></i></div>
+    <div id="board" class="board"></div>
+    <footer id="dock" class="dock"></footer>
+  </section>
+  <div id="setup" class="intro" hidden></div>
+  <div id="intro" class="intro" hidden>
+    <div class="intro-card">
+      <div id="intro-art" class="intro-art"></div>
+      <h3 id="intro-title"></h3>
+      <ol id="intro-steps"></ol>
+      <button id="intro-go" class="btn" type="button">Got it, play</button>
+    </div>
+  </div>
+</div>
+<script src="/arcade/arcade.js"></script>
+<script src="/haptics.js" defer></script>
+</body>
+</html>

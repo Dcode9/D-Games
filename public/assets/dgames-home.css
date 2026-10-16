@@ -872,3 +872,21 @@ a {
     animation: none !important;
   }
 }
+
+/* catalog: sections, badges, motion */
+.dg-group{margin-bottom:34px}
+.dg-group .dg-section-header{align-items:flex-end}
+.dg-group-desc{margin:2px 0 0;color:var(--muted);font-size:14px}
+#all-games-sections[hidden],#all-games-grid[hidden],#recent-section[hidden]{display:none}
+.dg-player-chips{margin-top:-4px}
+.dg-lv,.dg-players{position:absolute;top:9px;padding:3px 9px;border-radius:10px;background:rgba(255,253,248,.94);font-size:12px;font-weight:800;letter-spacing:.02em;box-shadow:0 2px 0 rgba(40,45,38,.12)}
+.dg-players{left:9px}
+.dg-lv{right:9px;background:var(--accent)}
+.dg-game-card{animation:dg-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*35ms);transition:transform .16s}
+.dg-game-card:hover{transform:translateY(-4px) rotate(-.4deg)}
+.dg-game-card:active{transform:translateY(1px) scale(.985)}
+.dg-featured-art,.dg-featured-copy{transition:opacity .18s,transform .18s}
+.dg-featured-art.is-swap{opacity:0;transform:scale(.97)}
+.dg-featured-copy.is-swap{opacity:0;transform:translateX(8px)}
+@keyframes dg-rise{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.dg-game-card,.dg-featured-art,.dg-featured-copy{animation:none;transition:none}}

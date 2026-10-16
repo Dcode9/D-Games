@@ -34,6 +34,14 @@
         <button type="button" class="dg-filter" data-category="classic">Classic</button>
       </div>
     </div>
+    <div class="dg-filter-block">
+      <p class="dg-sidebar-label">Players</p>
+      <div class="dg-sidebar-filters">
+        <button type="button" class="dg-filter is-active" data-players="all">Any</button>
+        <button type="button" class="dg-filter" data-players="1">1 Player</button>
+        <button type="button" class="dg-filter" data-players="multi">Multiplayer &amp; party</button>
+      </div>
+    </div>
     <div class="dg-sidebar-spacer"></div>
     <a class="dg-verse-link" href="https://d-verse.in" target="_blank" rel="noopener noreferrer">D'Verse</a>
   </aside>
@@ -74,6 +82,16 @@
           </div>
         </article>
 
+        <section id="recent-section" class="dg-section" hidden>
+          <div class="dg-section-header"><h2>Jump back in</h2></div>
+          <div id="home-recent-grid" class="dg-game-grid"></div>
+        </section>
+
+        <section class="dg-section">
+          <div class="dg-section-header"><h2>1 Player games</h2><button type="button" class="dg-text-btn" data-players-action="1">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
+          <div id="home-solo-grid" class="dg-game-grid"></div>
+        </section>
+
         <section class="dg-section">
           <div class="dg-section-header"><h2>Pick up &amp; play</h2><button type="button" class="dg-text-btn" data-view-action="plays">See all <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span></button></div>
           <div id="home-games-grid" class="dg-game-grid"></div>
@@ -102,6 +120,12 @@
           <button type="button" class="dg-filter-chip" data-category="action">Action</button>
           <button type="button" class="dg-filter-chip" data-category="classic">Classic</button>
         </div>
+        <div class="dg-mobile-filters dg-player-chips" aria-label="Players">
+          <button type="button" class="dg-filter-chip is-active" data-players="all">Any players</button>
+          <button type="button" class="dg-filter-chip" data-players="1">1 Player</button>
+          <button type="button" class="dg-filter-chip" data-players="multi">Multiplayer &amp; party</button>
+        </div>
+        <div id="all-games-sections"></div>
         <div id="all-games-grid" class="dg-game-grid"></div>
       </section>
 
