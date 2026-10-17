@@ -388,7 +388,8 @@
     toast.timer = setTimeout(() => el.classList.remove("is-visible"), 1500);
   }
   function dailyGame() {
-    return GAMES[0];
+    const d = new Date();
+    return GAMES[Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000) % GAMES.length];
   }
   function filteredGames() {
     const query = state.search.toLowerCase();
