@@ -1,0 +1,1489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#d8f0c8">
+<title>Tag — D'Games</title>
+<link rel="stylesheet" href="/assets/dgames-ui.css">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --paper: #f4ecd2;
+    --ink: #1e293b;
+    --muted: #5b6573;
+    --accent: #e11d48;
+    --lime: #65a30d;
+  }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #182026;
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .hud {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    border-radius: 14px;
+    border: 2px solid rgba(30, 41, 59, 0.25);
+    background: rgba(248, 245, 234, 0.92);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+    pointer-events: auto;
+  }
+  .hud-timer {
+    min-width: 68px;
+    text-align: center;
+    font: 900 22px/1 ui-monospace, SFMono-Regular, monospace;
+    color: var(--ink);
+  }
+  .hud-timer.urgent {
+    color: var(--accent);
+    animation: pulse 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.12); }
+  }
+  .hud-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font: 800 11px/1 ui-monospace, monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(30, 41, 59, 0.08);
+    color: var(--ink);
+  }
+  .hud-btn {
+    border: 2px solid rgba(30, 41, 59, 0.22);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 9px;
+    padding: 5px 10px;
+    font: 800 11px/1 ui-monospace, monospace;
+    cursor: pointer;
+  }
+  .hud-btn:hover { background: #f1f5f9; }
+  .hud-btn:active { transform: translateY(1px); }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+  }
+  .overlay.hidden { display: none; }
+  .card {
+    width: min(520px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #f8f5ea;
+    border: 3px solid #1e293b;
+    border-radius: 20px;
+    padding: 22px 24px;
+    box-shadow: 0 12px 0 rgba(15, 23, 42, 0.28), 0 24px 60px rgba(0, 0, 0, 0.35);
+    text-align: center;
+  }
+  .eyebrow {
+    font: 900 10px/1 ui-monospace, monospace;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lime);
+  }
+  .card h1 {
+    margin: 8px 0 6px;
+    font: 900 clamp(34px, 7vw, 48px)/0.95 Inter, sans-serif;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .subtitle {
+    margin: 0 auto 16px;
+    max-width: 400px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+  .group-label {
+    text-align: left;
+    font: 800 10px/1 ui-monospace, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 12px 0 6px;
+  }
+  .seg-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    gap: 8px;
+  }
+  .seg-btn {
+    padding: 10px 8px;
+    border-radius: 11px;
+    border: 2px solid rgba(30, 41, 59, 0.25);
+    background: #fff;
+    color: var(--ink);
+    font: 800 12px/1.1 Inter, sans-serif;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.12s ease;
+  }
+  .seg-btn.active {
+    background: #1e293b;
+    color: #f8f5ea;
+    border-color: #1e293b;
+    box-shadow: 0 3px 0 rgba(30, 41, 59, 0.25);
+  }
+  .controls-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    text-align: left;
+  }
+  .ctrl-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 9px;
+    border-radius: 9px;
+    background: rgba(30, 41, 59, 0.06);
+    font: 700 11px/1.2 ui-monospace, monospace;
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 2px solid #1e293b;
+    flex-shrink: 0;
+  }
+  .primary-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 13px;
+    border: 2px solid #1e293b;
+    background: #e11d48;
+    color: #fff;
+    font: 900 14px/1 ui-monospace, monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 5px 0 #881337;
+    cursor: pointer;
+  }
+  .primary-btn:hover { background: #be123c; }
+  .primary-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #881337; }
+  .secondary-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 11px;
+    border-radius: 11px;
+    border: 2px solid #1e293b;
+    background: #fff;
+    color: var(--ink);
+    font: 800 12px/1 ui-monospace, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .touch-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 6;
+    display: none;
+    justify-content: space-between;
+    padding: 0 16px;
+    pointer-events: none;
+  }
+  .touch-bar.visible { display: flex; }
+  .touch-group {
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+  }
+  .t-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    border: 2px solid rgba(30, 41, 59, 0.55);
+    background: rgba(248, 245, 234, 0.85);
+    color: var(--ink);
+    font: 900 20px/1 Inter, sans-serif;
+    box-shadow: 0 5px 0 rgba(15, 23, 42, 0.25);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .t-btn.held {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(15, 23, 42, 0.25);
+    background: #fde047;
+  }
+  .result-list {
+    margin: 14px 0 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 11px;
+    background: #fff;
+    border: 2px solid rgba(30, 41, 59, 0.16);
+    font: 800 13px/1 Inter, sans-serif;
+  }
+  .result-row.winner {
+    border-color: #65a30d;
+    background: #ecfccb;
+  }
+  .result-row.loser {
+    border-color: #e11d48;
+    background: #ffe4e6;
+  }
+  @media (max-width: 560px) {
+    .hud { gap: 6px; padding: 6px 10px; }
+    .hud-timer { font-size: 18px; min-width: 54px; }
+    .controls-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-game="tag">
+<canvas id="stage"></canvas>
+
+<div class="hud" id="hud">
+  <span class="hud-pill" id="arenaBadge">Jungle Canopy</span>
+  <div class="hud-timer" id="timerDisplay">60.0</div>
+  <button class="hud-btn" id="soundBtn" type="button" aria-label="Toggle sound">SFX ON</button>
+  <button class="hud-btn" id="pauseBtn" type="button">PAUSE</button>
+</div>
+
+<div class="touch-bar" id="touchBar">
+  <div class="touch-group">
+    <button class="t-btn" data-t="left" type="button" aria-label="Move left">◀</button>
+    <button class="t-btn" data-t="right" type="button" aria-label="Move right">▶</button>
+  </div>
+  <div class="touch-group">
+    <button class="t-btn" data-t="down" type="button" aria-label="Drop through platform">▼</button>
+    <button class="t-btn" data-t="jump" type="button" aria-label="Jump">▲</button>
+  </div>
+</div>
+
+<!-- Start / Setup Overlay -->
+<div class="overlay" id="menuOverlay">
+  <div class="card">
+    <div class="eyebrow">D'Games Local Arcade</div>
+    <h1>TAG!</h1>
+    <p class="subtitle">Outrun the chaser across spring pads, wall-kicks, and warp portals. Don't be <b>IT</b> when the clock hits zero.</p>
+
+    <div class="group-label">Mode</div>
+    <div class="seg-row" id="modeRow">
+      <button class="seg-btn active" data-mode="bots" type="button">1P vs Bots</button>
+      <button class="seg-btn" data-mode="local" type="button">Local PvP</button>
+    </div>
+
+    <div class="group-label">Players</div>
+    <div class="seg-row" id="countRow">
+      <button class="seg-btn" data-count="2" type="button">2 Players</button>
+      <button class="seg-btn active" data-count="3" type="button">3 Players</button>
+      <button class="seg-btn" data-count="4" type="button">4 Players</button>
+    </div>
+
+    <div class="group-label">Arena</div>
+    <div class="seg-row" id="arenaRow">
+      <button class="seg-btn active" data-arena="0" type="button">Jungle Canopy</button>
+      <button class="seg-btn" data-arena="1" type="button">Desert Temple</button>
+    </div>
+
+    <div class="group-label">Round Timer</div>
+    <div class="seg-row" id="timeRow">
+      <button class="seg-btn" data-time="45" type="button">45s</button>
+      <button class="seg-btn active" data-time="60" type="button">60s</button>
+      <button class="seg-btn" data-time="90" type="button">90s</button>
+    </div>
+
+    <div class="controls-grid">
+      <div class="ctrl-chip"><span class="swatch" style="background:#ef4444"></span>P1: W A S D</div>
+      <div class="ctrl-chip"><span class="swatch" style="background:#2563eb"></span>P2: Arrows</div>
+      <div class="ctrl-chip"><span class="swatch" style="background:#eab308"></span>P3: I J K L</div>
+      <div class="ctrl-chip"><span class="swatch" style="background:#22c55e"></span>P4: T F G H</div>
+    </div>
+
+    <button class="primary-btn" id="startBtn" type="button">Start Round</button>
+  </div>
+</div>
+
+<!-- Pause Overlay -->
+<div class="overlay hidden" id="pauseOverlay">
+  <div class="card">
+    <div class="eyebrow">Game Paused</div>
+    <h1>PAUSED</h1>
+    <p class="subtitle">Take a breather. Resume whenever everyone is ready.</p>
+    <button class="primary-btn" id="resumeBtn" type="button">Resume</button>
+    <button class="secondary-btn" id="menuFromPauseBtn" type="button">Back to Setup</button>
+  </div>
+</div>
+
+<!-- End Round Overlay -->
+<div class="overlay hidden" id="endOverlay">
+  <div class="card">
+    <div class="eyebrow">Time's Up!</div>
+    <h1 id="endTitle">Runners Win!</h1>
+    <p class="subtitle" id="endSub">Red was left holding IT when the buzzer sounded.</p>
+    <div class="result-list" id="resultList"></div>
+    <button class="primary-btn" id="rematchBtn" type="button">Play Again</button>
+    <button class="secondary-btn" id="menuFromEndBtn" type="button">Change Arena / Players</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+
+  // Virtual deterministic arena dimensions
+  const VW = 1200;
+  const VH = 720;
+  const FIXED_DT = 1 / 60;
+
+  // Snappy platformer physics constants (tuned for Poki Tag feel)
+  const PHYS = {
+    gravity: 1980,
+    fallGravityMult: 1.28,
+    jumpCutMult: 0.46,
+    maxFall: 980,
+    wallSlideMax: 175,
+    maxSpeed: 375,
+    itSpeedMult: 1.07,
+    groundAccel: 3400,
+    groundFriction: 2800,
+    airAccel: 2300,
+    airFriction: 620,
+    jumpVel: -700,
+    wallJumpVx: 430,
+    wallJumpVy: -670,
+    springVel: -1040,
+    coyoteTime: 0.095,
+    jumpBuffer: 0.11,
+    tagCooldown: 0.92,
+    portalCooldown: 0.75,
+    dropDuration: 0.18,
+    hitStop: 0.045,
+  };
+
+  const PLAYER_PRESETS = [
+    { name: 'Red',    color: '#ef4444', dark: '#991b1b', keys: { left: 'a', right: 'd', jump: 'w', down: 's' } },
+    { name: 'Blue',   color: '#2563eb', dark: '#1e3a8a', keys: { left: 'arrowleft', right: 'arrowright', jump: 'arrowup', down: 'arrowdown' } },
+    { name: 'Gold',   color: '#eab308', dark: '#854d0e', keys: { left: 'j', right: 'l', jump: 'i', down: 'k' } },
+    { name: 'Lime',   color: '#22c55e', dark: '#14532d', keys: { left: 'f', right: 'h', jump: 't', down: 'g' } },
+  ];
+
+  // Hand-crafted arenas with solid walls, one-way platforms, spring jump pads, and paired teleporters
+  const ARENAS = [
+    {
+      name: 'Jungle Canopy',
+      skyTop: '#bae6fd',
+      skyBottom: '#f4ecd2',
+      bgHill1: '#9ad08a',
+      bgHill2: '#75b064',
+      solidFill: '#6b4f35',
+      solidTop: '#5ca342',
+      oneWayFill: '#8c6239',
+      oneWayTop: '#74c353',
+      // Solid blocks: x, y, w, h
+      solids: [
+        { x: 0, y: 668, w: 1200, h: 52 },    // Floor
+        { x: 0, y: 0, w: 28, h: 720 },       // Left wall
+        { x: 1172, y: 0, w: 28, h: 720 },    // Right wall
+        { x: 0, y: 0, w: 1200, h: 24 },      // Ceiling
+        // Central tree-trunk pillars for wall-kick agility
+        { x: 240, y: 470, w: 36, h: 198 },
+        { x: 924, y: 470, w: 36, h: 198 },
+        // Mid stone islands
+        { x: 470, y: 486, w: 260, h: 28 },
+      ],
+      // One-way pass-through platforms
+      oneWays: [
+        { x: 56,  y: 545, w: 155, h: 18 },
+        { x: 989, y: 545, w: 155, h: 18 },
+        { x: 110, y: 390, w: 230, h: 18 },
+        { x: 860, y: 390, w: 230, h: 18 },
+        { x: 430, y: 328, w: 340, h: 18 },
+        { x: 145, y: 215, w: 210, h: 18 },
+        { x: 845, y: 215, w: 210, h: 18 },
+        { x: 485, y: 155, w: 230, h: 18 },
+      ],
+      // Bouncy spring pads
+      springs: [
+        { x: 356, y: 652, w: 58, h: 16, power: -1050, comp: 0 },
+        { x: 786, y: 652, w: 58, h: 16, power: -1050, comp: 0 },
+        { x: 571, y: 470, w: 58, h: 16, power: -980,  comp: 0 },
+      ],
+      // Paired portals (id 0 <-> 1, 2 <-> 3)
+      portals: [
+        { id: 0, pair: 1, x: 64,   y: 616, r: 22, color: '#0284c7', glow: '#7dd3fc' },
+        { id: 1, pair: 0, x: 1126, y: 162, r: 22, color: '#0284c7', glow: '#7dd3fc' },
+        { id: 2, pair: 3, x: 1136, y: 616, r: 22, color: '#d97706', glow: '#fde047' },
+        { id: 3, pair: 2, x: 74,   y: 162, r: 22, color: '#d97706', glow: '#fde047' },
+      ],
+      spawns: [
+        { x: 160, y: 330 },
+        { x: 1000, y: 330 },
+        { x: 580, y: 260 },
+        { x: 580, y: 600 },
+      ],
+    },
+    {
+      name: 'Desert Temple',
+      skyTop: '#fed7aa',
+      skyBottom: '#fef3c7',
+      bgHill1: '#e6b87d',
+      bgHill2: '#d49a5a',
+      solidFill: '#a16207',
+      solidTop: '#eab308',
+      oneWayFill: '#b45309',
+      oneWayTop: '#f59e0b',
+      solids: [
+        { x: 0, y: 668, w: 1200, h: 52 },
+        { x: 0, y: 0, w: 28, h: 720 },
+        { x: 1172, y: 0, w: 28, h: 720 },
+        { x: 0, y: 0, w: 1200, h: 24 },
+        // Stepped central pyramid core
+        { x: 455, y: 556, w: 290, h: 112 },
+        { x: 520, y: 468, w: 160, h: 88 },
+        // Side sandstone columns for wall-jumps
+        { x: 180, y: 240, w: 34, h: 220 },
+        { x: 986, y: 240, w: 34, h: 220 },
+      ],
+      oneWays: [
+        { x: 56,  y: 540, w: 220, h: 18 },
+        { x: 924, y: 540, w: 220, h: 18 },
+        { x: 255, y: 392, w: 195, h: 18 },
+        { x: 750, y: 392, w: 195, h: 18 },
+        { x: 465, y: 296, w: 270, h: 18 },
+        { x: 60,  y: 230, w: 115, h: 18 },
+        { x: 1025,y: 230, w: 115, h: 18 },
+        { x: 295, y: 175, w: 180, h: 18 },
+        { x: 725, y: 175, w: 180, h: 18 },
+      ],
+      springs: [
+        { x: 571, y: 452, w: 58, h: 16, power: -1020, comp: 0 },
+        { x: 96,  y: 652, w: 58, h: 16, power: -1060, comp: 0 },
+        { x: 1046,y: 652, w: 58, h: 16, power: -1060, comp: 0 },
+      ],
+      portals: [
+        { id: 0, pair: 1, x: 350, y: 616, r: 22, color: '#7c3aed', glow: '#ddd6fe' },
+        { id: 1, pair: 0, x: 600, y: 110, r: 22, color: '#7c3aed', glow: '#ddd6fe' },
+        { id: 2, pair: 3, x: 850, y: 616, r: 22, color: '#0d9488', glow: '#99f6e4' },
+        { id: 3, pair: 2, x: 600, y: 236, r: 22, color: '#0d9488', glow: '#99f6e4' },
+      ],
+      spawns: [
+        { x: 120, y: 480 },
+        { x: 1040, y: 480 },
+        { x: 580, y: 230 },
+        { x: 340, y: 330 },
+      ],
+    },
+  ];
+
+  // State
+  const config = { mode: 'bots', count: 3, arenaIdx: 0, duration: 60 };
+  let state = 'menu'; // menu | playing | paused | ended
+  let arena = ARENAS[0];
+  let players = [];
+  let particles = [];
+  let floatingTexts = [];
+  let keysDown = new Set();
+  let touchInput = { left: false, right: false, jump: false, down: false };
+  let soundOn = true;
+  let audioCtx = null;
+
+  let roundTimer = 60;
+  let lastWholeSec = 60;
+  let hitStopTimer = 0;
+  let shakeTimer = 0;
+  let shakeMag = 0;
+  let portalSpin = 0;
+  let accumulator = 0;
+  let lastTime = 0;
+
+  // UI refs
+  const menuOverlay = document.getElementById('menuOverlay');
+  const pauseOverlay = document.getElementById('pauseOverlay');
+  const endOverlay = document.getElementById('endOverlay');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const arenaBadge = document.getElementById('arenaBadge');
+  const soundBtn = document.getElementById('soundBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const touchBar = document.getElementById('touchBar');
+  const endTitle = document.getElementById('endTitle');
+  const endSub = document.getElementById('endSub');
+  const resultList = document.getElementById('resultList');
+
+  // Web Audio procedural sound effects
+  function ensureAudio() {
+    if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  }
+
+  function playTone(freq, endFreq, dur, type = 'triangle', gainVal = 0.14) {
+    if (!soundOn) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    if (endFreq !== freq) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq), now + dur);
+    }
+    gain.gain.setValueAtTime(gainVal, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + dur);
+  }
+
+  const sfx = {
+    jump: () => playTone(290, 560, 0.11, 'triangle', 0.12),
+    wallJump: () => playTone(360, 720, 0.12, 'triangle', 0.13),
+    spring: () => { playTone(220, 880, 0.22, 'sine', 0.18); playTone(330, 1020, 0.18, 'triangle', 0.1); },
+    portal: () => { playTone(620, 240, 0.18, 'sine', 0.14); playTone(440, 960, 0.18, 'sine', 0.1); },
+    tag: () => { playTone(520, 140, 0.16, 'sawtooth', 0.16); playTone(780, 980, 0.12, 'square', 0.1); },
+    tick: () => playTone(880, 880, 0.06, 'square', 0.08),
+    win: () => {
+      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, f, 0.16, 'triangle', 0.14), i * 85));
+    },
+  };
+
+  function spawnParticles(x, y, color, count = 10, speed = 220) {
+    for (let i = 0; i < count; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = (0.3 + Math.random() * 0.7) * speed;
+      particles.push({
+        x, y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 40,
+        size: 3 + Math.random() * 5,
+        color,
+        life: 0.28 + Math.random() * 0.25,
+        maxLife: 0.53,
+      });
+    }
+  }
+
+  function addFloatingText(x, y, text, color) {
+    floatingTexts.push({ x, y, text, color, life: 0.9, maxLife: 0.9 });
+  }
+
+  function createPlayers() {
+    arena = ARENAS[config.arenaIdx];
+    arena.springs.forEach(s => { s.comp = 0; });
+    players = [];
+    const itIndex = Math.floor(Math.random() * config.count);
+    for (let i = 0; i < config.count; i++) {
+      const preset = PLAYER_PRESETS[i];
+      const sp = arena.spawns[i % arena.spawns.length];
+      players.push({
+        id: i,
+        name: preset.name,
+        color: preset.color,
+        dark: preset.dark,
+        keys: preset.keys,
+        isBot: config.mode === 'bots' && i > 0,
+        x: sp.x,
+        y: sp.y,
+        w: 36,
+        h: 36,
+        vx: 0,
+        vy: 0,
+        facing: i % 2 === 0 ? 1 : -1,
+        onGround: false,
+        wallDir: 0, // -1 left wall, 1 right wall
+        coyote: 0,
+        jumpBuf: 0,
+        jumpHeld: false,
+        dropTimer: 0,
+        portalCd: 0,
+        tagCd: 0,
+        isIt: i === itIndex,
+        timeAsIt: 0,
+        tagsMade: 0,
+        scaleX: 1,
+        scaleY: 1,
+        // AI memory
+        aiJumpCd: 0,
+        aiDir: i % 2 === 0 ? 1 : -1,
+        aiDecisionTimer: 0,
+      });
+    }
+  }
+
+  function startRound() {
+    ensureAudio();
+    createPlayers();
+    particles = [];
+    floatingTexts = [];
+    roundTimer = config.duration;
+    lastWholeSec = config.duration;
+    hitStopTimer = 0;
+    shakeTimer = 0;
+    state = 'playing';
+    arenaBadge.textContent = arena.name;
+    timerDisplay.textContent = roundTimer.toFixed(1);
+    timerDisplay.classList.remove('urgent');
+    menuOverlay.classList.add('hidden');
+    pauseOverlay.classList.add('hidden');
+    endOverlay.classList.add('hidden');
+    updateTouchVisibility();
+    const itP = players.find(p => p.isIt);
+    if (itP) addFloatingText(itP.x + itP.w / 2, itP.y - 26, `${itP.name.toUpperCase()} IS IT!`, '#e11d48');
+  }
+
+  function updateTouchVisibility() {
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    if (state === 'playing' && isTouch && config.mode === 'bots') {
+      touchBar.classList.add('visible');
+    } else {
+      touchBar.classList.remove('visible');
+    }
+  }
+
+  function getPlayerInput(p) {
+    if (p.isBot) return computeBotInput(p);
+    let left = keysDown.has(p.keys.left);
+    let right = keysDown.has(p.keys.right);
+    let jump = keysDown.has(p.keys.jump);
+    let down = keysDown.has(p.keys.down);
+    if (p.id === 0) {
+      left = left || touchInput.left;
+      right = right || touchInput.right;
+      jump = jump || touchInput.jump;
+      down = down || touchInput.down;
+      // In solo vs bots mode, also allow Arrow keys for P1 convenience!
+      if (config.mode === 'bots') {
+        left = left || keysDown.has('arrowleft');
+        right = right || keysDown.has('arrowright');
+        jump = jump || keysDown.has('arrowup') || keysDown.has(' ');
+        down = down || keysDown.has('arrowdown');
+      }
+    }
+    return { left, right, jump, down };
+  }
+
+  function computeBotInput(p) {
+    const input = { left: false, right: false, jump: false, down: false };
+    p.aiJumpCd = Math.max(0, p.aiJumpCd - FIXED_DT);
+    p.aiDecisionTimer -= FIXED_DT;
+
+    const cx = p.x + p.w / 2;
+    const cy = p.y + p.h / 2;
+
+    if (p.isIt) {
+      // Chase nearest non-IT runner
+      let target = null;
+      let bestDist = Infinity;
+      for (const other of players) {
+        if (other.id === p.id) continue;
+        const d = Math.hypot(other.x - p.x, other.y - p.y);
+        if (d < bestDist) { bestDist = d; target = other; }
+      }
+      if (target) {
+        const dx = (target.x + target.w / 2) - cx;
+        const dy = (target.y + target.h / 2) - cy;
+        if (dx < -14) input.left = true;
+        else if (dx > 14) input.right = true;
+
+        // If target is much higher, seek nearest spring pad or jump up
+        if (dy < -70) {
+          let nearSpring = null;
+          let sd = 260;
+          for (const s of arena.springs) {
+            const d = Math.hypot((s.x + s.w / 2) - cx, s.y - cy);
+            if (d < sd && Math.abs(s.y - cy) < 110) { sd = d; nearSpring = s; }
+          }
+          if (nearSpring) {
+            const sdx = (nearSpring.x + nearSpring.w / 2) - cx;
+            input.left = sdx < -8;
+            input.right = sdx > 8;
+          }
+          if ((p.onGround || p.wallDir !== 0) && p.aiJumpCd <= 0) {
+            input.jump = true;
+            p.aiJumpCd = 0.28;
+          }
+        } else if (dy > 90 && p.onGround && Math.abs(dx) < 160) {
+          input.down = true;
+        }
+        // Jump over walls/obstacles when blocked
+        if (p.wallDir !== 0 && p.aiJumpCd <= 0) {
+          input.jump = true;
+          p.aiJumpCd = 0.25;
+        }
+      }
+    } else {
+      // Flee from the IT player
+      const chaser = players.find(o => o.isIt);
+      if (chaser) {
+        const dx = cx - (chaser.x + chaser.w / 2);
+        const dy = cy - (chaser.y + chaser.h / 2);
+        const dist = Math.hypot(dx, dy);
+
+        if (p.aiDecisionTimer <= 0) {
+          p.aiDecisionTimer = 0.22 + Math.random() * 0.25;
+          // Avoid getting cornered near arena edges
+          if (cx < 140) p.aiDir = 1;
+          else if (cx > VW - 140) p.aiDir = -1;
+          else p.aiDir = dx >= 0 ? 1 : -1;
+        }
+        if (p.aiDir < 0) input.left = true;
+        else input.right = true;
+
+        // Jump when chaser is close, when approaching walls, or to climb platforms
+        if (dist < 250 && (p.onGround || p.wallDir !== 0) && p.aiJumpCd <= 0) {
+          if (dy > -40 || Math.random() < 0.65) {
+            input.jump = true;
+            p.aiJumpCd = 0.34;
+          }
+        } else if (p.wallDir !== 0 && p.aiJumpCd <= 0) {
+          input.jump = true;
+          p.aiDir = -p.wallDir;
+          p.aiJumpCd = 0.28;
+        } else if (p.onGround && Math.random() < 0.015 && p.aiJumpCd <= 0) {
+          input.jump = true;
+          p.aiJumpCd = 0.5;
+        }
+        // Drop through platform if chaser is right above and we're high up
+        if (dist < 180 && dy > 20 && cy < 480 && p.onGround && Math.random() < 0.08) {
+          input.down = true;
+        }
+      }
+    }
+    return input;
+  }
+
+  function rectOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function stepPhysics(dt) {
+    portalSpin += dt * 3.2;
+
+    if (hitStopTimer > 0) {
+      hitStopTimer -= dt;
+      return;
+    }
+
+    if (shakeTimer > 0) {
+      shakeTimer = Math.max(0, shakeTimer - dt);
+    }
+
+    // Round timer
+    roundTimer = Math.max(0, roundTimer - dt);
+    timerDisplay.textContent = roundTimer.toFixed(1);
+    const whole = Math.ceil(roundTimer);
+    if (roundTimer <= 10) {
+      timerDisplay.classList.add('urgent');
+      if (whole < lastWholeSec && whole > 0) sfx.tick();
+    }
+    lastWholeSec = whole;
+
+    if (roundTimer <= 0) {
+      finishRound();
+      return;
+    }
+
+    // Recover spring animations
+    for (const s of arena.springs) {
+      s.comp = Math.max(0, s.comp - dt * 5);
+    }
+
+    // Update players
+    for (const p of players) {
+      if (p.isIt) p.timeAsIt += dt;
+      p.tagCd = Math.max(0, p.tagCd - dt);
+      p.portalCd = Math.max(0, p.portalCd - dt);
+      p.dropTimer = Math.max(0, p.dropTimer - dt);
+
+      const inp = getPlayerInput(p);
+      const justPressedJump = inp.jump && !p.jumpHeld;
+      p.jumpHeld = inp.jump;
+
+      if (justPressedJump) p.jumpBuf = PHYS.jumpBuffer;
+      else p.jumpBuf = Math.max(0, p.jumpBuf - dt);
+
+      if (inp.down && p.onGround) {
+        p.dropTimer = PHYS.dropDuration;
+      }
+
+      // Horizontal acceleration & traction
+      const maxSpd = PHYS.maxSpeed * (p.isIt ? PHYS.itSpeedMult : 1);
+      const accel = p.onGround ? PHYS.groundAccel : PHYS.airAccel;
+      const fric = p.onGround ? PHYS.groundFriction : PHYS.airFriction;
+
+      const moveDir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
+      if (moveDir !== 0) {
+        if (p.onGround && Math.sign(p.vx) !== 0 && Math.sign(p.vx) !== moveDir && Math.abs(p.vx) > 180) {
+          spawnParticles(p.x + p.w / 2, p.y + p.h, '#d6cbb3', 3, 90);
+        }
+        p.vx += moveDir * accel * dt;
+        if (Math.abs(p.vx) > maxSpd) p.vx = Math.sign(p.vx) * Math.max(maxSpd, Math.abs(p.vx) - fric * dt);
+        p.facing = moveDir;
+      } else {
+        if (Math.abs(p.vx) <= fric * dt) p.vx = 0;
+        else p.vx -= Math.sign(p.vx) * fric * dt;
+      }
+
+      // Coyote time
+      if (p.onGround) p.coyote = PHYS.coyoteTime;
+      else p.coyote = Math.max(0, p.coyote - dt);
+
+      // Jump / Wall-jump
+      if (p.jumpBuf > 0) {
+        if (p.coyote > 0) {
+          p.vy = PHYS.jumpVel;
+          p.onGround = false;
+          p.coyote = 0;
+          p.jumpBuf = 0;
+          p.scaleX = 0.78;
+          p.scaleY = 1.26;
+          spawnParticles(p.x + p.w / 2, p.y + p.h, '#e2e8f0', 6, 130);
+          sfx.jump();
+        } else if (p.wallDir !== 0) {
+          p.vy = PHYS.wallJumpVy;
+          p.vx = -p.wallDir * PHYS.wallJumpVx;
+          p.facing = -p.wallDir;
+          p.jumpBuf = 0;
+          p.scaleX = 0.78;
+          p.scaleY = 1.24;
+          spawnParticles(p.wallDir > 0 ? p.x + p.w : p.x, p.y + p.h / 2, '#f8fafc', 7, 150);
+          sfx.wallJump();
+        }
+      }
+
+      // Variable jump height cut
+      if (!inp.jump && p.vy < -180) {
+        p.vy *= Math.pow(PHYS.jumpCutMult, dt * 16);
+      }
+
+      // Gravity & wall slide
+      const grav = p.vy > 0 ? PHYS.gravity * PHYS.fallGravityMult : PHYS.gravity;
+      p.vy = Math.min(PHYS.maxFall, p.vy + grav * dt);
+
+      if (!p.onGround && p.wallDir !== 0 && p.vy > PHYS.wallSlideMax && moveDir === p.wallDir) {
+        p.vy = PHYS.wallSlideMax;
+      }
+
+      // Move X & resolve solid collisions
+      p.x += p.vx * dt;
+      p.wallDir = 0;
+      for (const s of arena.solids) {
+        if (rectOverlap(p, s)) {
+          if (p.vx > 0) {
+            p.x = s.x - p.w;
+            p.vx = 0;
+            p.wallDir = 1;
+          } else if (p.vx < 0) {
+            p.x = s.x + s.w;
+            p.vx = 0;
+            p.wallDir = -1;
+          }
+        }
+      }
+
+      // Check adjacent wall contact for forgiving wall-jump detection
+      if (p.wallDir === 0 && !p.onGround) {
+        const probeL = { x: p.x - 3, y: p.y + 4, w: 3, h: p.h - 8 };
+        const probeR = { x: p.x + p.w, y: p.y + 4, w: 3, h: p.h - 8 };
+        for (const s of arena.solids) {
+          if (rectOverlap(probeL, s)) { p.wallDir = -1; break; }
+          if (rectOverlap(probeR, s)) { p.wallDir = 1; break; }
+        }
+      }
+
+      // Move Y & resolve solid + one-way collisions
+      const prevBottom = p.y + p.h;
+      const wasOnGround = p.onGround;
+      p.y += p.vy * dt;
+      p.onGround = false;
+
+      for (const s of arena.solids) {
+        if (rectOverlap(p, s)) {
+          if (p.vy > 0) {
+            p.y = s.y - p.h;
+            if (!wasOnGround && p.vy > 320) {
+              p.scaleX = 1.24;
+              p.scaleY = 0.78;
+              spawnParticles(p.x + p.w / 2, p.y + p.h, '#d6cbb3', 5, 110);
+            }
+            p.vy = 0;
+            p.onGround = true;
+          } else if (p.vy < 0) {
+            p.y = s.y + s.h;
+            p.vy = 0;
+          }
+        }
+      }
+
+      // One-way platforms
+      if (p.vy >= 0 && p.dropTimer <= 0) {
+        for (const ow of arena.oneWays) {
+          if (p.x + p.w > ow.x + 2 && p.x < ow.x + ow.w - 2) {
+            if (prevBottom <= ow.y + 6 && p.y + p.h >= ow.y) {
+              p.y = ow.y - p.h;
+              if (!wasOnGround && p.vy > 320) {
+                p.scaleX = 1.22;
+                p.scaleY = 0.80;
+              }
+              p.vy = 0;
+              p.onGround = true;
+            }
+          }
+        }
+      }
+
+      // Spring jump pads
+      for (const sp of arena.springs) {
+        if (rectOverlap(p, sp) && p.vy >= -80) {
+          p.vy = sp.power || PHYS.springVel;
+          p.onGround = false;
+          p.coyote = 0;
+          sp.comp = 1;
+          p.scaleX = 0.72;
+          p.scaleY = 1.34;
+          spawnParticles(sp.x + sp.w / 2, sp.y, '#facc15', 14, 240);
+          sfx.spring();
+        }
+      }
+
+      // Teleporter portals
+      if (p.portalCd <= 0) {
+        const px = p.x + p.w / 2;
+        const py = p.y + p.h / 2;
+        for (const pt of arena.portals) {
+          if (Math.hypot(px - pt.x, py - pt.y) < pt.r + 14) {
+            const dest = arena.portals[pt.pair];
+            spawnParticles(pt.x, pt.y, pt.glow, 14, 210);
+            p.x = dest.x - p.w / 2;
+            p.y = dest.y - p.h / 2;
+            p.portalCd = PHYS.portalCooldown;
+            p.scaleX = 0.7;
+            p.scaleY = 1.3;
+            spawnParticles(dest.x, dest.y, dest.glow, 14, 210);
+            sfx.portal();
+            break;
+          }
+        }
+      }
+
+      // Squash-and-stretch spring back
+      p.scaleX += (1 - p.scaleX) * Math.min(1, dt * 14);
+      p.scaleY += (1 - p.scaleY) * Math.min(1, dt * 14);
+    }
+
+    // Tag collision check
+    const chaser = players.find(p => p.isIt);
+    if (chaser && chaser.tagCd <= 0) {
+      for (const target of players) {
+        if (target.id === chaser.id || target.tagCd > 0) continue;
+        if (rectOverlap(chaser, target)) {
+          chaser.isIt = false;
+          chaser.tagsMade += 1;
+          target.isIt = true;
+          chaser.tagCd = PHYS.tagCooldown;
+          target.tagCd = PHYS.tagCooldown;
+
+          // Knockback separation
+          const dx = (target.x + target.w / 2) - (chaser.x + chaser.w / 2);
+          const dir = dx >= 0 ? 1 : -1;
+          chaser.vx = -dir * 320;
+          chaser.vy = -260;
+          target.vx = dir * 320;
+          target.vy = -280;
+
+          hitStopTimer = PHYS.hitStop;
+          shakeTimer = 0.22;
+          shakeMag = 9;
+          const mx = (chaser.x + target.x + chaser.w) / 2;
+          const my = (chaser.y + target.y + chaser.h) / 2;
+          spawnParticles(mx, my, '#e11d48', 22, 340);
+          spawnParticles(mx, my, '#ffffff', 10, 240);
+          addFloatingText(mx, my - 24, `TAG! ${target.name.toUpperCase()} IS IT!`, '#e11d48');
+          sfx.tag();
+          break;
+        }
+      }
+    }
+
+    // Update particles & floating texts
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const pt = particles[i];
+      pt.life -= dt;
+      if (pt.life <= 0) { particles.splice(i, 1); continue; }
+      pt.vy += 650 * dt;
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+    }
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const ft = floatingTexts[i];
+      ft.life -= dt;
+      if (ft.life <= 0) { floatingTexts.splice(i, 1); continue; }
+      ft.y -= 48 * dt;
+    }
+  }
+
+  function finishRound() {
+    state = 'ended';
+    updateTouchVisibility();
+    sfx.win();
+    const loser = players.find(p => p.isIt);
+    const winners = players.filter(p => !p.isIt);
+    endTitle.textContent = winners.length === 1 ? `${winners[0].name} Wins!` : 'Runners Win!';
+    endSub.textContent = loser ? `${loser.name} was caught holding IT when time ran out.` : 'Round complete!';
+
+    resultList.innerHTML = '';
+    const sorted = [...players].sort((a, b) => (a.isIt ? 1 : 0) - (b.isIt ? 1 : 0) || a.timeAsIt - b.timeAsIt);
+    for (const p of sorted) {
+      const row = document.createElement('div');
+      row.className = 'result-row ' + (p.isIt ? 'loser' : 'winner');
+      const role = p.isBot ? ' (Bot)' : '';
+      const badge = p.isIt ? 'IT — LOSER' : 'SAFE — WINNER';
+      row.innerHTML = `
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="swatch" style="background:${p.color}"></span>
+          ${p.name}${role}
+        </span>
+        <span style="font:800 11px ui-monospace,monospace;">${p.timeAsIt.toFixed(1)}s IT · ${badge}</span>
+      `;
+      resultList.appendChild(row);
+    }
+    endOverlay.classList.remove('hidden');
+  }
+
+  function drawRoundedRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.fill();
+  }
+
+  function render() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cw = window.innerWidth;
+    const ch = window.innerHeight;
+    if (canvas.width !== Math.floor(cw * dpr) || canvas.height !== Math.floor(ch * dpr)) {
+      canvas.width = Math.floor(cw * dpr);
+      canvas.height = Math.floor(ch * dpr);
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#182026';
+    ctx.fillRect(0, 0, cw, ch);
+
+    const scale = Math.min(cw / VW, ch / VH);
+    const ox = (cw - VW * scale) / 2;
+    const oy = (ch - VH * scale) / 2;
+
+    const sx = shakeTimer > 0 ? (Math.random() - 0.5) * 2 * shakeMag * (shakeTimer / 0.22) : 0;
+    const sy = shakeTimer > 0 ? (Math.random() - 0.5) * 2 * shakeMag * (shakeTimer / 0.22) : 0;
+
+    ctx.save();
+    ctx.translate(ox + sx * scale, oy + sy * scale);
+    ctx.scale(scale, scale);
+
+    // Clip to arena
+    ctx.beginPath();
+    ctx.rect(0, 0, VW, VH);
+    ctx.clip();
+
+    // Sky gradient
+    const sky = ctx.createLinearGradient(0, 0, 0, VH);
+    sky.addColorStop(0, arena.skyTop);
+    sky.addColorStop(1, arena.skyBottom);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, VW, VH);
+
+    // Scenic backdrop silhouettes
+    ctx.fillStyle = arena.bgHill1;
+    ctx.globalAlpha = 0.45;
+    ctx.beginPath();
+    ctx.moveTo(0, VH);
+    ctx.quadraticCurveTo(280, 420, 620, 560);
+    ctx.quadraticCurveTo(960, 390, VW, 530);
+    ctx.lineTo(VW, VH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = arena.bgHill2;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(0, VH);
+    ctx.quadraticCurveTo(360, 520, 740, 600);
+    ctx.quadraticCurveTo(1020, 470, VW, 610);
+    ctx.lineTo(VW, VH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Subtle background grid
+    ctx.strokeStyle = 'rgba(30,41,59,0.05)';
+    ctx.lineWidth = 1;
+    for (let gx = 60; gx < VW; gx += 60) {
+      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, VH); ctx.stroke();
+    }
+    for (let gy = 60; gy < VH; gy += 60) {
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(VW, gy); ctx.stroke();
+    }
+
+    // Solid platforms
+    for (const s of arena.solids) {
+      ctx.fillStyle = arena.solidFill;
+      drawRoundedRect(s.x, s.y, s.w, s.h, 6);
+      if (s.y > 40 && s.w > 50) {
+        ctx.fillStyle = arena.solidTop;
+        drawRoundedRect(s.x, s.y, s.w, Math.min(12, s.h), 6);
+      }
+      ctx.strokeStyle = 'rgba(30,41,59,0.35)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(s.x + 1, s.y + 1, s.w - 2, s.h - 2);
+    }
+
+    // One-way platforms
+    for (const ow of arena.oneWays) {
+      ctx.fillStyle = arena.oneWayFill;
+      drawRoundedRect(ow.x, ow.y, ow.w, ow.h, 7);
+      ctx.fillStyle = arena.oneWayTop;
+      drawRoundedRect(ow.x, ow.y, ow.w, 8, 5);
+      // Dashed underside hint so players know they can jump/drop through
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(ow.x + 10, ow.y + ow.h - 3);
+      ctx.lineTo(ow.x + ow.w - 10, ow.y + ow.h - 3);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Spring jump pads
+    for (const sp of arena.springs) {
+      const lift = sp.comp * 6;
+      // Base coil
+      ctx.fillStyle = '#334155';
+      drawRoundedRect(sp.x + 6, sp.y + 8, sp.w - 12, sp.h - 6, 3);
+      // Top bounce cap
+      ctx.fillStyle = '#f59e0b';
+      drawRoundedRect(sp.x, sp.y - lift, sp.w, 11, 5);
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(sp.x, sp.y - lift, sp.w, 11, 5);
+      ctx.stroke();
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(sp.x + 10, sp.y - lift + 3, sp.w - 20, 3);
+    }
+
+    // Teleporter portals
+    for (const pt of arena.portals) {
+      ctx.save();
+      ctx.translate(pt.x, pt.y);
+      ctx.fillStyle = pt.glow;
+      ctx.globalAlpha = 0.28 + Math.sin(portalSpin + pt.id) * 0.1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, pt.r * 0.88, pt.r * 1.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = pt.color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, pt.r * 0.72, pt.r * 1.15, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, pt.r * 0.42, portalSpin, portalSpin + Math.PI * 1.2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Players
+    for (const p of players) {
+      const cx = p.x + p.w / 2;
+      const by = p.y + p.h;
+
+      // Ground shadow
+      ctx.fillStyle = 'rgba(15,23,42,0.18)';
+      ctx.beginPath();
+      ctx.ellipse(cx, by + 2, p.w * 0.44 * p.scaleX, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(cx, by);
+      ctx.scale(p.scaleX, p.scaleY);
+
+      // IT glowing aura
+      if (p.isIt) {
+        ctx.strokeStyle = 'rgba(225,29,72,0.55)';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.roundRect(-p.w / 2 - 5, -p.h - 5, p.w + 10, p.h + 10, 14);
+        ctx.stroke();
+      }
+
+      // Immunity blink
+      if (p.tagCd > 0 && Math.floor(p.tagCd * 16) % 2 === 0) {
+        ctx.globalAlpha = 0.55;
+      }
+
+      // Body
+      ctx.fillStyle = p.color;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.roundRect(-p.w / 2, -p.h, p.w, p.h, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      // Eyes looking in facing direction
+      const lookX = p.facing * 3.5;
+      const lookY = Math.max(-2, Math.min(2, p.vy * 0.004));
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-6 + lookX * 0.5, -p.h * 0.62, 5.2, 0, Math.PI * 2);
+      ctx.arc(7 + lookX * 0.5, -p.h * 0.62, 5.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(-6 + lookX, -p.h * 0.62 + lookY, 2.5, 0, Math.PI * 2);
+      ctx.arc(7 + lookX, -p.h * 0.62 + lookY, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Expression: fierce brow if IT, determined/smile if runner
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      if (p.isIt) {
+        ctx.beginPath();
+        ctx.moveTo(-12, -p.h * 0.78); ctx.lineTo(-3, -p.h * 0.72);
+        ctx.moveTo(12, -p.h * 0.78); ctx.lineTo(3, -p.h * 0.72);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(lookX * 0.4, -p.h * 0.34, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Floating IT arrow above chaser
+      if (p.isIt) {
+        const bob = Math.sin(portalSpin * 2.4) * 5;
+        const ay = p.y - 16 + bob;
+        ctx.fillStyle = '#e11d48';
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, ay);
+        ctx.lineTo(cx - 11, ay - 16);
+        ctx.lineTo(cx + 11, ay - 16);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#e11d48';
+        ctx.font = '900 11px ui-monospace, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('IT', cx, ay - 22);
+      }
+    }
+
+    // Particles
+    for (const pt of particles) {
+      ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(pt.x - pt.size / 2, pt.y - pt.size / 2, pt.size, pt.size);
+    }
+    ctx.globalAlpha = 1;
+
+    // Floating event texts
+    for (const ft of floatingTexts) {
+      ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+      ctx.font = '900 18px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(ft.text, ft.x, ft.y);
+      ctx.fillStyle = ft.color;
+      ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+  }
+
+  function loop(now) {
+    if (!lastTime) lastTime = now;
+    const frameDt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+
+    if (state === 'playing') {
+      accumulator += frameDt;
+      while (accumulator >= FIXED_DT) {
+        stepPhysics(FIXED_DT);
+        accumulator -= FIXED_DT;
+      }
+    }
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // Keyboard bindings
+  window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) {
+      e.preventDefault();
+    }
+    if (k === 'escape' || k === 'p') {
+      if (state === 'playing') pauseGame();
+      else if (state === 'paused') resumeGame();
+      return;
+    }
+    keysDown.add(k);
+  }, { passive: false });
+
+  window.addEventListener('keyup', e => {
+    keysDown.delete(e.key.toLowerCase());
+  });
+
+  // Pause automatically when document is hidden (D'Games convention)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'playing') {
+      pauseGame();
+    }
+  });
+
+  function pauseGame() {
+    state = 'paused';
+    keysDown.clear();
+    pauseOverlay.classList.remove('hidden');
+    updateTouchVisibility();
+  }
+
+  function resumeGame() {
+    state = 'playing';
+    lastTime = performance.now();
+    accumulator = 0;
+    pauseOverlay.classList.add('hidden');
+    updateTouchVisibility();
+  }
+
+  // Segmented menu controls
+  function bindSeg(rowId, key, parse = v => v) {
+    const row = document.getElementById(rowId);
+    row.querySelectorAll('.seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        row.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        config[key] = parse(btn.dataset[Object.keys(btn.dataset)[0]]);
+        if (key === 'arenaIdx') {
+          arena = ARENAS[config.arenaIdx];
+          arenaBadge.textContent = arena.name;
+        }
+      });
+    });
+  }
+
+  bindSeg('modeRow', 'mode');
+  bindSeg('countRow', 'count', Number);
+  bindSeg('arenaRow', 'arenaIdx', Number);
+  bindSeg('timeRow', 'duration', Number);
+
+  document.getElementById('startBtn').addEventListener('click', startRound);
+  document.getElementById('rematchBtn').addEventListener('click', startRound);
+  document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+  document.getElementById('menuFromPauseBtn').addEventListener('click', () => {
+    state = 'menu';
+    pauseOverlay.classList.add('hidden');
+    menuOverlay.classList.remove('hidden');
+    updateTouchVisibility();
+  });
+  document.getElementById('menuFromEndBtn').addEventListener('click', () => {
+    state = 'menu';
+    endOverlay.classList.add('hidden');
+    menuOverlay.classList.remove('hidden');
+    updateTouchVisibility();
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    if (state === 'playing') pauseGame();
+    else if (state === 'paused') resumeGame();
+  });
+
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? 'SFX ON' : 'SFX OFF';
+  });
+
+  // Touch buttons
+  document.querySelectorAll('.t-btn').forEach(btn => {
+    const dir = btn.dataset.t;
+    const setHeld = on => {
+      touchInput[dir] = on;
+      btn.classList.toggle('held', on);
+    };
+    btn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      btn.setPointerCapture?.(e.pointerId);
+      setHeld(true);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => {
+      btn.addEventListener(ev, e => {
+        if (ev !== 'pointerleave' || e.buttons === 0) setHeld(false);
+      });
+    });
+  });
+
+  // Initialize background preview & start animation loop
+  createPlayers();
+  requestAnimationFrame(loop);
+})();
+</script>
+<script src="/haptics.js" defer></script>
+</body>
+</html>
