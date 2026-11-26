@@ -10,12 +10,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "No concept provided" });
     }
 
-    // The environment variable TYPESAFE_API_KEY must be set in Vercel
-    if (!"apikey_22232130601a0ad9469097aa0d16ad2d40e1_6f6539ac69ff4317b61e86de3e3aeeb80724001379f226236467484c67a11ce1") {
+    const apiKey = process.env.TYPESAFE_API_KEY;
+    if (!apiKey) {
         return res.status(500).json({ error: "Missing TYPESAFE_API_KEY" });
     }
 
-    const client = new TypeSafeClient({ apiKey: "apikey_22232130601a0ad9469097aa0d16ad2d40e1_6f6539ac69ff4317b61e86de3e3aeeb80724001379f226236467484c67a11ce1" });
+    const client = new TypeSafeClient({ apiKey });
 
     try {
         const response = await client.systemOne({
