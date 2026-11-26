@@ -466,7 +466,10 @@
     toast.timer = setTimeout(() => el.classList.remove("is-visible"), 1500);
   }
   function dailyGame() {
-    return GAMES[0];
+    if (!GAMES.length) return null;
+    const now = new Date();
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    return GAMES[dayOfYear % GAMES.length];
   }
   function filteredGames() {
     const query = state.search.toLowerCase();
