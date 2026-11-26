@@ -213,6 +213,18 @@
       time: "2–6 min",
     },
     {
+      id: "tag",
+      title: "Tag",
+      category: "action",
+      genre: "Platformer",
+      tag: "1–4P",
+      desc: "Outrun the chaser across spring pads, wall-kicks, and warp portals. Solo vs bots or 2–4P local.",
+      img: "/assets/covers/tag.svg",
+      url: "/tag/",
+      time: "1–3 min",
+      players: "1–4",
+    },
+    {
       id: "circuit-stitch",
       title: "Circuit Stitch",
       category: "puzzle",
